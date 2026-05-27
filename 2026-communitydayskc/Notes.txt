@@ -1,1 +1,29 @@
 https://www.communitydays.info/
+
+Surya Rao Rayarao
+SS&C Technologies, Lead Software Engineer
+Surya Rao Rayarao is a distinguished thought leader at the forefront of artificial intelligence and data modernization. With deep expertise in machine learning applications and enterprise transformation, he specializes in helping organizations navigate the complex landscape of digital evolution.
+
+His work particularly focuses on the financial and insurance sectors, where he has pioneered innovative approaches to hyperautomation, anomaly detection, and intelligent data processing. Through his speaking engagements, Surya shares practical insights on implementing AI solutions that drive real business value.
+
+Known for his "enlightening" and "inspiring" presentations, Surya combines technical depth with accessible communication, making complex AI concepts understandable for diverse audiences from technical teams to executive leadership.
+
+From Java to AI: Modernizing Enterprise Systems with Machine Learning
+
+Surya Rao Rayarao
+From Java to AI: Modernizing Enterprise Systems with Machine Learning
+Java has been the backbone of enterprise software for decades — but in today's world, AI and Machine Learning are redefining what enterprise systems can do. The question is: how do you bridge the two?
+
+In this session, Surya Rao Rayarao — Lead Software Engineer at SS&C Technologies, IEEE Senior Member, and MS Data Science graduate (UT Austin) — draws on 20+ years of Java and enterprise engineering experience to show you exactly how to evolve modern Java applications with AI/ML capabilities, without a full rewrite.
+
+Key takeaways:
+• The evolution of Java enterprise systems: from J2EE to AI-ready architectures
+• Practical patterns for embedding ML pipelines into Spring Boot and Java microservices
+• Real-world FinTech examples: using AI to solve complex financial data challenges in Java-based systems
+• How to expose ML models as REST APIs and integrate them with existing Java backends
+• Career insights for Java engineers looking to evolve into AI/ML-integrated roles
+
+Whether you're a Java developer curious about AI, a tech lead navigating modernization, or an architect designing next-gen systems, this talk delivers actionable strategies grounded in 20+ years of real production Java experience.
+
+Room 4 Fri 9:00 am - 9:55 am
+KCJUG Full session (50 minutes + 5 minute Q&A)
