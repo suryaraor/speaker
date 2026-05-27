@@ -1,0 +1,479 @@
+{
+  "info": {
+    "name": "01 - Model as a Service",
+    "description": "Postman collection for testing the Model as a Service pattern - Python ML service with Spring Boot client",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "item": [
+    {
+      "name": "Python ML Service",
+      "description": "FastAPI fraud detection model service running on port 8000",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ml_service_url}}/health",
+              "host": [
+                "{{ml_service_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check if the ML service is healthy and model is loaded"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has status healthy', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('healthy');",
+                  "});",
+                  "",
+                  "pm.test('Model is loaded', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.model_loaded).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Predict Fraud - High Risk",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1850.0,\n  \"hour_of_day\": 3,\n  \"merchant_risk_score\": 0.8,\n  \"velocity_30d\": 22,\n  \"geo_risk_score\": 0.75\n}"
+            },
+            "url": {
+              "raw": "{{ml_service_url}}/predict/fraud",
+              "host": [
+                "{{ml_service_url}}"
+              ],
+              "path": [
+                "predict",
+                "fraud"
+              ]
+            },
+            "description": "Submit transaction features for fraud prediction (high-risk example)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains fraud_probability', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('fraud_probability');",
+                  "    pm.expect(jsonData.fraud_probability).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test('Response contains is_fraud flag', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('is_fraud');",
+                  "    pm.expect(jsonData.is_fraud).to.be.a('boolean');",
+                  "});",
+                  "",
+                  "pm.test('Response contains risk_level', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.risk_level).to.be.oneOf(['LOW', 'MEDIUM', 'HIGH']);",
+                  "});",
+                  "",
+                  "pm.test('Response contains feature_importances', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('feature_importances');",
+                  "    pm.expect(jsonData.feature_importances).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Predict Fraud - Low Risk",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 42.50,\n  \"hour_of_day\": 14,\n  \"merchant_risk_score\": 0.1,\n  \"velocity_30d\": 5,\n  \"geo_risk_score\": 0.05\n}"
+            },
+            "url": {
+              "raw": "{{ml_service_url}}/predict/fraud",
+              "host": [
+                "{{ml_service_url}}"
+              ],
+              "path": [
+                "predict",
+                "fraud"
+              ]
+            },
+            "description": "Submit transaction features for fraud prediction (low-risk example)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Risk level should be LOW for low-risk features', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.risk_level).to.eql('LOW');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Predict Fraud - Custom Features",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500.0,\n  \"hour_of_day\": 2,\n  \"merchant_risk_score\": 0.6,\n  \"velocity_30d\": 18,\n  \"geo_risk_score\": 0.55\n}"
+            },
+            "url": {
+              "raw": "{{ml_service_url}}/predict/fraud",
+              "host": [
+                "{{ml_service_url}}"
+              ],
+              "path": [
+                "predict",
+                "fraud"
+              ]
+            },
+            "description": "Submit custom transaction features for fraud prediction"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Java Spring Boot Client",
+      "description": "Spring Boot REST API client that calls the Python ML service",
+      "item": [
+        {
+          "name": "Demo - High Risk",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{spring_boot_url}}/api/fraud/demo/high-risk",
+              "host": [
+                "{{spring_boot_url}}"
+              ],
+              "path": [
+                "api",
+                "fraud",
+                "demo",
+                "high-risk"
+              ]
+            },
+            "description": "Get a pre-built high-risk transaction evaluation (synchronous)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains fraud_probability', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('fraud_probability');",
+                  "    pm.expect(jsonData.fraud_probability).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test('High-risk transaction should have high fraud probability', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.fraud_probability).to.be.above(0.5);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Demo - Low Risk",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{spring_boot_url}}/api/fraud/demo/low-risk",
+              "host": [
+                "{{spring_boot_url}}"
+              ],
+              "path": [
+                "api",
+                "fraud",
+                "demo",
+                "low-risk"
+              ]
+            },
+            "description": "Get a pre-built low-risk transaction evaluation (synchronous)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains fraud_probability', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('fraud_probability');",
+                  "    pm.expect(jsonData.fraud_probability).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test('Low-risk transaction should have low fraud probability', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.fraud_probability).to.be.below(0.5);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Transaction - Synchronous",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"TXN-20260523-001\",\n  \"accountId\": \"ACC-98765\",\n  \"amount\": 2500.0,\n  \"timestamp\": \"2026-05-23T02:45:00Z\",\n  \"merchantId\": \"MERCH-CRYPTO-5555\",\n  \"merchantCategory\": \"CRYPTO\",\n  \"location\": \"NG\",\n  \"ipAddress\": \"41.203.150.200\"\n}"
+            },
+            "url": {
+              "raw": "{{spring_boot_url}}/api/fraud/evaluate",
+              "host": [
+                "{{spring_boot_url}}"
+              ],
+              "path": [
+                "api",
+                "fraud",
+                "evaluate"
+              ]
+            },
+            "description": "Evaluate a custom transaction (blocking/synchronous call). Feature engineering happens in Java, prediction from Python ML service."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains fraud_probability', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('fraud_probability');",
+                  "    pm.expect(jsonData.fraud_probability).to.be.a('number');",
+                  "    pm.expect(jsonData.fraud_probability).to.be.within(0, 1);",
+                  "});",
+                  "",
+                  "pm.test('Response contains is_fraud flag', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('is_fraud');",
+                  "    pm.expect(jsonData.is_fraud).to.be.a('boolean');",
+                  "});",
+                  "",
+                  "pm.test('Response contains risk_level', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('risk_level');",
+                  "    pm.expect(jsonData.risk_level).to.be.oneOf(['LOW', 'MEDIUM', 'HIGH']);",
+                  "});",
+                  "",
+                  "pm.test('Response includes model_version', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('model_version');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Evaluate Transaction - Asynchronous",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"TXN-20260523-002\",\n  \"accountId\": \"ACC-54321\",\n  \"amount\": 150.0,\n  \"timestamp\": \"2026-05-23T15:20:00Z\",\n  \"merchantId\": \"MERCH-GROCERY-999\",\n  \"merchantCategory\": \"GROCERY\",\n  \"location\": \"US\",\n  \"ipAddress\": \"72.14.100.50\"\n}"
+            },
+            "url": {
+              "raw": "{{spring_boot_url}}/api/fraud/evaluate/async",
+              "host": [
+                "{{spring_boot_url}}"
+              ],
+              "path": [
+                "api",
+                "fraud",
+                "evaluate",
+                "async"
+              ]
+            },
+            "description": "Evaluate a transaction with non-blocking async call (uses WebClient with 200ms timeout)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Async endpoint returns quickly', function () {",
+                  "    // This is a reactive endpoint that should return immediately",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 202]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Evaluate - Large Amount (High Risk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"TXN-20260523-LARGE\",\n  \"accountId\": \"ACC-99999\",\n  \"amount\": 5000.0,\n  \"timestamp\": \"2026-05-23T04:30:00Z\",\n  \"merchantId\": \"MERCH-JEWELRY-777\",\n  \"merchantCategory\": \"JEWELRY\",\n  \"location\": \"RU\",\n  \"ipAddress\": \"185.220.0.1\"\n}"
+            },
+            "url": {
+              "raw": "{{spring_boot_url}}/api/fraud/evaluate",
+              "host": [
+                "{{spring_boot_url}}"
+              ],
+              "path": [
+                "api",
+                "fraud",
+                "evaluate"
+              ]
+            },
+            "description": "Evaluate a large-amount transaction with risk factors (high fraud probability expected)"
+          },
+          "response": []
+        },
+        {
+          "name": "Evaluate - Small Amount (Low Risk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"TXN-20260523-SMALL\",\n  \"accountId\": \"ACC-11111\",\n  \"amount\": 25.99,\n  \"timestamp\": \"2026-05-23T12:00:00Z\",\n  \"merchantId\": \"MERCH-COFFEE-123\",\n  \"merchantCategory\": \"FOOD\",\n  \"location\": \"US\",\n  \"ipAddress\": \"192.168.1.1\"\n}"
+            },
+            "url": {
+              "raw": "{{spring_boot_url}}/api/fraud/evaluate",
+              "host": [
+                "{{spring_boot_url}}"
+              ],
+              "path": [
+                "api",
+                "fraud",
+                "evaluate"
+              ]
+            },
+            "description": "Evaluate a small-amount legitimate transaction (low fraud probability expected)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "ml_service_url",
+      "value": "http://localhost:8000",
+      "type": "string",
+      "description": "Python FastAPI ML service base URL"
+    },
+    {
+      "key": "spring_boot_url",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Java Spring Boot client base URL"
+    }
+  ]
+}

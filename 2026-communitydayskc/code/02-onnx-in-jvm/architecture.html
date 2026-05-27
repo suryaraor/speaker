@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>02 - ONNX In-JVM: Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 0.95em;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* Architecture Section */
+        .architecture-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            gap: 0;
+            margin: 50px 0;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+
+        .flow-stage {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+
+        .flow-stage::after {
+            content: "→";
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: #F093FB;
+            font-weight: bold;
+        }
+
+        .flow-stage:last-child::after {
+            display: none;
+        }
+
+        .flow-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .flow-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.2);
+            border-color: #F5576C;
+        }
+
+        .flow-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .flow-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .flow-desc {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .flow-stage.python {
+            color: #3776ab;
+        }
+
+        .flow-stage.java {
+            color: #ED8936;
+        }
+
+        .flow-stage.model {
+            color: #48BB78;
+        }
+
+        /* Component Boxes */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .component-card {
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .component-card.python-train {
+            background: linear-gradient(135deg, #3776ab 0%, #254d6d 100%);
+            border: 3px solid #1a2a3d;
+        }
+
+        .component-card.java-inference {
+            background: linear-gradient(135deg, #ED8936 0%, #C05621 100%);
+            border: 3px solid #7D4620;
+        }
+
+        .component-card.model-file {
+            background: linear-gradient(135deg, #48BB78 0%, #22543D 100%);
+            border: 3px solid #1e4620;
+        }
+
+        .component-card h3 {
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-card p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .component-card ul {
+            list-style: none;
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+
+        .component-card li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-card li:before {
+            content: "▸";
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Performance Comparison */
+        .performance-section {
+            background: linear-gradient(135deg, #fef5f5 0%, #fee6e6 100%);
+            border: 2px solid #F5576C;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .performance-title {
+            color: #F5576C;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th {
+            background: #F5576C;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            color: #333;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(245, 87, 108, 0.05);
+        }
+
+        .metric-winner {
+            background: linear-gradient(90deg, rgba(72, 187, 120, 0.1) 0%, rgba(72, 187, 120, 0.05) 100%);
+            font-weight: bold;
+            color: #22543D;
+        }
+
+        /* Key Benefits */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .benefit-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #F5576C;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateX(5px);
+            border-left-color: #F093FB;
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.2);
+        }
+
+        .benefit-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .benefit-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .benefit-card p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        /* Latency Visualization */
+        .latency-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .latency-title {
+            color: #333;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
+
+        .latency-bars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .latency-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #F5576C;
+        }
+
+        .latency-bar h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+        }
+
+        .bar-visualization {
+            background: #eee;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F5576C, #F093FB);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em;
+            transition: width 0.5s ease;
+        }
+
+        .latency-value {
+            color: #F5576C;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Code Examples */
+        .code-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 40px 0;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            color: #f8f8f2;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .code-block {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-comment { color: #75715e; }
+        .code-keyword { color: #66d9ef; }
+        .code-string { color: #e6db74; }
+        .code-class { color: #a1efe4; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .process-flow {
+                flex-wrap: wrap;
+            }
+
+            .flow-stage::after {
+                position: static;
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .architecture-section {
+                padding: 30px;
+            }
+
+            .comparison-table {
+                font-size: 0.9em;
+            }
+
+            .comparison-table td, .comparison-table th {
+                padding: 10px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ ONNX In-JVM</h1>
+            <p class="subtitle">Train Once in Python • Export to ONNX • Run Inference in Java Forever</p>
+            <p class="tagline">Sub-millisecond predictions • No Python runtime • Universal model format</p>
+        </header>
+
+        <div class="architecture-section">
+            <h2 class="section-title">
+                <span class="section-icon">🏗️</span>
+                ONNX In-JVM Architecture
+            </h2>
+
+            <!-- Process Flow -->
+            <h3 style="color: #333; margin-bottom: 30px; font-size: 1.5em;">📊 Build & Deployment Flow</h3>
+            <div class="process-flow">
+                <div class="flow-stage python">
+                    <div class="flow-box">
+                        <div class="flow-icon">🐍</div>
+                        <div class="flow-label">Python Training</div>
+                        <div class="flow-desc">Train RandomForest, XGBoost, PyTorch, etc.</div>
+                    </div>
+                </div>
+                <div class="flow-stage model">
+                    <div class="flow-box">
+                        <div class="flow-icon">📦</div>
+                        <div class="flow-label">ONNX Export</div>
+                        <div class="flow-desc">Export model to universal binary format</div>
+                    </div>
+                </div>
+                <div class="flow-stage java">
+                    <div class="flow-box">
+                        <div class="flow-icon">📁</div>
+                        <div class="flow-label">Store in JAR</div>
+                        <div class="flow-desc">Include .onnx file in Java resources</div>
+                    </div>
+                </div>
+                <div class="flow-stage java">
+                    <div class="flow-box">
+                        <div class="flow-icon">⚙️</div>
+                        <div class="flow-label">JVM Inference</div>
+                        <div class="flow-desc">ONNX Runtime runs predictions instantly</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Components -->
+            <h3 style="color: #333; margin-bottom: 30px; font-size: 1.5em;">🔧 System Components</h3>
+            <div class="components-grid">
+                <div class="component-card python-train">
+                    <h3>
+                        <span>🐍</span>
+                        Python Training (One-time)
+                    </h3>
+                    <p>Train the model using your favorite Python ML framework:</p>
+                    <ul>
+                        <li>scikit-learn RandomForest</li>
+                        <li>XGBoost classifier</li>
+                        <li>LightGBM models</li>
+                        <li>PyTorch neural networks</li>
+                        <li>Export to ONNX format</li>
+                    </ul>
+                </div>
+
+                <div class="component-card model-file">
+                    <h3>
+                        <span>📦</span>
+                        ONNX Model File
+                    </h3>
+                    <p>Universal, language-agnostic model representation:</p>
+                    <ul>
+                        <li>fraud_model.onnx (~5MB)</li>
+                        <li>Bundled in JAR resources</li>
+                        <li>Swap for retraining</li>
+                        <li>Version controlled</li>
+                        <li>Portable across platforms</li>
+                    </ul>
+                </div>
+
+                <div class="component-card java-inference">
+                    <h3>
+                        <span>☕</span>
+                        Spring Boot + ONNX Runtime
+                    </h3>
+                    <p>Lightning-fast inference right inside the JVM:</p>
+                    <ul>
+                        <li>ORT Session loads model at startup</li>
+                        <li>Sub-ms predictions per call</li>
+                        <li>No network latency</li>
+                        <li>No Python process needed</li>
+                        <li>Full control in Java</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Performance Comparison -->
+            <div class="performance-section">
+                <h3 class="performance-title">
+                    <span>⏱️</span>
+                    Performance: ONNX In-JVM vs. REST API
+                </h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>ONNX In-JVM</th>
+                            <th>REST API (HTTP)</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Latency per prediction</td>
+                            <td class="metric-winner">0.18 ms</td>
+                            <td>10-50 ms</td>
+                            <td>55-280× faster</td>
+                        </tr>
+                        <tr>
+                            <td>1000 predictions time</td>
+                            <td class="metric-winner">180 ms</td>
+                            <td>10-50 seconds</td>
+                            <td>55-280× faster</td>
+                        </tr>
+                        <tr>
+                            <td>Network dependency</td>
+                            <td class="metric-winner">None</td>
+                            <td>Required</td>
+                            <td>Full isolation</td>
+                        </tr>
+                        <tr>
+                            <td>Timeout handling</td>
+                            <td class="metric-winner">No timeouts</td>
+                            <td>200ms SLA</td>
+                            <td>Guaranteed response</td>
+                        </tr>
+                        <tr>
+                            <td>Python runtime</td>
+                            <td class="metric-winner">Not needed</td>
+                            <td>Required</td>
+                            <td>No external process</td>
+                        </tr>
+                        <tr>
+                            <td>Model retraining</td>
+                            <td class="metric-winner">Swap file, restart</td>
+                            <td>Swap file, restart</td>
+                            <td>Both simple</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Key Benefits -->
+            <h3 style="color: #333; margin-bottom: 30px; font-size: 1.5em;">⭐ Key Benefits</h3>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">⚡</div>
+                    <h4>Sub-millisecond Latency</h4>
+                    <p>No HTTP overhead, no network round-trip. Direct in-memory inference 50-300× faster than REST API.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🛡️</div>
+                    <h4>Zero External Dependencies</h4>
+                    <p>No Python process to maintain, no microservice to keep running. Fully embedded in Java.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🔄</div>
+                    <h4>Easy Model Updates</h4>
+                    <p>Retrain in Python, export to ONNX, swap file, restart JVM. No code changes needed.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎯</div>
+                    <h4>Framework Agnostic</h4>
+                    <p>Train with scikit-learn, XGBoost, PyTorch, or any framework that exports to ONNX.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">📦</div>
+                    <h4>Single Artifact Deployment</h4>
+                    <p>One JAR file contains model, code, and dependencies. Deploy to any environment with Java.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🔒</div>
+                    <h4>Air-Gap Friendly</h4>
+                    <p>Works perfectly in environments with no Python, no external APIs, fully isolated networks.</p>
+                </div>
+            </div>
+
+            <!-- Latency Visualization -->
+            <div class="latency-section">
+                <h3 class="latency-title">📊 Latency Comparison: 1000 Predictions</h3>
+                <div class="latency-bars">
+                    <div class="latency-bar">
+                        <h4>ONNX In-JVM</h4>
+                        <div class="bar-visualization">
+                            <div class="bar-fill" style="width: 5%;">
+                                <span class="latency-value">180 ms</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.85em; color: #666;">
+                            0.18 ms per prediction
+                        </div>
+                    </div>
+                    <div class="latency-bar">
+                        <h4>REST API (Avg)</h4>
+                        <div class="bar-visualization">
+                            <div class="bar-fill" style="width: 100%;">
+                                <span class="latency-value">20,000 ms</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.85em; color: #666;">
+                            20 ms per prediction (average)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Examples -->
+            <div class="code-section">
+                <h3>💻 Java Integration Code</h3>
+                <div class="code-block">
+<span class="code-comment">// Step 1: Load ONNX model at application startup</span>
+<span class="code-keyword">OrtSession</span> session = environment.createSession(<span class="code-string">"fraud_model.onnx"</span>);
+
+<span class="code-comment">// Step 2: Create float array with features [amount, hour, merchant_risk, velocity, geo_risk]</span>
+<span class="code-keyword">float</span>[][] inputData = {{ 1850f, 3f, 0.8f, 22f, 0.75f }};
+<span class="code-class">OnnxTensor</span> input = <span class="code-class">OnnxTensor</span>.createTensor(environment, inputData);
+
+<span class="code-comment">// Step 3: Run inference (sub-millisecond!)</span>
+<span class="code-keyword">try</span> (<span class="code-class">OrtRunnable</span>.Result results = session.run(Collections.singletonMap(
+    <span class="code-string">"input"</span>, input))) {
+    
+    <span class="code-keyword">float</span>[] probabilities = (<span class="code-keyword">float</span>[]) results.get(0).getValue();
+    <span class="code-keyword">double</span> fraudProbability = probabilities[1]; <span class="code-comment">// Index 1 = fraud class</span>
+    
+    <span class="code-keyword">return</span> <span class="code-keyword">new</span> <span class="code-class">FraudScore</span>(fraudProbability, fraudProbability > 0.85);
+}
+                </div>
+            </div>
+
+            <!-- Why Choose ONNX -->
+            <div style="background: linear-gradient(135deg, #fff5f5 0%, #fee6e6 100%); border: 2px solid #F093FB; border-radius: 12px; padding: 30px; margin-top: 40px;">
+                <h3 style="color: #F093FB; margin-bottom: 20px; font-size: 1.3em;">🤔 When to Use ONNX In-JVM</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; color: #333; line-height: 1.8;">
+                    <div>
+                        <strong style="color: #48BB78; display: block; margin-bottom: 10px;">✅ Perfect For:</strong>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>🚀 Real-time trading/fraud detection</li>
+                            <li>📱 Mobile/edge ML (low latency)</li>
+                            <li>🔒 Air-gapped/regulated networks</li>
+                            <li>💰 Cost-optimized (no microservice overhead)</li>
+                            <li>🎯 Java-first organizations</li>
+                            <li>⚡ Batch scoring (1000s per minute)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong style="color: #EE5A6F; display: block; margin-bottom: 10px;">❌ Not Ideal For:</strong>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>❌ Large deep learning models (size > JVM memory)</li>
+                            <li>❌ Frequently retraining models (10+ times/day)</li>
+                            <li>❌ Complex preprocessing pipelines</li>
+                            <li>❌ Multi-framework ensembles</li>
+                            <li>❌ Teams without ML expertise</li>
+                            <li>❌ Rapidly evolving ML code</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>ONNX In-JVM • Train Once • Export Once • Run Anywhere • Sub-Millisecond Latency</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Created for CommunityDays KC 2026</p>
+    </footer>
+</body>
+</html>

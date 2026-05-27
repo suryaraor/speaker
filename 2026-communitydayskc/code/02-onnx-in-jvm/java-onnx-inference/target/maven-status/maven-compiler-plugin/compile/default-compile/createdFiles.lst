@@ -1,0 +1,6 @@
+com\example\onnx\controller\InferenceController.class
+com\example\onnx\config\OnnxConfig.class
+com\example\onnx\model\FraudPrediction.class
+com\example\onnx\model\TransactionFeatures.class
+com\example\onnx\OnnxApplication.class
+com\example\onnx\service\OnnxFraudDetector.class

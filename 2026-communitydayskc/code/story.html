@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bank That Taught Java to Think — Community Day KC 2026</title>
+<style>
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --border:    #30363d;
+    --accent:    #58a6ff;
+    --green:     #3fb950;
+    --yellow:    #d29922;
+    --red:       #f85149;
+    --purple:    #bc8cff;
+    --orange:    #ffa657;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --code-bg:   #1e2530;
+    --tag-h:     32px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── Hero ─────────────────────────────────────────────────────────────────── */
+  .hero {
+    padding: 64px 0 48px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+  .hero .kicker {
+    display: inline-block;
+    background: rgba(88,166,255,.12);
+    color: var(--accent);
+    border: 1px solid rgba(88,166,255,.25);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -.5px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  /* ── Timeline connector ───────────────────────────────────────────────────── */
+  .timeline { position: relative; }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 28px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--border), transparent);
+  }
+
+  /* ── Chapter card ─────────────────────────────────────────────────────────── */
+  .chapter {
+    position: relative;
+    margin-bottom: 52px;
+    padding-left: 72px;
+  }
+
+  .chapter-dot {
+    position: absolute;
+    left: 14px;
+    top: 20px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid;
+    background: var(--bg);
+    z-index: 1;
+  }
+
+  .chapter-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .chapter h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    height: var(--tag-h);
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    border: 1px solid;
+    margin-right: 8px;
+    margin-bottom: 16px;
+  }
+
+  .chapter-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+
+  .chapter-body p { color: var(--text); margin-bottom: 14px; }
+  .chapter-body p:last-child { margin-bottom: 0; }
+
+  .highlight {
+    background: rgba(88,166,255,.07);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  /* ── Code block ───────────────────────────────────────────────────────────── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .code-block .code-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.03);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .code-block .lang-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .code-block pre {
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .kw   { color: #ff7b72; }
+  .type { color: #79c0ff; }
+  .fn   { color: #d2a8ff; }
+  .str  { color: #a5d6ff; }
+  .cmt  { color: #6e7681; font-style: italic; }
+  .num  { color: #79c0ff; }
+  .ann  { color: #ffa657; }
+
+  /* ── Tradeoff grid ────────────────────────────────────────────────────────── */
+  .tradeoff {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .tradeoff-item {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .tradeoff-item .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .pro .label  { color: var(--green); }
+  .con .label  { color: var(--red); }
+
+  /* ── Decision matrix ──────────────────────────────────────────────────────── */
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 20px 0;
+  }
+  .matrix th {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .matrix td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(48,54,61,.6);
+    vertical-align: top;
+  }
+  .matrix tr:last-child td { border-bottom: none; }
+  .matrix .pattern-name { font-weight: 600; }
+
+  /* ── Stat boxes ───────────────────────────────────────────────────────────── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stat {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .value { font-size: 26px; font-weight: 700; }
+  .stat .desc  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Chapter colour themes ────────────────────────────────────────────────── */
+  .ch1 .chapter-dot { color: var(--accent);  border-color: var(--accent);  }
+  .ch2 .chapter-dot { color: var(--green);   border-color: var(--green);   }
+  .ch3 .chapter-dot { color: var(--purple);  border-color: var(--purple);  }
+  .ch4 .chapter-dot { color: var(--yellow);  border-color: var(--yellow);  }
+  .ch5 .chapter-dot { color: var(--orange);  border-color: var(--orange);  }
+  .ch6 .chapter-dot { color: var(--red);     border-color: var(--red);     }
+
+  .ch1 .chapter-num { color: var(--accent);  }
+  .ch2 .chapter-num { color: var(--green);   }
+  .ch3 .chapter-num { color: var(--purple);  }
+  .ch4 .chapter-num { color: var(--yellow);  }
+  .ch5 .chapter-num { color: var(--orange);  }
+  .ch6 .chapter-num { color: var(--red);     }
+
+  .ch1 .chapter-body { border-color: rgba(88,166,255,.25);  }
+  .ch2 .chapter-body { border-color: rgba(63,185,80,.25);   }
+  .ch3 .chapter-body { border-color: rgba(188,140,255,.25); }
+  .ch4 .chapter-body { border-color: rgba(210,153,34,.25);  }
+  .ch5 .chapter-body { border-color: rgba(255,166,87,.25);  }
+  .ch6 .chapter-body { border-color: rgba(248,81,73,.25);   }
+
+  .tag-1 { color: var(--accent);  border-color: rgba(88,166,255,.3);  background: rgba(88,166,255,.08);  }
+  .tag-2 { color: var(--green);   border-color: rgba(63,185,80,.3);   background: rgba(63,185,80,.08);   }
+  .tag-3 { color: var(--purple);  border-color: rgba(188,140,255,.3); background: rgba(188,140,255,.08); }
+  .tag-4 { color: var(--yellow);  border-color: rgba(210,153,34,.3);  background: rgba(210,153,34,.08);  }
+  .tag-5 { color: var(--orange);  border-color: rgba(255,166,87,.3);  background: rgba(255,166,87,.08);  }
+  .tag-6 { color: var(--red);     border-color: rgba(248,81,73,.3);   background: rgba(248,81,73,.08);   }
+
+  /* ── Arch diagram ─────────────────────────────────────────────────────────── */
+  .arch {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 16px 0;
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .arch-box {
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    white-space: nowrap;
+  }
+  .arch-arrow { color: var(--muted); }
+
+  /* ── Footer ───────────────────────────────────────────────────────────────── */
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 72px;
+    padding-top: 32px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  HERO                                                                      -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="kicker">Community Day KC 2026 · Java + ML</div>
+  <h1>The Bank That Taught<br><span>Java to Think</span></h1>
+  <p>Six patterns for integrating machine learning into production Java systems —
+  told as one story, from first HTTP call to real-time streaming pipeline.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  PROLOGUE                                                                  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:52px;">
+  <p style="color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:12px;">The Setting</p>
+  <p>It's Monday morning at <strong>Heartland Bank</strong> in Kansas City. The fraud team just got off a very bad weekend — $1.4 million in chargebacks from a coordinated card-testing attack that the rules engine missed completely. The VP of Engineering walks into the all-hands with one slide: <em>"We need machine learning. We run Java. Figure it out."</em></p>
+  <p>This is the story of how the team figured it out — not once, but five times, each attempt teaching them something new. By the end, ML isn't a scary Python sidecar. It's just another part of the stack.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  TIMELINE                                                                  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="timeline">
+
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!--  CHAPTER 1 · Model as a Service                                            -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<div class="chapter ch1">
+  <div class="chapter-dot">01</div>
+  <div class="chapter-num">Chapter 1 · example 01-model-as-service</div>
+  <h2>The Quick Win — Call Python Over HTTP</h2>
+  <span class="tag tag-1">REST · WebClient · Fallback</span>
+  <span class="tag tag-1">Python FastAPI + sklearn</span>
+
+  <div class="chapter-body">
+    <p>The data science team already had a RandomForest model for fraud detection sitting in a Jupyter notebook. The fastest path to production: wrap it in a FastAPI service and call it from Spring Boot.</p>
+
+    <div class="arch">
+      <div class="arch-box">Spring Boot</div>
+      <span class="arch-arrow">──POST /predict/fraud──▶</span>
+      <div class="arch-box">FastAPI + RandomForest</div>
+    </div>
+
+    <p>Java handles what Java is already great at — feature extraction from domain objects, business rules, SLA enforcement — and hands off a clean numeric vector to Python for inference.</p>
+
+    <div class="highlight">
+      "The key insight: don't let Java become dumb glue. Feature engineering — the transformation of raw transaction data into ML-ready numbers — stays in Java, where the domain knowledge already lives."
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-dot" style="color:var(--accent)"></span>
+        <span>FraudDetectionService.java — 500ms SLA with graceful fallback</span>
+      </div>
+      <pre><span class="kw">private static final</span> Duration SLA_TIMEOUT    = Duration.ofMillis(<span class="num">500</span>);
+<span class="kw">private static final</span> FraudScore SAFE_FALLBACK = <span class="kw">new</span> <span class="type">FraudScore</span>(
+    <span class="num">0.0</span>, <span class="kw">false</span>, <span class="str">"fallback-v0"</span>, <span class="str">"LOW"</span>, Map.of()
+);
+
+<span class="kw">public</span> FraudScore <span class="fn">evaluate</span>(Transaction tx) {
+    <span class="type">TransactionFeatures</span> features = featureEngineer.<span class="fn">extract</span>(tx);
+    <span class="kw">return</span> <span class="fn">callMlService</span>(features)
+        .<span class="fn">onErrorReturn</span>(SAFE_FALLBACK)   <span class="cmt">// Python down? Don't block the payment.</span>
+        .<span class="fn">block</span>();
+}
+
+<span class="kw">private</span> Mono&lt;FraudScore&gt; <span class="fn">callMlService</span>(TransactionFeatures features) {
+    <span class="kw">return</span> mlWebClient.<span class="fn">post</span>()
+        .<span class="fn">uri</span>(<span class="str">"/predict/fraud"</span>)
+        .<span class="fn">bodyValue</span>(features)
+        .<span class="fn">retrieve</span>()
+        .<span class="fn">bodyToMono</span>(FraudScore.class)
+        .<span class="fn">timeout</span>(SLA_TIMEOUT);  <span class="cmt">// Fail fast. Fraud check isn't worth a 30s hang.</span>
+}</pre>
+    </div>
+
+    <div class="tradeoff">
+      <div class="tradeoff-item pro">
+        <div class="label">Works For</div>
+        Fastest path to production. Data science team owns the model independently. Any Python framework works.
+      </div>
+      <div class="tradeoff-item con">
+        <div class="label">The Catch</div>
+        Network hop on every transaction. Python service is another thing to deploy, monitor, and page on at 2am.
+      </div>
+    </div>
+
+    <p>The team shipped this in a sprint. Fraud dropped 40% in week one. Then Black Friday arrived and the Python service started timing out under load. They needed something faster.</p>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!--  CHAPTER 2 · ONNX in JVM                                                  -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<div class="chapter ch2">
+  <div class="chapter-dot">02</div>
+  <div class="chapter-num">Chapter 2 · example 02-onnx-in-jvm</div>
+  <h2>The Passport Trick — Train in Python, Run in Java</h2>
+  <span class="tag tag-2">ONNX Runtime · In-JVM Inference</span>
+  <span class="tag tag-2">Sub-millisecond · No Python at runtime</span>
+
+  <div class="chapter-body">
+    <p>A senior engineer on the team had seen ONNX used in a previous job. The idea: train your model in Python however you like — scikit-learn, XGBoost, PyTorch — then export it to a universal binary format called <strong>ONNX</strong>. Java loads the binary and runs inference directly inside the JVM using ONNX Runtime.</p>
+
+    <p>Think of ONNX as a passport. The model is trained in the Python world, stamped with an ONNX passport, and then it travels freely into the Java world. No visa required. No Python process needed at runtime.</p>
+
+    <div class="arch">
+      <div class="arch-box">Python: train_export.py</div>
+      <span class="arch-arrow">──export once──▶</span>
+      <div class="arch-box">fraud_model.onnx</div>
+      <span class="arch-arrow">──loaded by──▶</span>
+      <div class="arch-box">Spring Boot JVM</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-dot" style="color:var(--green)"></span>
+        <span>OnnxFraudDetector.java — inference entirely in the JVM</span>
+      </div>
+      <pre><span class="kw">public</span> FraudPrediction <span class="fn">predict</span>(TransactionFeatures features) <span class="kw">throws</span> OrtException {
+    <span class="kw">long</span> start = System.<span class="fn">nanoTime</span>();
+    <span class="kw">float</span>[][] inputMatrix = <span class="kw">new float</span>[][]{ features.<span class="fn">toArray</span>() };
+
+    <span class="kw">try</span> (<span class="type">OnnxTensor</span> tensor = OnnxTensor.<span class="fn">createTensor</span>(env, inputMatrix);
+         <span class="type">OrtSession.Result</span> result = session.<span class="fn">run</span>(Map.of(<span class="str">"float_input"</span>, tensor))) {
+
+        <span class="kw">float</span>[][] probs = (<span class="kw">float</span>[][]) result.<span class="fn">get</span>(<span class="str">"probabilities"</span>).<span class="fn">get</span>().<span class="fn">getValue</span>();
+        <span class="kw">float</span> fraudProb = probs[<span class="num">0</span>][<span class="num">1</span>];
+
+        <span class="kw">long</span> elapsedNs = System.<span class="fn">nanoTime</span>() - start;
+        <span class="cmt">// Typically: 150–200 microseconds. Compare to 10–50ms for HTTP.</span>
+        <span class="kw">return new</span> <span class="type">FraudPrediction</span>(fraudProb, fraudProb &gt; <span class="num">0.85f</span>, <span class="fn">riskLevel</span>(fraudProb), elapsedNs);
+    }
+}</pre>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="value" style="color:var(--green)">0.18ms</div>
+        <div class="desc">avg inference time (1k runs)</div>
+      </div>
+      <div class="stat">
+        <div class="value" style="color:var(--green)">0</div>
+        <div class="desc">Python processes at runtime</div>
+      </div>
+      <div class="stat">
+        <div class="value" style="color:var(--green)">1 file</div>
+        <div class="desc">swap model = swap .onnx file</div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      "Update the model? Have the data science team retrain in Python, export a new .onnx file, and drop it into the resources folder. Zero Java code changes. Zero deployment coordination."
+    </div>
+
+    <div class="tradeoff">
+      <div class="tradeoff-item pro">
+        <div class="label">Works For</div>
+        High-throughput paths where 10ms matters. Eliminates the sidecar service and its operational overhead.
+      </div>
+      <div class="tradeoff-item con">
+        <div class="label">The Catch</div>
+        Not every model exports cleanly to ONNX (custom ops, dynamic graphs). You still need Python for training.
+      </div>
+    </div>
+
+    <p>The Black Friday load tests passed. Inference at 0.18ms. No Python process in the production pod. The team celebrated — then their compliance officer walked in with a question: "Where does the model actually live? Can we audit it?"</p>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!--  CHAPTER 3 · Java-Native ML                                                -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<div class="chapter ch3">
+  <div class="chapter-dot">03</div>
+  <div class="chapter-num">Chapter 3 · example 03-java-native-ml</div>
+  <h2>The Compliance Team's Dream — 100% Java, Zero External Dependencies</h2>
+  <span class="tag tag-3">Weka · RandomForest in Java</span>
+  <span class="tag tag-3">Air-gapped · Fully auditable</span>
+
+  <div class="chapter-body">
+    <p>The compliance team had a list of requirements that made the Python-based approaches complicated: no external binaries in production containers, every line of model logic must be auditable in the Java codebase, and the system must work in an air-gapped environment where Python simply wasn't available.</p>
+
+    <p>The answer: <strong>Weka</strong>. A full machine learning library, written in Java, that's been running in financial systems since the late 90s. Train a RandomForest at startup, entirely in Java, and it lives right there in JVM memory — fully auditable by any Java developer on the team.</p>
+
+    <div class="arch">
+      <div class="arch-box">Spring Boot @PostConstruct</div>
+      <span class="arch-arrow">──trains──▶</span>
+      <div class="arch-box">Weka RandomForest</div>
+      <span class="arch-arrow">──lives in──▶</span>
+      <div class="arch-box">JVM Heap</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-dot" style="color:var(--purple)"></span>
+        <span>CreditRiskClassifier.java — model trains at startup, no external files</span>
+      </div>
+      <pre><span class="ann">@PostConstruct</span>
+<span class="kw">public void</span> <span class="fn">initialize</span>() <span class="kw">throws</span> Exception {
+    dataStructure = <span class="fn">buildDataStructure</span>();
+    <span class="type">Instances</span> trainingData = <span class="fn">generateTrainingData</span>(dataStructure);
+
+    classifier = <span class="kw">new</span> <span class="type">RandomForest</span>();
+    classifier.<span class="fn">setNumIterations</span>(<span class="num">100</span>);
+    classifier.<span class="fn">setSeed</span>(<span class="num">42</span>);
+    classifier.<span class="fn">buildClassifier</span>(trainingData);  <span class="cmt">// pure Java. no Python. no files.</span>
+
+    log.<span class="fn">info</span>(<span class="str">"Weka RandomForest trained: {} instances, {} attributes"</span>,
+        trainingData.<span class="fn">size</span>(), trainingData.<span class="fn">numAttributes</span>() - <span class="num">1</span>);
+}
+
+<span class="kw">public</span> CreditDecision <span class="fn">predict</span>(LoanApplication app) <span class="kw">throws</span> Exception {
+    <span class="type">Instance</span> instance = <span class="fn">toInstance</span>(app, dataStructure);
+    <span class="kw">double</span>[] distribution = classifier.<span class="fn">distributionForInstance</span>(instance);
+    <span class="cmt">// Returns: APPROVE / DENY / REVIEW with confidence scores</span>
+    <span class="kw">return new</span> <span class="type">CreditDecision</span>(decision, approveProb, denyProb, reviewProb, ...);
+}</pre>
+    </div>
+
+    <div class="tradeoff">
+      <div class="tradeoff-item pro">
+        <div class="label">Works For</div>
+        Air-gapped deployments. Compliance-heavy domains. Teams without Python expertise. Tabular data models.
+      </div>
+      <div class="tradeoff-item con">
+        <div class="label">The Catch</div>
+        Training data must be baked in or loaded from Java-accessible sources. Deep learning is off the table.
+      </div>
+    </div>
+
+    <div class="highlight">
+      "The credit risk classifier now runs in four different government data centers that have never had Python installed. Any Java developer on the team can read, test, and modify the model logic."
+    </div>
+
+    <p>Compliance was happy. But the performance team raised a new flag: the fraud scores for the same transaction were coming out slightly different depending on which service computed the features. Something was wrong upstream.</p>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!--  CHAPTER 4 · Feature Engineering                                           -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<div class="chapter ch4">
+  <div class="chapter-dot">04</div>
+  <div class="chapter-num">Chapter 4 · example 04-feature-engineering</div>
+  <h2>The Hidden Foundation — Where the Real Intelligence Lives</h2>
+  <span class="tag tag-4">Velocity Windows · Temporal Features</span>
+  <span class="tag tag-4">Domain Encoding · The Most Important Example</span>
+
+  <div class="chapter-body">
+    <p>Here's the truth the team had been missing: <em>the model is only as smart as the features you feed it</em>. A bad feature set makes even the best model useless. And feature engineering — the act of turning raw transaction objects into ML-ready numeric vectors — was being done inconsistently in three different places.</p>
+
+    <p>This chapter is the most important one. Not because the code is the fanciest, but because getting feature engineering right is what separates a model that works in a notebook from one that works in production.</p>
+
+    <div class="highlight">
+      "Feature engineering belongs in Java because the domain knowledge is already there: merchant risk lookup tables, geographic risk mappings, business hours definitions, account tier rules — all living in Java code and Java databases."
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-dot" style="color:var(--yellow)"></span>
+        <span>FeatureEngineer.java — six types of features, all in one place</span>
+      </div>
+      <pre><span class="cmt">// Temporal: what time patterns signal fraud?</span>
+<span class="kw">int</span> hourOfDay  = txn.<span class="fn">timestamp</span>().getHour();        <span class="cmt">// 3am? elevated risk</span>
+<span class="kw">int</span> dayOfWeek  = txn.<span class="fn">timestamp</span>().<span class="fn">getDayOfWeek</span>().<span class="fn">getValue</span>();
+
+<span class="cmt">// Domain encoding: risk scores from business lookup tables</span>
+<span class="kw">double</span> merchantRisk = MERCHANT_RISK.<span class="fn">getOrDefault</span>(txn.<span class="fn">merchantCategory</span>(), <span class="num">0.15</span>);
+<span class="kw">double</span> geoRisk      = GEO_RISK.<span class="fn">getOrDefault</span>(txn.<span class="fn">countryCode</span>(), <span class="num">0.30</span>);
+
+<span class="cmt">// Amount normalization: log1p reduces skew from outliers (e.g. $50k purchase)</span>
+<span class="kw">double</span> amountNorm = Math.<span class="fn">log1p</span>(txn.<span class="fn">amount</span>());
+
+<span class="cmt">// Velocity: how many transactions in the last 1h / 24h / 30d?</span>
+<span class="kw">int</span> txn1h  = velocityStore.<span class="fn">count</span>(accountId, <span class="num">1</span>);
+<span class="kw">int</span> txn24h = velocityStore.<span class="fn">count</span>(accountId, <span class="num">24</span>);
+<span class="kw">int</span> txn30d = velocityStore.<span class="fn">count</span>(accountId, <span class="num">720</span>);
+
+<span class="cmt">// Derived ratio: is this amount unusual for this account?</span>
+<span class="kw">double</span> amountToAvgRatio = txn.<span class="fn">amount</span>() / Math.<span class="fn">max</span>(avgAmount7d, <span class="num">1.0</span>);</pre>
+    </div>
+
+    <p>The velocity features are especially powerful. A single $1,850 transaction from a Nigerian IP at 3am looks suspicious. But ten transactions from the same account in the last hour — all under $50, all to different online merchants — is a classic card-testing attack. Without the velocity window, the model sees ten individually "normal" transactions.</p>
+
+    <div class="tradeoff">
+      <div class="tradeoff-item pro">
+        <div class="label">What you get</div>
+        Consistent features across all three scoring paths (REST, ONNX, native). Single source of truth for domain logic.
+      </div>
+      <div class="tradeoff-item con">
+        <div class="label">The discipline required</div>
+        Training data features must be computed the same way as inference features. Feature drift is silent and deadly.
+      </div>
+    </div>
+
+    <div class="highlight">
+      "The rule: the model should only ever see clean, numeric features. Never raw domain objects. The FeatureEngineer is the contract between your business domain and your ML model."
+    </div>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!--  CHAPTER 5 · Full Pipeline                                                 -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<div class="chapter ch5">
+  <div class="chapter-dot">05</div>
+  <div class="chapter-num">Chapter 5 · example 05-full-pipeline</div>
+  <h2>The Final Form — Real-Time Streaming with Kafka + ONNX</h2>
+  <span class="tag tag-5">Kafka · ONNX · Docker Compose</span>
+  <span class="tag tag-5">End-to-End Streaming Pipeline</span>
+
+  <div class="chapter-body">
+    <p>Six months after that Monday morning all-hands, the team is ready to put all the pieces together. Not a synchronous REST call triggered by a payment request. A real-time event-driven pipeline where every transaction on the Kafka bus gets scored the moment it arrives.</p>
+
+    <div class="arch">
+      <div class="arch-box">Payment System</div>
+      <span class="arch-arrow">──Kafka: transactions──▶</span>
+      <div class="arch-box">TransactionConsumer</div>
+      <span class="arch-arrow">──▶</span>
+      <div class="arch-box">FeatureEngineer</div>
+      <span class="arch-arrow">──▶</span>
+      <div class="arch-box">ONNX Scorer</div>
+      <span class="arch-arrow">──Kafka: fraud-alerts──▶</span>
+      <div class="arch-box">Risk Ops / CRM</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-dot" style="color:var(--orange)"></span>
+        <span>TransactionConsumer.java — one annotation, the whole pipeline starts</span>
+      </div>
+      <pre><span class="ann">@KafkaListener</span>(topics = <span class="str">"transactions"</span>, groupId = <span class="str">"fraud-detection"</span>)
+<span class="kw">public void</span> <span class="fn">consume</span>(<span class="ann">@Payload</span> String payload) {
+    <span class="type">TransactionEvent</span> event = objectMapper.<span class="fn">readValue</span>(payload, TransactionEvent.class);
+
+    <span class="type">TransactionFeatures</span> features = featureEngineer.<span class="fn">extract</span>(event);
+    <span class="type">FraudScore</span> score = fraudScoringService.<span class="fn">score</span>(features);
+
+    <span class="kw">if</span> (score.<span class="fn">isFraud</span>()) {
+        fraudAlertService.<span class="fn">raise</span>(event, score);  <span class="cmt">// publishes to "fraud-alerts" topic</span>
+    }
+}
+
+<span class="cmt">// FraudScoringService tries ONNX first (fast path), falls back to REST</span>
+<span class="kw">public</span> FraudScore <span class="fn">score</span>(TransactionFeatures features) {
+    <span class="kw">if</span> (onnxDetector.<span class="fn">isAvailable</span>()) {
+        <span class="kw">return</span> onnxDetector.<span class="fn">predict</span>(features);   <span class="cmt">// sub-ms, in-JVM</span>
+    }
+    <span class="kw">return</span> restFallback.<span class="fn">score</span>(features);        <span class="cmt">// REST if .onnx not loaded</span>
+}</pre>
+    </div>
+
+    <p>The entire stack runs with a single command:</p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-dot" style="color:var(--orange)"></span>
+        <span>docker-compose.yml — Kafka + Python ML service + Java pipeline</span>
+      </div>
+      <pre><span class="cmt"># Start everything: Zookeeper, Kafka, Python ML service, Java pipeline, Kafka UI</span>
+docker-compose up --build
+
+<span class="cmt"># Send a high-risk transaction (CRYPTO merchant, Nigerian IP, $2,500)</span>
+curl -X POST <span class="str">"http://localhost:8084/api/pipeline/test/send?merchantCategory=CRYPTO&countryCode=NG&amount=2500"</span>
+
+<span class="cmt"># See the fraud alert that was raised within milliseconds</span>
+curl http://localhost:<span class="num">8084</span>/api/pipeline/alerts
+
+<span class="cmt"># Visualize Kafka topics in the browser</span>
+open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka UI</span></pre>
+    </div>
+
+    <div class="tradeoff">
+      <div class="tradeoff-item pro">
+        <div class="label">What you get</div>
+        Decoupled pipeline. ONNX fast path with REST fallback. Fraud alert delivered to downstream in &lt;5ms from transaction event.
+      </div>
+      <div class="tradeoff-item con">
+        <div class="label">The complexity</div>
+        Kafka operations, consumer group management, dead-letter topics. More moving parts than the REST pattern.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!--  CHAPTER 6 · The Decision Guide                                            -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<div class="chapter ch6">
+  <div class="chapter-dot">06</div>
+  <div class="chapter-num">Chapter 6 · the decision guide</div>
+  <h2>So Which Pattern Do You Actually Use?</h2>
+  <span class="tag tag-6">Decision Matrix</span>
+  <span class="tag tag-6">When to Use What</span>
+
+  <div class="chapter-body">
+    <p>These aren't five competing patterns. They're five different answers to five different questions your team will face. Here's how to think about picking one:</p>
+
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Pick this when…</th>
+          <th>Latency</th>
+          <th>Ops overhead</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pattern-name" style="color:var(--accent)">01 · REST</span></td>
+          <td>Data science team owns the model lifecycle independently. Model changes often. You need OpenAPI docs and monitoring for free.</td>
+          <td style="color:var(--yellow)">10–50ms</td>
+          <td style="color:var(--red)">High — another service to run</td>
+        </tr>
+        <tr>
+          <td><span class="pattern-name" style="color:var(--green)">02 · ONNX</span></td>
+          <td>Latency matters. You want sub-ms inference. Model changes occasionally. You're OK with Python at train time, not runtime.</td>
+          <td style="color:var(--green)">&lt;1ms</td>
+          <td style="color:var(--green)">Low — one .onnx file</td>
+        </tr>
+        <tr>
+          <td><span class="pattern-name" style="color:var(--purple)">03 · Native (Weka)</span></td>
+          <td>Air-gapped or compliance-restricted environment. No Python anywhere. Team is Java-only. Tabular data, not deep learning.</td>
+          <td style="color:var(--green)">&lt;1ms</td>
+          <td style="color:var(--green)">Zero — lives in the JAR</td>
+        </tr>
+        <tr>
+          <td><span class="pattern-name" style="color:var(--yellow)">04 · Features</span></td>
+          <td><em>Always.</em> This isn't optional. No matter which inference pattern you pick, feature engineering belongs in Java.</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><span class="pattern-name" style="color:var(--orange)">05 · Pipeline</span></td>
+          <td>You need async, event-driven ML scoring at scale. Kafka already in your stack. Downstream systems need the fraud signal.</td>
+          <td style="color:var(--green)">&lt;5ms e2e</td>
+          <td style="color:var(--yellow)">Medium — Kafka + compose</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight">
+      "Chapter 04 (Feature Engineering) isn't one option on the list — it's the foundation under every other option. The model is only as good as the features you feed it, and those features should always be computed in Java."
+    </div>
+
+    <p>The realistic production answer for most teams: start with <strong>01 (REST)</strong> to get something working fast and let data science iterate. Migrate the hot path to <strong>02 (ONNX)</strong> once you understand the load. Use <strong>03 (Native)</strong> for compliance-sensitive sub-systems. Wire it all together with <strong>05 (Pipeline)</strong> when you're ready for event-driven scale.</p>
+    <p>And from day one, chapter one, <em>always</em> use <strong>04 (Feature Engineering in Java)</strong> — because that's where the domain knowledge lives, and domain knowledge is irreplaceable.</p>
+  </div>
+</div>
+
+</div><!-- end .timeline -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  EPILOGUE                                                                  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div style="background:linear-gradient(135deg,rgba(88,166,255,.08),rgba(63,185,80,.06));border:1px solid rgba(88,166,255,.2);border-radius:12px;padding:32px 36px;margin-top:8px;">
+  <p style="color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:16px;">The Moral of the Story</p>
+  <p style="font-size:18px;line-height:1.7;font-weight:500;">Heartland Bank didn't replace their Java stack with Python. They didn't build a separate "ML platform." They taught Java to think by meeting ML where it makes sense — at the feature layer, at the inference layer, at the integration layer — and letting each language do what it's best at.</p>
+  <p style="margin-top:16px;color:var(--muted)">Python is the best language for training models. Java is the best language for running the business. These are not mutually exclusive. The patterns in this talk are the bridge.</p>
+</div>
+
+<div class="footer">
+  <p>Community Day KC 2026 · Java + Machine Learning in Production</p>
+  <p style="margin-top:8px;font-size:12px">Examples: 01-model-as-service · 02-onnx-in-jvm · 03-java-native-ml · 04-feature-engineering · 05-full-pipeline</p>
+</div>
+
+</body>
+</html>

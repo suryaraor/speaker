@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>03 - Java-Native ML: Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 0.95em;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* Architecture Section */
+        .architecture-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        /* Startup Flow */
+        .startup-flow {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .flow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .step {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid #667eea;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .step h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .step p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        /* Component Overview */
+        .components-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 50px 0;
+            align-items: start;
+        }
+
+        .component-card {
+            border-radius: 15px;
+            padding: 35px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .component-card.java-native {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+            border: 3px solid #FF5252;
+        }
+
+        .component-card.weka {
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            border: 3px solid #1ABC9C;
+        }
+
+        .component-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .component-card p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .component-card ul {
+            list-style: none;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .component-card li {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-card li:before {
+            content: "▸";
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Feature Box */
+        .features-section {
+            background: linear-gradient(135deg, #fff5f5 0%, #fee6e6 100%);
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .features-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .feature-box:hover {
+            transform: translateX(5px);
+            border-left-color: #FF6B6B;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .feature-box h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .feature-box p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        /* Use Cases */
+        .use-cases-section {
+            margin: 40px 0;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .use-case {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .use-case.strong {
+            border-left-color: #48BB78;
+            background: linear-gradient(135deg, #e5f9f7 0%, #d6f3f0 100%);
+        }
+
+        .use-case.weak {
+            border-left-color: #EE5A6F;
+            background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+        }
+
+        .use-case.borderline {
+            border-left-color: #F5A623;
+            background: linear-gradient(135deg, #fff5e5 0%, #ffe6cc 100%);
+        }
+
+        .use-case:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .use-case h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .use-case p {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .use-case-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .stat {
+            background: rgba(255,255,255,0.6);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        /* Decision Flow */
+        .decision-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            color: white;
+            margin: 40px 0;
+        }
+
+        .decision-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .decision-outcomes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .outcome {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .outcome:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        .outcome h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .outcome p {
+            font-size: 0.95em;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        /* Code Section */
+        .code-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 40px 0;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            color: #f8f8f2;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .code-block {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-comment { color: #75715e; }
+        .code-keyword { color: #66d9ef; }
+        .code-string { color: #e6db74; }
+        .code-class { color: #a1efe4; }
+
+        /* Comparison Table */
+        .comparison-section {
+            margin: 40px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+        }
+
+        .comparison-table tr:hover {
+            background: #f5f7fa;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .check { color: #48BB78; }
+        .cross { color: #EE5A6F; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .architecture-section {
+                padding: 30px;
+            }
+
+            .flow-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                font-size: 0.9em;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Java-Native ML</h1>
+            <p class="subtitle">Train & Serve ML Entirely in Java • No External Dependencies</p>
+            <p class="tagline">Using Weka • 100% Java • Perfect for Regulated Environments</p>
+        </header>
+
+        <div class="architecture-section">
+            <h2 class="section-title">
+                <span class="section-icon">☕</span>
+                Pure Java ML Architecture
+            </h2>
+
+            <!-- Startup Flow -->
+            <div class="startup-flow">
+                <h3 style="display: flex; align-items: center; gap: 10px; color: #333; margin-bottom: 10px;">
+                    <span>🚀</span>
+                    Application Startup Flow
+                </h3>
+                <p style="color: #555; margin-bottom: 20px;">When Spring Boot starts, everything needed for ML prediction is initialized:</p>
+                <div class="flow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Build Feature Schema</h3>
+                        <p>Weka Instances defines feature names, types, and ranges. Immutable structure for all predictions.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Generate Training Data</h3>
+                        <p>Synthetic datasets representing good/bad/borderline credit applications. ~10,000 samples.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Train RandomForest</h3>
+                        <p>Weka RandomForest learns patterns distinguishing APPROVE/DENY/REVIEW cases from features.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h3>Ready to Predict</h3>
+                        <p>Model loaded in JVM memory, ready for instant predictions on new applications.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Components -->
+            <div style="margin: 50px 0;">
+                <h3 style="color: #333; margin-bottom: 30px; font-size: 1.5em;">🔧 Core Components</h3>
+                <div class="components-grid">
+                    <div class="component-card java-native">
+                        <h3>
+                            <span>☕</span>
+                            Spring Boot App
+                        </h3>
+                        <p>REST API + ML integration, all in Java:</p>
+                        <ul>
+                            <li>Credit evaluation REST endpoints</li>
+                            <li>Feature extraction from applications</li>
+                            <li>CreditRiskClassifier initialization</li>
+                            <li>Request/response handling</li>
+                            <li>No external ML dependencies</li>
+                        </ul>
+                    </div>
+
+                    <div class="component-card weka">
+                        <h3>
+                            <span>🤖</span>
+                            Weka ML Engine
+                        </h3>
+                        <p>Pure Java machine learning library:</p>
+                        <ul>
+                            <li>Instances: Feature structure definition</li>
+                            <li>Attribute: Feature types & ranges</li>
+                            <li>RandomForest: Classification model</li>
+                            <li>In-memory training & inference</li>
+                            <li>No Python, no external runtime</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Features -->
+            <div class="features-section">
+                <h3 class="features-title">
+                    <span>⭐</span>
+                    Core Advantages
+                </h3>
+                <div class="features-grid">
+                    <div class="feature-box">
+                        <div class="feature-icon">🎯</div>
+                        <h4>Zero Setup Required</h4>
+                        <p>mvn spring-boot:run starts everything. No Python to install, no models to export, no microservices to orchestrate.</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">🔒</div>
+                        <h4>Regulated Environments</h4>
+                        <p>Perfect for air-gapped networks, security-hardened systems, or organizations prohibiting external dependencies.</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">⚡</div>
+                        <h4>Fast Inference</h4>
+                        <p>Weka RandomForest predictions in sub-milliseconds. No HTTP overhead, no network latency.</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">📚</div>
+                        <h4>Java Teams</h4>
+                        <p>No Python expertise needed. Everything in Java — same language as business logic, all team members can modify.</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">🔍</div>
+                        <h4>Full Transparency</h4>
+                        <p>Source code in IDE. Debug breakpoints on ML training. Every decision fully auditable and traceable.</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">🚀</div>
+                        <h4>Easy Deployment</h4>
+                        <p>Single JAR artifact with model and code. No external files to manage, version control, or deploy separately.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Use Cases -->
+            <div class="use-cases-section">
+                <h3 style="color: #333; font-size: 1.5em; margin-bottom: 25px;">📊 Example Decision Scenarios</h3>
+                <div class="use-case-grid">
+                    <div class="use-case strong">
+                        <h3>
+                            <span>✅</span>
+                            Strong Approval Case
+                        </h3>
+                        <p><strong>Applicant Profile:</strong></p>
+                        <p>Excellent credit score, high income, stable employment, low debt ratio.</p>
+                        <div class="use-case-stats">
+                            <div class="stat">
+                                <span class="stat-label">Credit Score:</span>
+                                <span class="stat-value">780+</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Debt/Income:</span>
+                                <span class="stat-value">15-20%</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Employment:</span>
+                                <span class="stat-value">8+ years</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Decision:</span>
+                                <span class="stat-value">APPROVE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="use-case borderline">
+                        <h3>
+                            <span>⚠️</span>
+                            Borderline Case
+                        </h3>
+                        <p><strong>Applicant Profile:</strong></p>
+                        <p>Moderate credit, reasonable income, fair employment history, moderate debt ratio.</p>
+                        <div class="use-case-stats">
+                            <div class="stat">
+                                <span class="stat-label">Credit Score:</span>
+                                <span class="stat-value">690</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Debt/Income:</span>
+                                <span class="stat-value">35-40%</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Employment:</span>
+                                <span class="stat-value">4 years</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Decision:</span>
+                                <span class="stat-value">REVIEW</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="use-case weak">
+                        <h3>
+                            <span>❌</span>
+                            Denial Case
+                        </h3>
+                        <p><strong>Applicant Profile:</strong></p>
+                        <p>Poor credit, low income, unstable employment, high debt ratio.</p>
+                        <div class="use-case-stats">
+                            <div class="stat">
+                                <span class="stat-label">Credit Score:</span>
+                                <span class="stat-value">550</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Debt/Income:</span>
+                                <span class="stat-value">70%+</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Employment:</span>
+                                <span class="stat-value">1 year</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Decision:</span>
+                                <span class="stat-value">DENY</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Flow -->
+            <div class="decision-section">
+                <h3>
+                    <span>🔄</span>
+                    Java-Native Prediction Flow
+                </h3>
+                <div class="decision-outcomes">
+                    <div class="outcome">
+                        <h4>1️⃣ Extract Features</h4>
+                        <p>HTTP request received. Spring Boot controller extracts 6 features from JSON: credit score, income, loan amount, employment years, debt-to-income ratio.</p>
+                    </div>
+                    <div class="outcome">
+                        <h4>2️⃣ Create Instance</h4>
+                        <p>CreditRiskClassifier converts features to Weka Instance object. Validates all numeric ranges and types.</p>
+                    </div>
+                    <div class="outcome">
+                        <h4>3️⃣ Predict</h4>
+                        <p>RandomForest classifies instance. Returns probability distribution: [APPROVE, DENY, REVIEW]. Picks highest probability.</p>
+                    </div>
+                    <div class="outcome">
+                        <h4>4️⃣ Return Result</h4>
+                        <p>Decision (APPROVE/DENY/REVIEW) + all probabilities + explanation text. Sub-millisecond response time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weka Integration Code -->
+            <div class="code-section">
+                <h3>💻 Pure Java ML Integration</h3>
+                <div class="code-block">
+<span class="code-comment">// Step 1: Build Weka Instances schema</span>
+<span class="code-class">ArrayList</span>&lt;<span class="code-class">Attribute</span>&gt; attributes = <span class="code-keyword">new</span> <span class="code-class">ArrayList</span>&lt;&gt;();
+attributes.add(<span class="code-keyword">new</span> <span class="code-class">Attribute</span>(<span class="code-string">"creditScore"</span>));
+attributes.add(<span class="code-keyword">new</span> <span class="code-class">Attribute</span>(<span class="code-string">"annualIncome"</span>));
+<span class="code-comment">// ... more features</span>
+
+<span class="code-comment">// Step 2: Train RandomForest on synthetic data</span>
+<span class="code-class">Instances</span> trainingData = generateSyntheticData(attributes);
+<span class="code-class">RandomForest</span> model = <span class="code-keyword">new</span> <span class="code-class">RandomForest</span>();
+model.buildClassifier(trainingData);
+
+<span class="code-comment">// Step 3: Predict on new application</span>
+<span class="code-class">Instance</span> newApp = <span class="code-keyword">new</span> <span class="code-class">Instance</span>(trainingData.numAttributes());
+newApp.setValue(creditScore, 690);
+newApp.setValue(income, 65000);
+<span class="code-comment">// ... set other features</span>
+
+<span class="code-keyword">double</span> prediction = model.classifyInstance(newApp);
+<span class="code-keyword">double</span>[] probabilities = model.distributionForInstance(newApp);
+<span class="code-comment">// probabilities[0] = APPROVE, [1] = DENY, [2] = REVIEW</span>
+                </div>
+            </div>
+
+            <!-- Comparison with Other Approaches -->
+            <div class="comparison-section">
+                <h3 style="color: #333; font-size: 1.5em; margin-bottom: 25px;">📊 Java-Native ML vs. Other Patterns</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Java-Native ML</th>
+                            <th>REST API</th>
+                            <th>ONNX In-JVM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Setup Complexity</strong></td>
+                            <td><span class="check">✓ Minimal</span></td>
+                            <td><span class="cross">✗ Moderate</span></td>
+                            <td><span class="cross">✗ High</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>External Dependencies</strong></td>
+                            <td><span class="check">✓ None</span></td>
+                            <td><span class="cross">✗ Python service</span></td>
+                            <td><span class="cross">✗ ONNX Runtime</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Code Transparency</strong></td>
+                            <td><span class="check">✓ Full visibility</span></td>
+                            <td><span class="cross">✗ Partial</span></td>
+                            <td><span class="cross">✗ Binary model</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Prediction Latency</strong></td>
+                            <td><span class="check">✓ Sub-ms</span></td>
+                            <td><span class="cross">✗ 10-50ms</span></td>
+                            <td><span class="check">✓ 0.18ms</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Model Flexibility</strong></td>
+                            <td><span class="cross">✗ Limited</span></td>
+                            <td><span class="check">✓ Maximum</span></td>
+                            <td><span class="check">✓ High</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Python Expertise Required</strong></td>
+                            <td><span class="check">✓ No</span></td>
+                            <td><span class="cross">✗ Yes</span></td>
+                            <td><span class="cross">✗ Yes</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regulated/Air-Gapped</strong></td>
+                            <td><span class="check">✓ Ideal</span></td>
+                            <td><span class="cross">✗ Hard</span></td>
+                            <td><span class="cross">✗ Possible</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Auditability</strong></td>
+                            <td><span class="check">✓ Full</span></td>
+                            <td><span class="cross">✗ Partial</span></td>
+                            <td><span class="cross">✗ Limited</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- When to Use -->
+            <div style="background: linear-gradient(135deg, #fff5f5 0%, #fee6e6 100%); border: 2px solid #667eea; border-radius: 12px; padding: 30px; margin-top: 40px;">
+                <h3 style="color: #667eea; margin-bottom: 20px; font-size: 1.3em;">🤔 When to Use Java-Native ML</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; color: #333; line-height: 1.8;">
+                    <div>
+                        <strong style="color: #48BB78; display: block; margin-bottom: 10px;">✅ Perfect For:</strong>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>🔒 Regulated/compliance-heavy industries</li>
+                            <li>🛡️ Air-gapped networks</li>
+                            <li>☕ Java-only teams</li>
+                            <li>📦 Simple tabular data</li>
+                            <li>🚀 Quick prototypes</li>
+                            <li>🎯 Full source auditability</li>
+                            <li>💰 Minimal operational overhead</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong style="color: #EE5A6F; display: block; margin-bottom: 10px;">❌ Not Ideal For:</strong>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>❌ Deep learning models</li>
+                            <li>❌ Computer vision/NLP</li>
+                            <li>❌ Complex preprocessing</li>
+                            <li>❌ Very large datasets (GBs)</li>
+                            <li>❌ Advanced model types</li>
+                            <li>❌ Frequent model retraining</li>
+                            <li>❌ Production at massive scale</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Java-Native ML • Weka • Pure Java • No External Dependencies • Regulated-Friendly</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Created for CommunityDays KC 2026</p>
+    </footer>
+</body>
+</html>

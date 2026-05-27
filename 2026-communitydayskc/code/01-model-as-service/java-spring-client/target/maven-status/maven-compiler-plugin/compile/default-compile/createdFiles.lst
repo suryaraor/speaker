@@ -1,0 +1,8 @@
+com\example\mlclient\service\FraudDetectionService.class
+com\example\mlclient\controller\FraudController.class
+com\example\mlclient\config\WebClientConfig.class
+com\example\mlclient\model\Transaction.class
+com\example\mlclient\model\TransactionFeatures.class
+com\example\mlclient\service\FeatureEngineer.class
+com\example\mlclient\MlClientApplication.class
+com\example\mlclient\model\FraudScore.class

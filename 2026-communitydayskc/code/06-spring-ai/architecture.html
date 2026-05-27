@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>06 — Spring AI Architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0b0f1a; color: #e2e8f0;
+         min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+         padding: 40px 32px 60px; }
+  h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 6px; color: #e2e8f0; }
+  .sub { font-size: 1rem; color: #94a3b8; margin-bottom: 32px; }
+  .accent { color: #6366f1; }
+  .green  { color: #34d399; }
+  .cyan   { color: #22d3ee; }
+  .amber  { color: #fbbf24; }
+  svg { max-width: 960px; width: 100%; }
+  .card { background: #131929; border: 1px solid #1e293b; border-radius: 12px; padding: 20px 24px; }
+  .grid { display: grid; gap: 16px; max-width: 960px; width: 100%; margin-top: 28px; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  p  { font-size: .88rem; color: #94a3b8; line-height: 1.6; }
+  code { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: .82rem;
+         background: #090d16; border: 1px solid #1e293b; border-radius: 8px;
+         padding: 16px 20px; display: block; line-height: 1.75; color: #e2e8f0;
+         max-width: 960px; width: 100%; margin-top: 28px; overflow-x: auto; }
+  .kw  { color: #c084fc; }
+  .str { color: #86efac; }
+  .cmt { color: #475569; font-style: italic; }
+  .fn  { color: #67e8f9; }
+  .ann { color: #f87171; }
+  @media(max-width:700px) { .grid-3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div style="text-align:center;margin-bottom:10px">
+  <span style="background:#1e1b4b;color:#818cf8;border:1px solid #3730a3;border-radius:999px;
+               padding:4px 14px;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase">
+    Example 06 · Architecture
+  </span>
+</div>
+<h1>Spring <span class="accent">AI</span></h1>
+<p class="sub">LLM-powered fraud explanation — ChatClient + Structured Output + Provider Swap</p>
+
+<svg viewBox="0 0 960 500" role="img" aria-label="Spring AI Architecture">
+  <defs>
+    <marker id="af" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+    <marker id="ac" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+    <marker id="aa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+  </defs>
+
+  <!-- Spring Boot service boundary -->
+  <rect x="4" y="4" width="640" height="492" rx="14" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="324" y="26" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#818cf8" letter-spacing="2">☕  SPRING BOOT  ·  spring-ai-fraud-explainer  :8006</text>
+
+  <!-- FraudExplainerController -->
+  <rect x="22" y="42" width="200" height="100" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="122" y="66" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudExplainerController</text>
+  <line x1="32" y1="74" x2="212" y2="74" stroke="#2d3a5e" stroke-width="1"/>
+  <text x="122" y="92" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/explain</text>
+  <text x="122" y="110" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/ask</text>
+  <text x="122" y="128" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">@RestController</text>
+
+  <!-- FraudExplainerService -->
+  <rect x="22" y="188" width="200" height="128" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="122" y="212" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudExplainerService</text>
+  <line x1="32" y1="220" x2="212" y2="220" stroke="#2d3a5e" stroke-width="1"/>
+  <text x="122" y="240" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">chatClient.prompt()</text>
+  <text x="122" y="258" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">  .user(u -&gt; u.text(...)</text>
+  <text x="122" y="276" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">  .param(k, v))</text>
+  <text x="122" y="294" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">  .call()</text>
+  <text x="122" y="306" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">  .entity(FraudExplanation)</text>
+
+  <!-- Arrow: Controller → Service -->
+  <line x1="122" y1="142" x2="122" y2="186" stroke="#6366f1" stroke-width="1.5" marker-end="url(#af)"/>
+
+  <!-- Prompt Template box -->
+  <rect x="260" y="42" width="200" height="160" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+  <text x="360" y="64" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#94a3b8">Prompt Template</text>
+  <line x1="270" y1="72" x2="450" y2="72" stroke="#1e293b" stroke-width="1"/>
+  <text x="360" y="92" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">System: "You are a senior</text>
+  <text x="360" y="110" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">fraud analyst..."</text>
+  <text x="360" y="134" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">User: "Analyze TX {id}</text>
+  <text x="360" y="152" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">amount {amount} {currency}</text>
+  <text x="360" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">prob {probability}% ..."</text>
+  <text x="360" y="190" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">Spring AI fills {params}</text>
+
+  <!-- Arrow: Service → Prompt -->
+  <line x1="222" y1="252" x2="258" y2="180" stroke="#6366f1" stroke-width="1.5" marker-end="url(#af)"/>
+
+  <!-- Structured Output box -->
+  <rect x="260" y="230" width="200" height="160" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+  <text x="360" y="252" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#94a3b8">Structured Output</text>
+  <line x1="270" y1="260" x2="450" y2="260" stroke="#1e293b" stroke-width="1"/>
+  <text x="360" y="280" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Spring AI reflects on</text>
+  <text x="360" y="298" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">FraudExplanation.class</text>
+  <text x="360" y="316" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">→ builds JSON schema</text>
+  <text x="360" y="334" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">→ instructs LLM</text>
+  <text x="360" y="352" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#34d399">→ auto-deserializes</text>
+  <text x="360" y="370" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#34d399">to Java record</text>
+
+  <!-- ChatClient box -->
+  <rect x="22" y="380" width="200" height="104" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="122" y="404" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">ChatClient @Bean</text>
+  <line x1="32" y1="412" x2="212" y2="412" stroke="#2d3a5e" stroke-width="1"/>
+  <text x="122" y="432" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">builder.defaultSystem(…)</text>
+  <text x="122" y="450" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">.build()</text>
+  <text x="122" y="468" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">Singleton · @Configuration</text>
+
+  <!-- Arrow: Service → ChatClient -->
+  <line x1="122" y1="316" x2="122" y2="378" stroke="#6366f1" stroke-width="1.5" marker-end="url(#af)"/>
+
+  <!-- Arrow: ChatClient → AI provider (out to right) -->
+  <line x1="646" y1="432" x2="680" y2="432" stroke="#22d3ee" stroke-width="2" marker-end="url(#ac)"/>
+  <line x1="450" y1="432" x2="644" y2="432" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+  <!-- Arrow: Prompt → ChatClient -->
+  <line x1="360" y1="202" x2="280" y2="380" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#af)"/>
+  <!-- Arrow: Structured Output → Service (response back) -->
+  <line x1="260" y1="310" x2="222" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#ag)"/>
+
+  <!-- AI PROVIDER ZONE -->
+  <rect x="680" y="4" width="276" height="492" rx="14" fill="#0d111e" stroke="#0e4f6d" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <text x="818" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#22d3ee" letter-spacing="2">AI PROVIDER</text>
+
+  <!-- OpenAI -->
+  <rect x="696" y="38" width="244" height="90" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="818" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">OpenAI (default)</text>
+  <text x="818" y="82" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">gpt-4o-mini · gpt-4o</text>
+  <text x="818" y="100" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">spring-ai-openai-spring-boot-starter</text>
+  <text x="818" y="118" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">OPENAI_API_KEY env var</text>
+
+  <!-- Anthropic -->
+  <rect x="696" y="148" width="244" height="90" rx="8" fill="#0c2a3b" stroke="#334155" stroke-width="1.5"/>
+  <text x="818" y="172" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#94a3b8">Anthropic Claude</text>
+  <text x="818" y="192" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">claude-3-5-sonnet-20241022</text>
+  <text x="818" y="210" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">spring-ai-anthropic-starter</text>
+  <text x="818" y="228" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">swap starter + set key</text>
+
+  <!-- Ollama -->
+  <rect x="696" y="258" width="244" height="90" rx="8" fill="#0c2a3b" stroke="#334155" stroke-width="1.5"/>
+  <text x="818" y="282" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#94a3b8">Ollama (local)</text>
+  <text x="818" y="302" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">llama3.1 · mistral · phi3</text>
+  <text x="818" y="320" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">spring-ai-ollama-starter</text>
+  <text x="818" y="338" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">No API key · runs offline</text>
+
+  <!-- Key insight -->
+  <rect x="696" y="368" width="244" height="120" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+  <text x="818" y="390" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Provider Swap</text>
+  <line x1="706" y1="398" x2="930" y2="398" stroke="#1e293b" stroke-width="1"/>
+  <text x="818" y="418" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Change pom.xml starter</text>
+  <text x="818" y="438" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">+ application.properties</text>
+  <text x="818" y="458" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Zero Java code changes</text>
+  <text x="818" y="478" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#34d399">Same ChatClient API</text>
+
+  <!-- INPUT and OUTPUT labels at edges -->
+  <!-- Input label -->
+  <rect x="4" y="56" width="18" height="72" rx="4" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1"/>
+  <text x="13" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="8" font-weight="700" fill="#818cf8"
+        transform="rotate(-90,13,92)">FraudAlert IN</text>
+
+  <!-- Output label -->
+  <rect x="4" y="338" width="18" height="96" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1"/>
+  <text x="13" y="362" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="8" font-weight="700" fill="#34d399"
+        transform="rotate(-90,13,386)">FraudExplanation OUT</text>
+</svg>
+
+<div class="grid grid-3">
+  <div class="card" style="border-top:3px solid #6366f1">
+    <h3 style="color:#818cf8">ChatClient Fluent API</h3>
+    <p>Spring AI's <strong style="color:#e2e8f0">ChatClient</strong> is a builder-style API similar to WebClient. Chain <code style="background:none;border:none;padding:0;font-size:.82rem;color:#86efac">.prompt().user(...).call()</code> for any LLM interaction with full type safety.</p>
+  </div>
+  <div class="card" style="border-top:3px solid #34d399">
+    <h3 style="color:#34d399">Structured Output</h3>
+    <p>Calling <code style="background:none;border:none;padding:0;font-size:.82rem;color:#86efac">.entity(FraudExplanation.class)</code> makes Spring AI reflect on the record, generate a JSON schema, instruct the LLM, and deserialise the response — all automatically.</p>
+  </div>
+  <div class="card" style="border-top:3px solid #22d3ee">
+    <h3 style="color:#22d3ee">Provider Portability</h3>
+    <p>Swap the Maven starter (OpenAI → Claude → Ollama) and update one property. Your <strong style="color:#e2e8f0">ChatClient code never changes</strong> — the same abstraction works across all providers.</p>
+  </div>
+</div>
+
+<code>
+<span class="cmt">// AiConfig.java — set the system persona once, reuse everywhere</span>
+<span class="ann">@Bean</span>
+<span class="fn">ChatClient</span> <span class="fn">chatClient</span>(ChatClient.Builder builder) {
+    <span class="kw">return</span> builder
+        .<span class="fn">defaultSystem</span>(<span class="str">"You are a senior fraud analyst..."</span>)
+        .<span class="fn">build</span>();
+}
+
+<span class="cmt">// FraudExplainerService.java — parameterized prompt + structured output</span>
+<span class="kw">public</span> FraudExplanation <span class="fn">explain</span>(FraudAlert alert) {
+    <span class="kw">return</span> chatClient.prompt()
+        .<span class="fn">user</span>(u -> u
+            .<span class="fn">text</span>(<span class="str">"Analyze TX {txId}: amount {amount}, prob {prob}%..."</span>)
+            .<span class="fn">param</span>(<span class="str">"txId"</span>,  alert.<span class="fn">transactionId</span>())
+            .<span class="fn">param</span>(<span class="str">"amount"</span>, alert.<span class="fn">amount</span>())
+            .<span class="fn">param</span>(<span class="str">"prob"</span>,   alert.<span class="fn">fraudProbability</span>() * <span class="fn">100</span>))
+        .<span class="fn">call</span>()
+        .<span class="fn">entity</span>(FraudExplanation.<span class="kw">class</span>); <span class="cmt">// Spring AI auto-deserialises to Java record</span>
+}
+</code>
+
+<p style="color:#475569;font-size:.82rem;margin-top:20px;text-align:center">
+  06-spring-ai · Spring AI 1.0.0 · Spring Boot 3.3.5 · Community Day KC 2026
+</p>
+</body>
+</html>

@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>05 - Full ML Pipeline: Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Vardana, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 0.95em;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .architecture-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        /* Main Architecture Diagram */
+        .pipeline-diagram {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 2px solid #11998e;
+        }
+
+        .diagram-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .diagram-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .pipeline-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #11998e;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pipeline-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(17, 153, 142, 0.2);
+        }
+
+        .pipeline-box.kafka {
+            border-left-color: #11998e;
+        }
+
+        .pipeline-box.consumer {
+            border-left-color: #FF6B6B;
+        }
+
+        .pipeline-box.features {
+            border-left-color: #FFB347;
+        }
+
+        .pipeline-box.scoring {
+            border-left-color: #48BB78;
+        }
+
+        .pipeline-box.alert {
+            border-left-color: #667eea;
+        }
+
+        .pipeline-box.external {
+            border-left-color: #FF00FF;
+        }
+
+        .pipeline-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .pipeline-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .pipeline-desc {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* Component Details */
+        .components-section {
+            margin: 50px 0;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .component {
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .component:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .component.kafka-component {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: 3px solid #0a6355;
+        }
+
+        .component.consumer-component {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+            border: 3px solid #CC3333;
+        }
+
+        .component.ml-component {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid #4a52a3;
+        }
+
+        .component h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .component ul {
+            list-style: none;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .component li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component li:before {
+            content: "▸";
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Data Flow Timeline */
+        .timeline-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .timeline-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #11998e, #38ef7d);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            margin-left: 100px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -75px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #11998e;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .timeline-content strong {
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .timeline-content p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        /* Docker & Deployment */
+        .deployment-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 15px;
+            padding: 40px;
+            color: white;
+            margin: 40px 0;
+        }
+
+        .deployment-title {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deployment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .deployment-box {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .deployment-box:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        .deployment-box h4 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deployment-box p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        /* Scoring Mode */
+        .scoring-modes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .scoring-mode {
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .scoring-mode.onnx {
+            background: linear-gradient(135deg, #48BB78 0%, #22543D 100%);
+            border: 3px solid #1e4620;
+        }
+
+        .scoring-mode.rest {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid #4a52a3;
+        }
+
+        .scoring-mode h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scoring-mode p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .scoring-mode ul {
+            list-style: none;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .scoring-mode li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scoring-mode li:before {
+            content: "▸";
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Code Section */
+        .code-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 40px 0;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            color: #f8f8f2;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .code-block {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-comment { color: #75715e; }
+        .code-keyword { color: #66d9ef; }
+        .code-string { color: #e6db74; }
+        .code-class { color: #a1efe4; }
+
+        /* Endpoints */
+        .endpoints-section {
+            background: linear-gradient(135deg, #fff5f5 0%, #fee6e6 100%);
+            border: 2px solid #11998e;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .endpoints-title {
+            color: #11998e;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
+
+        .endpoint-item {
+            background: white;
+            border-left: 4px solid #11998e;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .endpoint-method {
+            font-weight: bold;
+            color: #11998e;
+            display: inline-block;
+            width: 60px;
+        }
+
+        .endpoint-desc {
+            display: block;
+            color: #666;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .scoring-modes {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .architecture-section {
+                padding: 30px;
+            }
+
+            .timeline::before {
+                left: 15px;
+            }
+
+            .timeline-item {
+                margin-left: 60px;
+            }
+
+            .timeline-dot {
+                left: -45px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Full ML Pipeline</h1>
+            <p class="subtitle">End-to-End Streaming Fraud Detection • Kafka + Feature Engineering + ML + Alerts</p>
+            <p class="tagline">Kafka Streaming • Feature Engineering • ONNX or REST Scoring • Fraud Alerts • Docker Compose</p>
+        </header>
+
+        <div class="architecture-section">
+            <h2 class="section-title">
+                <span class="section-icon">🏭</span>
+                Complete ML Pipeline Architecture
+            </h2>
+
+            <!-- Main Diagram -->
+            <div class="pipeline-diagram">
+                <h3 class="diagram-title">
+                    <span>📊</span>
+                    End-to-End Data Flow
+                </h3>
+                <div class="diagram-flow">
+                    <div class="pipeline-box kafka">
+                        <div class="pipeline-icon">📨</div>
+                        <div class="pipeline-label">Kafka: transactions</div>
+                        <div class="pipeline-desc">Raw payment stream</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #11998e;">→</div>
+                    <div class="pipeline-box consumer">
+                        <div class="pipeline-icon">👂</div>
+                        <div class="pipeline-label">Consumer</div>
+                        <div class="pipeline-desc">@KafkaListener reads topics</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #11998e;">→</div>
+                    <div class="pipeline-box features">
+                        <div class="pipeline-icon">🎯</div>
+                        <div class="pipeline-label">Feature Engineer</div>
+                        <div class="pipeline-desc">Java domain logic</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #11998e;">→</div>
+                    <div class="pipeline-box scoring">
+                        <div class="pipeline-icon">🤖</div>
+                        <div class="pipeline-label">Scorer</div>
+                        <div class="pipeline-desc">ONNX or REST</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #11998e;">→</div>
+                    <div class="pipeline-box alert">
+                        <div class="pipeline-icon">🚨</div>
+                        <div class="pipeline-label">Alert Service</div>
+                        <div class="pipeline-desc">Fraud decisions</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #11998e;">→</div>
+                    <div class="pipeline-box kafka">
+                        <div class="pipeline-icon">📤</div>
+                        <div class="pipeline-label">Kafka: fraud-alerts</div>
+                        <div class="pipeline-desc">Alert stream</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: #11998e;">→</div>
+                    <div class="pipeline-box external">
+                        <div class="pipeline-icon">🌐</div>
+                        <div class="pipeline-label">Downstream</div>
+                        <div class="pipeline-desc">CRM, Risk Ops, Account Freeze</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Components Detail -->
+            <div class="components-section">
+                <h3 style="color: #333; font-size: 1.5em; margin-bottom: 30px;">🔧 Core Components</h3>
+                <div class="component-grid">
+                    <div class="component kafka-component">
+                        <h3>
+                            <span>📨</span>
+                            Apache Kafka
+                        </h3>
+                        <p>Streaming message broker connecting payment system to ML pipeline:</p>
+                        <ul>
+                            <li><strong>transactions</strong> — raw payments in</li>
+                            <li><strong>fraud-alerts</strong> — decisions out</li>
+                            <li>Scales to 100K+ msgs/sec</li>
+                            <li>Replay capability</li>
+                            <li>Durable storage</li>
+                        </ul>
+                    </div>
+
+                    <div class="component consumer-component">
+                        <h3>
+                            <span>👂</span>
+                            Transaction Consumer
+                        </h3>
+                        <p>Spring @KafkaListener consuming transaction stream:</p>
+                        <ul>
+                            <li>Listens on "transactions" topic</li>
+                            <li>Deserializes JSON to Transaction</li>
+                            <li>Batching & retries configured</li>
+                            <li>Non-blocking async processing</li>
+                            <li>Error handling & DLQ</li>
+                        </ul>
+                    </div>
+
+                    <div class="component ml-component">
+                        <h3>
+                            <span>🎯</span>
+                            Feature Engineering
+                        </h3>
+                        <p>Java domain layer extracts ML-ready features:</p>
+                        <ul>
+                            <li>Temporal: hour, day, overnight</li>
+                            <li>Categorical: merchant/geo risk</li>
+                            <li>Velocity: 1h/24h/30d counts</li>
+                            <li>Derived: ratios, normalization</li>
+                            <li>Metadata preservation</li>
+                        </ul>
+                    </div>
+
+                    <div class="component ml-component">
+                        <h3>
+                            <span>🤖</span>
+                            ML Scoring
+                        </h3>
+                        <p>Two-mode scoring: ONNX fast path or REST fallback:</p>
+                        <ul>
+                            <li><strong>ONNX (Primary):</strong> 0.18ms per prediction</li>
+                            <li><strong>REST (Fallback):</strong> HTTP to Python service</li>
+                            <li>Auto-switches on ONNX unavailable</li>
+                            <li>Returns probability + risk level</li>
+                            <li>Feature importances</li>
+                        </ul>
+                    </div>
+
+                    <div class="component consumer-component">
+                        <h3>
+                            <span>🚨</span>
+                            Alert Service
+                        </h3>
+                        <p>Determines fraud decisions and publishes alerts:</p>
+                        <ul>
+                            <li>HIGH risk (prob > 0.85) → BLOCK</li>
+                            <li>MEDIUM (0.4-0.85) → REVIEW</li>
+                            <li>LOW (< 0.4) → ALLOW</li>
+                            <li>Publishes to fraud-alerts topic</li>
+                            <li>Includes full decision context</li>
+                        </ul>
+                    </div>
+
+                    <div class="component kafka-component">
+                        <h3>
+                            <span>🌐</span>
+                            Downstream Systems
+                        </h3>
+                        <p>Alert consumers take action on fraud decisions:</p>
+                        <ul>
+                            <li>CRM: Flag customer account</li>
+                            <li>Risk Ops: Manual review queue</li>
+                            <li>Account Freeze: Block transactions</li>
+                            <li>Compliance: Audit trail</li>
+                            <li>Analytics: Model monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Flow Timeline -->
+            <div class="timeline-section">
+                <h3 class="timeline-title">
+                    <span>⏲️</span>
+                    Request-to-Alert Timeline
+                </h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>0ms: Payment System</strong>
+                            <p>Card transaction occurs. Payment gateway publishes to Kafka "transactions" topic.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>1-5ms: Kafka Receive</strong>
+                            <p>Transaction message enters Kafka broker, replicated across cluster for durability.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>5-10ms: Consumer Polls</strong>
+                            <p>Spring @KafkaListener polls topic, receives batch of transactions, deserializes JSON.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>10-20ms: Feature Engineering</strong>
+                            <p>FeatureEngineer extracts ~12 ML features from transaction. Queries merchant/geo tables, velocity cache.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>20-30ms: ML Scoring (ONNX Fast Path)</strong>
+                            <p>Features passed to ONNX Runtime in-JVM. RandomForest predicts fraud probability in <1ms.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>30-35ms: Alert Decision</strong>
+                            <p>FraudAlertService receives prediction, determines action (BLOCK/REVIEW/ALLOW), creates alert object.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>35-40ms: Publish Alert</strong>
+                            <p>Alert serialized to JSON, published to Kafka "fraud-alerts" topic, replicated for durability.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <strong>40-100ms: Downstream Action</strong>
+                            <p>CRM, Risk Ops, Account Freeze consumers receive alert, take action. Total latency: 40-100ms.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoring Modes -->
+            <h3 style="color: #333; font-size: 1.5em; margin-top: 50px; margin-bottom: 30px;">🎯 Scoring Modes: Fast vs. Flexible</h3>
+            <div class="scoring-modes">
+                <div class="scoring-mode onnx">
+                    <h3>
+                        <span>⚡</span>
+                        ONNX In-JVM (Fast Path)
+                    </h3>
+                    <p>Primary scoring method when ONNX file available:</p>
+                    <ul>
+                        <li>Sub-millisecond latency</li>
+                        <li>No network call</li>
+                        <li>No external dependencies</li>
+                        <li>Bundled in JAR</li>
+                        <li>Deterministic, no failures</li>
+                    </ul>
+                </div>
+                <div class="scoring-mode rest">
+                    <h3>
+                        <span>🔄</span>
+                        REST Fallback (Flexible)
+                    </h3>
+                    <p>Fallback when ONNX unavailable or Python service needed:</p>
+                    <ul>
+                        <li>HTTP to Python ML service</li>
+                        <li>More model flexibility</li>
+                        <li>Can update without restart</li>
+                        <li>May have network latency</li>
+                        <li>Circuit breaker pattern</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Docker & Deployment -->
+            <div class="deployment-section">
+                <h3 class="deployment-title">
+                    <span>🐳</span>
+                    Docker Compose Stack
+                </h3>
+                <div class="deployment-grid">
+                    <div class="deployment-box">
+                        <h4>
+                            <span>🐘</span>
+                            Zookeeper
+                        </h4>
+                        <p>Kafka coordination & leader election. Manages broker cluster state.</p>
+                    </div>
+                    <div class="deployment-box">
+                        <h4>
+                            <span>📨</span>
+                            Kafka Broker
+                        </h4>
+                        <p>Message broker. Handles transactions & fraud-alerts topics with persistence.</p>
+                    </div>
+                    <div class="deployment-box">
+                        <h4>
+                            <span>🐍</span>
+                            Python ML Service
+                        </h4>
+                        <p>FastAPI server on port 8000. Serves fraud predictions if ONNX unavailable.</p>
+                    </div>
+                    <div class="deployment-box">
+                        <h4>
+                            <span>☕</span>
+                            Java Pipeline
+                        </h4>
+                        <p>Spring Boot on port 8084. Consumes transactions, scores, publishes alerts.</p>
+                    </div>
+                    <div class="deployment-box">
+                        <h4>
+                            <span>📊</span>
+                            Kafka UI
+                        </h4>
+                        <p>Visual browser on port 9090. Monitor topics, messages, consumer groups.</p>
+                    </div>
+                    <div class="deployment-box">
+                        <h4>
+                            <span>💾</span>
+                            Persistent Volumes
+                        </h4>
+                        <p>Kafka data & Zookeeper state persist across restarts. No data loss on reboot.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Endpoints -->
+            <div class="endpoints-section">
+                <h3 class="endpoints-title">🔌 REST API Endpoints</h3>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span>/api/pipeline/status</span>
+                    <span class="endpoint-desc">Current scoring mode (ONNX or REST) + message counts</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span>/api/pipeline/alerts</span>
+                    <span class="endpoint-desc">Recent fraud alerts since application startup</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">POST</span>
+                    <span>/api/pipeline/test/send?merchantCategory=...&amount=...&countryCode=...</span>
+                    <span class="endpoint-desc">Send test transaction to Kafka pipeline</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span>/actuator/health</span>
+                    <span class="endpoint-desc">Spring Boot health check + Kafka connectivity status</span>
+                </div>
+            </div>
+
+            <!-- Code Example -->
+            <div class="code-section">
+                <h3>💻 Kafka Consumer Integration</h3>
+                <div class="code-block">
+<span class="code-comment">// Spring Kafka listener consuming transactions</span>
+<span class="code-keyword">@KafkaListener</span>(topics = <span class="code-string">"transactions"</span>, groupId = <span class="code-string">"fraud-pipeline"</span>)
+<span class="code-keyword">public</span> <span class="code-keyword">void</span> processTransaction(<span class="code-class">Transaction</span> txn) {
+    <span class="code-keyword">try</span> {
+        <span class="code-comment">// 1. Feature engineering (Java domain logic)</span>
+        <span class="code-class">TransactionFeatures</span> features = featureEngineer.extract(txn);
+        
+        <span class="code-comment">// 2. Score (ONNX fast path or REST fallback)</span>
+        <span class="code-keyword">double</span> fraudProb = fraudScoringService.score(features);
+        
+        <span class="code-comment">// 3. Determine action</span>
+        <span class="code-class">FraudDecision</span> decision = fraudProb > 0.85 ? 
+            <span class="code-class">FraudDecision</span>.BLOCK : 
+            fraudProb > 0.40 ? <span class="code-class">FraudDecision</span>.REVIEW : 
+            <span class="code-class">FraudDecision</span>.ALLOW;
+        
+        <span class="code-comment">// 4. Publish alert</span>
+        <span class="code-class">FraudAlert</span> alert = <span class="code-keyword">new</span> <span class="code-class">FraudAlert</span>(
+            txn.transactionId(), fraudProb, decision, features
+        );
+        fraudAlertPublisher.publish(alert);
+        
+    } <span class="code-keyword">catch</span> (<span class="code-class">Exception</span> e) {
+        log.error(<span class="code-string">"Pipeline error for txn: {}"</span>, txn.transactionId(), e);
+        <span class="code-comment">// Publish to DLQ for manual review</span>
+        deadLetterQueue.push(txn);
+    }
+}
+                </div>
+            </div>
+
+            <!-- Deployment Instructions -->
+            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; padding: 30px; margin-top: 40px;">
+                <h3 style="color: #333; margin-bottom: 20px; font-size: 1.3em;">🚀 Running the Full Pipeline</h3>
+                <div style="background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 0.9em; margin-bottom: 20px; overflow-x: auto;">
+<span class="code-comment"># Option A: Docker Compose (full stack, recommended)</span>
+docker-compose up --build
+
+<span class="code-comment"># Watch Java pipeline logs</span>
+docker-compose logs -f java-pipeline
+
+<span class="code-comment"># Send test transaction via REST API</span>
+curl -X POST "http://localhost:8084/api/pipeline/test/send?merchantCategory=CRYPTO&countryCode=NG&amount=1800"
+
+<span class="code-comment"># Check Kafka UI at http://localhost:9090</span>
+<span class="code-comment"># Check fraud alerts</span>
+curl http://localhost:8084/api/pipeline/alerts
+                </div>
+                <div style="color: #333; line-height: 1.8;">
+                    <p><strong>What's Included:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>✅ Zookeeper — Kafka coordination</li>
+                        <li>✅ Kafka — Message broker with topics</li>
+                        <li>✅ Python ML Service — FastAPI fraud detection</li>
+                        <li>✅ Java Pipeline — Spring Boot consumer + scorer</li>
+                        <li>✅ Kafka UI — Visual topic browser</li>
+                        <li>✅ Persistent Volumes — Data survives restarts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Key Benefits -->
+            <div style="background: linear-gradient(135deg, #e5f9f7 0%, #d6f3f0 100%); border: 2px solid #11998e; border-radius: 15px; padding: 30px; margin-top: 40px;">
+                <h3 style="color: #11998e; margin-bottom: 20px; font-size: 1.3em;">⭐ Why This Architecture Works</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; color: #333; line-height: 1.8;">
+                    <div>
+                        <strong style="color: #11998e; display: block; margin-bottom: 10px;">✅ Production-Ready:</strong>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>🎯 Kafka provides durability + replay</li>
+                            <li>⚡ ONNX path = sub-ms latency</li>
+                            <li>🔄 REST fallback = flexibility</li>
+                            <li>📊 Kafka UI = observability</li>
+                            <li>🚀 Docker = consistent deployment</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong style="color: #11998e; display: block; margin-bottom: 10px;">🎓 Educational Value:</strong>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>📚 Shows complete pipeline</li>
+                            <li>🔀 Java + Python integration</li>
+                            <li>⚙️ Feature engineering in practice</li>
+                            <li>🤖 Two ML execution modes</li>
+                            <li>📦 Docker orchestration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Full ML Pipeline • Kafka Streaming • Feature Engineering • ONNX + REST Scoring • Docker Compose</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Created for CommunityDays KC 2026</p>
+    </footer>
+</body>
+</html>

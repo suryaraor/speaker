@@ -1,0 +1,5 @@
+com\example\nativeml\NativeMlApplication.class
+com\example\nativeml\service\CreditRiskClassifier.class
+com\example\nativeml\model\CreditDecision.class
+com\example\nativeml\controller\CreditRiskController.class
+com\example\nativeml\model\LoanApplication.class

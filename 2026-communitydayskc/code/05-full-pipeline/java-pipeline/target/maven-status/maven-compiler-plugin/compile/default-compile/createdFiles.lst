@@ -1,0 +1,11 @@
+com\example\pipeline\service\FraudScoringService$1Response.class
+com\example\pipeline\service\FeatureEngineer.class
+com\example\pipeline\model\FraudAlert.class
+com\example\pipeline\service\FraudAlertService.class
+com\example\pipeline\controller\PipelineController$1TestEvent.class
+com\example\pipeline\model\TransactionEvent.class
+com\example\pipeline\service\FraudScoringService.class
+com\example\pipeline\service\FraudScoringService$1Payload.class
+com\example\pipeline\service\TransactionConsumer.class
+com\example\pipeline\PipelineApplication.class
+com\example\pipeline\controller\PipelineController.class

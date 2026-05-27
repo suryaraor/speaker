@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hermes Agent — From Zero to Agentic</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  /* ── Slide deck ── */
+  #deck {
+    width: 100vw; height: 100vh;
+    background: #0b0f1a;
+    color: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 60px 80px;
+    opacity: 0; transform: translateX(60px);
+    transition: opacity .5s ease, transform .5s ease;
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1; transform: translateX(0);
+    pointer-events: auto;
+  }
+  .slide.exit {
+    opacity: 0; transform: translateX(-60px);
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.1; }
+  h2 { font-size: clamp(1.6rem, 3.5vw, 2.6rem); font-weight: 700; margin-bottom: 28px; }
+  h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 6px; }
+  p, li { font-size: clamp(.95rem, 1.8vw, 1.15rem); line-height: 1.7; color: #94a3b8; }
+  ul { list-style: none; padding: 0; }
+  li::before { content: '→ '; color: #6366f1; font-weight: 700; }
+
+  /* ── Accent colors ── */
+  .accent  { color: #6366f1; }
+  .green   { color: #34d399; }
+  .amber   { color: #fbbf24; }
+  .rose    { color: #f87171; }
+  .cyan    { color: #22d3ee; }
+
+  /* ── Pill / badge ── */
+  .pill {
+    display: inline-block;
+    padding: 4px 14px; border-radius: 999px;
+    font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .pill-blue  { background: #1e1b4b; color: #818cf8; border: 1px solid #3730a3; }
+  .pill-green { background: #064e3b; color: #34d399; border: 1px solid #065f46; }
+  .pill-amber { background: #451a03; color: #fbbf24; border: 1px solid #78350f; }
+  .pill-rose  { background: #4c0519; color: #f87171; border: 1px solid #9f1239; }
+
+  /* ── Card grid ── */
+  .grid { display: grid; gap: 20px; width: 100%; max-width: 960px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: #131929; border: 1px solid #1e293b;
+    border-radius: 14px; padding: 24px 26px;
+    transition: border-color .25s, transform .25s;
+  }
+  .card:hover { border-color: #4f46e5; transform: translateY(-3px); }
+  .card .icon { font-size: 1.8rem; margin-bottom: 10px; }
+
+  /* ── Code block ── */
+  .code-wrap {
+    background: #090d16; border: 1px solid #1e293b;
+    border-radius: 12px; padding: 22px 28px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: clamp(.78rem, 1.5vw, .9rem);
+    line-height: 1.7; width: 100%; max-width: 820px;
+    overflow-x: auto; text-align: left;
+  }
+  .kw  { color: #c084fc; }
+  .str { color: #86efac; }
+  .cmt { color: #475569; font-style: italic; }
+  .fn  { color: #67e8f9; }
+  .num { color: #fbbf24; }
+
+  /* ── Big number stat ── */
+  .stat-grid { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; }
+  .stat {
+    text-align: center; background: #131929;
+    border: 1px solid #1e293b; border-radius: 14px; padding: 28px 36px;
+    min-width: 160px;
+  }
+  .stat .number { font-size: 2.8rem; font-weight: 800; }
+  .stat .label  { font-size: .85rem; color: #64748b; margin-top: 4px; }
+
+  /* ── Timeline ── */
+  .timeline { width: 100%; max-width: 780px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 22px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, #6366f1, #22d3ee);
+  }
+  .tl-item { padding: 0 0 28px 58px; position: relative; }
+  .tl-dot {
+    position: absolute; left: 12px; top: 4px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #0b0f1a; border: 3px solid #6366f1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 800;
+  }
+  .tl-item h3 { color: #e2e8f0; }
+
+  /* ── Flow diagram ── */
+  .flow {
+    display: flex; align-items: center; gap: 0;
+    flex-wrap: wrap; justify-content: center;
+    width: 100%; max-width: 900px;
+  }
+  .flow-box {
+    background: #131929; border: 1px solid #334155;
+    border-radius: 10px; padding: 14px 18px;
+    text-align: center; min-width: 120px; font-size: .88rem;
+    font-weight: 600;
+  }
+  .flow-arrow { font-size: 1.4rem; color: #4f46e5; margin: 0 6px; }
+
+  /* ── Progress bar ── */
+  .level-bar {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 12px; font-size: .9rem;
+  }
+  .level-bar .name { width: 180px; flex-shrink: 0; color: #cbd5e1; }
+  .bar-track {
+    flex: 1; height: 8px; background: #1e293b; border-radius: 999px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #6366f1, #22d3ee);
+    width: 0; transition: width 1.2s cubic-bezier(.22,1,.36,1);
+  }
+
+  /* ── Nav controls ── */
+  #nav {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px; z-index: 100;
+  }
+  .nav-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #1e293b; border: 1px solid #334155;
+    color: #e2e8f0; font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, border-color .2s;
+  }
+  .nav-btn:hover { background: #4f46e5; border-color: #4f46e5; }
+  #progress-text { font-size: .82rem; color: #64748b; min-width: 52px; text-align: center; }
+
+  /* ── Slide-specific ── */
+  #s-cover { background: radial-gradient(ellipse at 60% 40%, #1a1040 0%, #0b0f1a 70%); }
+  #s-cover h1 span { color: #818cf8; }
+  #s-cover .tagline { font-size: 1.1rem; color: #64748b; margin-top: 14px; }
+  #s-cover .hero-glow {
+    position: absolute; width: 600px; height: 600px;
+    background: radial-gradient(circle, #4f46e520 0%, transparent 70%);
+    top: 50%; left: 60%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* ── Highlight box ── */
+  .callout {
+    border-left: 4px solid #6366f1; background: #131929;
+    border-radius: 0 10px 10px 0; padding: 14px 20px;
+    margin-top: 16px; font-size: .95rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .slide { padding: 40px 28px; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div id="deck">
+
+  <!-- ── S0: Cover ── -->
+  <div class="slide active" id="s-cover">
+    <div class="hero-glow"></div>
+    <div class="pill pill-blue">Meetup Edition · 2026</div>
+    <h1>Meet <span>Hermes</span><br/>Your AI Agent</h1>
+    <p class="tagline">From simple chat to autonomous multi-step agent — let's explore together.</p>
+  </div>
+
+  <!-- ── S1: What is Hermes? ── -->
+  <div class="slide" id="s-what">
+    <div class="pill pill-blue">The Basics</div>
+    <h2>What <span class="accent">is</span> Hermes?</h2>
+    <div class="grid grid-2" style="max-width:840px">
+      <div class="card">
+        <div class="icon">🧠</div>
+        <h3>A Fine-Tuned LLM</h3>
+        <p>Hermes is built on top of powerful base models (LLaMA, Mistral) and fine-tuned by <strong>Nous Research</strong> to excel at real-world tasks.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤝</div>
+        <h3>A Conversation Partner</h3>
+        <p>It understands natural language, follows complex instructions, and maintains context across a long conversation.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔧</div>
+        <h3>A Tool-Calling Agent</h3>
+        <p>Hermes can decide <em>when</em> to call external tools — APIs, databases, code runners — and chain them together.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🗂️</div>
+        <h3>A Structured Output Engine</h3>
+        <p>Ask for JSON, XML, or any schema and it delivers — no regex hacks needed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S2: Capability Levels ── -->
+  <div class="slide" id="s-levels">
+    <div class="pill pill-blue">Overview</div>
+    <h2>Capability <span class="accent">Levels</span></h2>
+    <div style="width:100%;max-width:680px">
+      <div class="level-bar"><span class="name">🟢 Basic — Chat & Q&A</span><div class="bar-track"><div class="bar-fill" data-w="35"></div></div></div>
+      <div class="level-bar"><span class="name">🔵 Intermediate — Tools</span><div class="bar-track"><div class="bar-fill" data-w="60"></div></div></div>
+      <div class="level-bar"><span class="name">🟣 Advanced — Agentic</span><div class="bar-track"><div class="bar-fill" data-w="85"></div></div></div>
+      <div class="level-bar"><span class="name">⚡ Expert — Multi-Agent</span><div class="bar-track"><div class="bar-fill" data-w="100"></div></div></div>
+    </div>
+    <div class="callout" style="max-width:680px;margin-top:28px">
+      We'll walk each level with a live example. Each one builds on the last.
+    </div>
+  </div>
+
+  <!-- ── S3: Level 1 — Basic Chat ── -->
+  <div class="slide" id="s-basic">
+    <div class="pill pill-green">Level 1 — Basic</div>
+    <h2>💬 Chat &amp; Reasoning</h2>
+    <div class="grid grid-2" style="max-width:860px">
+      <div>
+        <ul style="margin-bottom:18px">
+          <li>Answer questions in any domain</li>
+          <li>Summarise long documents</li>
+          <li>Translate between languages</li>
+          <li>Write, edit &amp; rewrite text</li>
+          <li>Explain code line-by-line</li>
+        </ul>
+        <div class="callout">
+          <span class="green">Key strength:</span> Hermes follows complex multi-part instructions in a single prompt — no "sorry, I can only do one thing at a time."
+        </div>
+      </div>
+      <div class="code-wrap">
+<span class="cmt">// Prompt</span>
+<span class="str">"Summarise this 50-page PDF in
+ 3 bullet points, then suggest
+ 5 follow-up questions for a
+ beginner audience."</span>
+
+<span class="cmt">// Hermes Response</span>
+• Key finding 1 …
+• Key finding 2 …
+• Key finding 3 …
+
+<span class="green">Follow-up questions:</span>
+<span class="num">1.</span> What does X mean for …?
+<span class="num">2.</span> How does Y compare to …?
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S4: Level 2 — Structured Output ── -->
+  <div class="slide" id="s-structured">
+    <div class="pill pill-green">Level 2 — Intermediate</div>
+    <h2>📦 Structured Output</h2>
+    <p style="max-width:700px;text-align:center;margin-bottom:26px">
+      Tell Hermes the exact shape of data you need. It returns valid JSON — every time.
+    </p>
+    <div class="code-wrap">
+<span class="cmt">// Prompt</span>
+<span class="str">"Extract the invoice details from
+ this email and return JSON."</span>
+
+<span class="cmt">// Hermes → guaranteed schema</span>
+{
+  <span class="str">"vendor"</span>: <span class="str">"Acme Corp"</span>,
+  <span class="str">"invoice_no"</span>: <span class="str">"INV-2024-0091"</span>,
+  <span class="str">"amount_usd"</span>: <span class="num">4820.00</span>,
+  <span class="str">"due_date"</span>: <span class="str">"2024-06-15"</span>,
+  <span class="str">"line_items"</span>: [
+    { <span class="str">"desc"</span>: <span class="str">"Consulting"</span>, <span class="str">"qty"</span>: <span class="num">40</span>, <span class="str">"rate"</span>: <span class="num">120.5</span> }
+  ]
+}
+    </div>
+    <div class="callout" style="max-width:820px">
+      Plug this directly into a database, spreadsheet, or downstream API — zero parsing code.
+    </div>
+  </div>
+
+  <!-- ── S5: Level 3 — Function / Tool Calling ── -->
+  <div class="slide" id="s-tools">
+    <div class="pill pill-amber">Level 3 — Advanced</div>
+    <h2>🔧 Function &amp; Tool Calling</h2>
+    <p style="max-width:700px;text-align:center;margin-bottom:24px">
+      Hermes <em>decides</em> which tool to invoke and with what arguments — then interprets the result.
+    </p>
+    <div class="flow">
+      <div class="flow-box" style="border-color:#6366f1">User Prompt</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:#818cf8">🧠 Hermes<br/><small>reasons &amp; plans</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:#22d3ee">Tool Call<br/><small>search / DB / API</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:#34d399">Result</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:#fbbf24">📝 Final Answer</div>
+    </div>
+    <div class="code-wrap" style="margin-top:26px">
+<span class="cmt">// Hermes picks the right tool on its own</span>
+<span class="kw">tool_call</span>: <span class="fn">get_weather</span>({ <span class="str">"city"</span>: <span class="str">"Tokyo"</span>, <span class="str">"unit"</span>: <span class="str">"celsius"</span> })
+<span class="kw">tool_call</span>: <span class="fn">calendar_book</span>({ <span class="str">"date"</span>: <span class="str">"2024-11-20"</span>, <span class="str">"title"</span>: <span class="str">"Flight to Tokyo"</span> })
+<span class="cmt">// … then synthesises both results into one natural reply</span>
+    </div>
+  </div>
+
+  <!-- ── S6: Level 4 — Agentic Loop ── -->
+  <div class="slide" id="s-agentic">
+    <div class="pill pill-amber">Level 4 — Agentic</div>
+    <h2>🤖 Autonomous Agent Loop</h2>
+    <p style="max-width:700px;text-align:center;margin-bottom:24px">
+      Give Hermes a <strong>goal</strong>, not steps. It plans, acts, observes, and retries — on its own.
+    </p>
+    <div class="timeline" style="max-width:660px">
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#6366f1">1</div>
+        <h3>Plan <span style="color:#64748b;font-weight:400;font-size:.9rem">— Break goal into sub-tasks</span></h3>
+        <p>"Research top 5 competitors, scrape pricing, store in DB."</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#818cf8">2</div>
+        <h3>Act <span style="color:#64748b;font-weight:400;font-size:.9rem">— Call tools &amp; APIs</span></h3>
+        <p>Web search → scraper → database write — all autonomous.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#22d3ee">3</div>
+        <h3>Observe <span style="color:#64748b;font-weight:400;font-size:.9rem">— Evaluate results</span></h3>
+        <p>Did the scraper fail? Retry with a different URL strategy.</p>
+      </div>
+      <div class="tl-item" style="padding-bottom:0">
+        <div class="tl-dot" style="border-color:#34d399">4</div>
+        <h3>Deliver <span style="color:#64748b;font-weight:400;font-size:.9rem">— Return final answer</span></h3>
+        <p>Sends you a Slack summary with a chart — without being asked.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S7: Level 5 — Multi-Agent ── -->
+  <div class="slide" id="s-multi">
+    <div class="pill pill-rose">Level 5 — Expert</div>
+    <h2>🌐 Multi-Agent Orchestration</h2>
+    <p style="max-width:720px;text-align:center;margin-bottom:28px">
+      One Hermes orchestrates many specialised agents in parallel — like a CEO delegating to experts.
+    </p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:900px">
+      <div class="card" style="text-align:center;min-width:160px">
+        <div class="icon">👑</div>
+        <h3 class="accent">Orchestrator</h3>
+        <p>Breaks the mission, assigns agents, collects results</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+        <div style="display:flex;gap:12px">
+          <div class="card" style="min-width:140px;padding:14px 16px">
+            <span class="green">🔍 Research Agent</span>
+            <p style="font-size:.82rem;margin-top:4px">Searches the web &amp; databases</p>
+          </div>
+          <div class="card" style="min-width:140px;padding:14px 16px">
+            <span class="amber">💻 Code Agent</span>
+            <p style="font-size:.82rem;margin-top:4px">Writes &amp; runs Python scripts</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div class="card" style="min-width:140px;padding:14px 16px">
+            <span class="cyan">📊 Data Agent</span>
+            <p style="font-size:.82rem;margin-top:4px">Queries DBs, builds charts</p>
+          </div>
+          <div class="card" style="min-width:140px;padding:14px 16px">
+            <span class="rose">✉️ Comms Agent</span>
+            <p style="font-size:.82rem;margin-top:4px">Sends emails &amp; Slack msgs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="max-width:900px;margin-top:22px">
+      Real example: "Analyse our sales data, write a Python forecast, and email the board deck" → done in under 2 minutes.
+    </div>
+  </div>
+
+  <!-- ── S8: Real-world Use Cases ── -->
+  <div class="slide" id="s-usecases">
+    <div class="pill pill-blue">Real World</div>
+    <h2>Where People <span class="accent">Use</span> Hermes Today</h2>
+    <div class="grid grid-3" style="max-width:920px">
+      <div class="card">
+        <div class="icon">⚖️</div>
+        <h3 class="accent">Legal</h3>
+        <p>Contract review, clause extraction, risk scoring — replacing hours of paralegal work.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🏥</div>
+        <h3 class="green">Healthcare</h3>
+        <p>Patient intake forms → structured EMR entries. Discharge summary generation.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📈</div>
+        <h3 class="amber">Finance</h3>
+        <p>Earnings call analysis, portfolio news digests, automated regulatory filings.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🛍️</div>
+        <h3 class="cyan">E-Commerce</h3>
+        <p>Product description generation at scale, customer support automation, returns triage.</p>
+      </div>
+      <div class="card">
+        <div class="icon">👩‍💻</div>
+        <h3 class="rose">Software Dev</h3>
+        <p>Code review, test generation, bug triage, documentation — full dev-loop automation.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔬</div>
+        <h3 style="color:#c084fc">Research</h3>
+        <p>Paper summarisation, hypothesis generation, experiment design from literature.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S9: Key Stats ── -->
+  <div class="slide" id="s-stats">
+    <div class="pill pill-blue">By the Numbers</div>
+    <h2>Why Hermes <span class="accent">Stands Out</span></h2>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="number accent">128K</div>
+        <div class="label">Context window tokens</div>
+      </div>
+      <div class="stat">
+        <div class="number green">#1</div>
+        <div class="label">Function-calling on open benchmarks</div>
+      </div>
+      <div class="stat">
+        <div class="number amber">∞</div>
+        <div class="label">Tool integrations possible</div>
+      </div>
+      <div class="stat">
+        <div class="number cyan">100%</div>
+        <div class="label">Open weights — run locally</div>
+      </div>
+    </div>
+    <div class="callout" style="max-width:780px;margin-top:32px">
+      Hermes can run fully <strong>offline</strong> on your own hardware — no data leaves your machine.
+    </div>
+  </div>
+
+  <!-- ── S10: Quick Start ── -->
+  <div class="slide" id="s-quickstart">
+    <div class="pill pill-green">Get Started</div>
+    <h2>⚡ Quick Start</h2>
+    <div class="code-wrap">
+<span class="cmt"># Install via Ollama (local, free)</span>
+<span class="fn">ollama</span> pull NousResearch/Hermes-3-Llama-3.1-8B
+
+<span class="cmt"># Or via Python (OpenAI-compatible API)</span>
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+client = OpenAI(base_url=<span class="str">"http://localhost:11434/v1"</span>, api_key=<span class="str">"ollama"</span>)
+
+response = client.chat.completions.create(
+  model=<span class="str">"hermes3"</span>,
+  messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Tell me a fun fact about space"</span>}]
+)
+<span class="fn">print</span>(response.choices[<span class="num">0</span>].message.content)
+    </div>
+    <div class="callout" style="max-width:820px;margin-top:20px">
+      Zero cost, zero cloud dependency. Your GPU, your data, your rules.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- USE CASE: WAREHOUSE SUPPLIER              -->
+  <!-- ══════════════════════════════════════════ -->
+
+  <!-- ── UC-1: The Business Problem ── -->
+  <div class="slide" id="s-wh-problem">
+    <div class="pill pill-amber">Real Use Case</div>
+    <h2>Meet <span class="amber">SwiftStock</span> — A Warehouse Supplier</h2>
+    <p style="max-width:700px;text-align:center;margin-bottom:26px;color:#64748b">
+      200 retail clients · 5 warehouses · 50,000+ SKUs · 500+ orders/day<br/>
+      <span style="color:#f87171;font-weight:600">Every single problem below is handled manually today.</span>
+    </p>
+    <div class="grid grid-3" style="max-width:960px">
+      <div class="card" style="border-top:3px solid #f87171">
+        <div class="icon">📥</div>
+        <h3 style="color:#f87171">Order Chaos</h3>
+        <p>Orders arrive via email, WhatsApp, phone, and web portal. Each one needs manual data entry into the ERP — 2 hrs/day just typing orders in.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #f87171">
+        <div class="icon">📦</div>
+        <h3 style="color:#f87171">Blind Inventory</h3>
+        <p>Staff only discover stockouts <em>after</em> a customer orders. No automated reorder triggers — restocking is always reactive, never proactive.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #f87171">
+        <div class="icon">🧾</div>
+        <h3 style="color:#f87171">Invoice Pile-up</h3>
+        <p>100+ supplier invoices/week. Someone manually matches each PDF line item to a purchase order. Errors lead to overpayments and disputes.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #f87171">
+        <div class="icon">🚚</div>
+        <h3 style="color:#f87171">Delivery Blindspot</h3>
+        <p>Customers call to ask "where is my order?" Nobody knows until someone logs into the courier portal and checks manually.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #f87171">
+        <div class="icon">📋</div>
+        <h3 style="color:#f87171">Paper Pick Lists</h3>
+        <p>Warehouse staff get printed pick lists every morning. A last-minute order? Reprint the whole thing. Wrong zone assignment = wasted 20 min walks.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #f87171">
+        <div class="icon">📊</div>
+        <h3 style="color:#f87171">No Daily Insight</h3>
+        <p>Managers have no real-time picture of what shipped, what's delayed, what's low on stock — until the weekly Excel report arrives Friday night.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UC-2: The Solution Architecture ── -->
+  <div class="slide" id="s-wh-arch">
+    <div class="pill pill-blue">The Solution</div>
+    <h2>One <span class="accent">Hermes Agent</span> — Six Problems Solved</h2>
+    <p style="text-align:center;color:#64748b;margin-bottom:28px;max-width:640px">
+      Hermes sits at the centre — reading inputs, calling tools, taking action, and reporting back. No human in the loop for routine tasks.
+    </p>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:center;max-width:920px;width:100%">
+
+      <!-- Left: Inputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">📧</span><span style="font-size:.85rem">Email / WhatsApp orders</span>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">🧾</span><span style="font-size:.85rem">Supplier PDF invoices</span>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">🗃️</span><span style="font-size:.85rem">ERP / inventory DB</span>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">🚚</span><span style="font-size:.85rem">Shipping API (FedEx/UPS)</span>
+        </div>
+      </div>
+
+      <!-- Centre: Hermes brain -->
+      <div style="display:flex;flex-direction:column;align-items:center;padding:0 28px">
+        <div style="font-size:.8rem;color:#475569;margin-bottom:8px">reads &amp; reasons</div>
+        <div style="font-size:2rem;color:#4f46e5;margin-bottom:-4px">→</div>
+        <div style="background:linear-gradient(135deg,#1a1040,#131929);border:2px solid #6366f1;border-radius:20px;padding:24px 20px;text-align:center;min-width:140px">
+          <div style="font-size:2rem">🐍</div>
+          <div style="font-weight:800;color:#818cf8;font-size:1rem;margin-top:6px">Hermes</div>
+          <div style="font-size:.72rem;color:#475569;margin-top:2px">Agent Brain</div>
+        </div>
+        <div style="font-size:2rem;color:#4f46e5;margin-top:-4px">→</div>
+        <div style="font-size:.8rem;color:#475569;margin-top:8px">acts &amp; reports</div>
+      </div>
+
+      <!-- Right: Outputs -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px;border-color:#34d399">
+          <span style="font-size:1.3rem">✅</span><span style="font-size:.85rem;color:#34d399">Order created in ERP</span>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px;border-color:#34d399">
+          <span style="font-size:1.3rem">📋</span><span style="font-size:.85rem;color:#34d399">Pick list pushed to staff app</span>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px;border-color:#34d399">
+          <span style="font-size:1.3rem">🔔</span><span style="font-size:.85rem;color:#34d399">Auto purchase order sent</span>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px;border-color:#34d399">
+          <span style="font-size:1.3rem">📊</span><span style="font-size:.85rem;color:#34d399">Daily brief → Slack/email</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── UC-3: Day in the Life ── -->
+  <div class="slide" id="s-wh-day">
+    <div class="pill pill-green">Agent Walkthrough</div>
+    <h2>A Day in the Life of <span class="accent">SwiftStock's Agent</span></h2>
+    <div class="timeline" style="max-width:740px">
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#fbbf24">☀️</div>
+        <h3 style="color:#fbbf24">7:00 AM — Morning Brief</h3>
+        <p>Agent queries ERP + shipping API → sends Slack summary: "23 orders pending, 4 delayed shipments, 3 SKUs below reorder point, $18K in unmatched invoices."</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#6366f1">📧</div>
+        <h3 class="accent">9:15 AM — Order Arrives via Email</h3>
+        <p>Hermes reads email → extracts: client, 12 SKUs, quantities, delivery address → checks stock → reserves items → creates ERP order → pushes zone-optimised pick list to staff's mobile app → replies to client with confirmation &amp; ETA.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#f87171">📦</div>
+        <h3 style="color:#f87171">11:30 AM — Stock Drops Below Threshold</h3>
+        <p>After 3 orders for "Box-500ml", stock hits 40 units (reorder point: 50). Agent auto-generates a purchase order → sends to approved supplier via email → logs PO in ERP → sets a 3-day follow-up reminder.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#34d399">🧾</div>
+        <h3 class="green">2:00 PM — Supplier Invoice Received</h3>
+        <p>PDF invoice arrives. Hermes extracts 34 line items → matches each to open PO → finds one discrepancy ($240 overcharge on SKU-882) → flags to accounts team with exact diff → approves the rest for payment automatically.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:#22d3ee">🚚</div>
+        <h3 class="cyan">4:45 PM — Delivery Delay Detected</h3>
+        <p>Agent polls FedEx API → shipment #8821 stuck in transit 2 days. Automatically notifies the client via email with apology + revised ETA → escalates to ops team on Slack → logs incident in CRM.</p>
+      </div>
+      <div class="tl-item" style="padding-bottom:0">
+        <div class="tl-dot" style="border-color:#c084fc">🌙</div>
+        <h3 style="color:#c084fc">6:00 PM — Evening Report</h3>
+        <p>Agent compiles: 47 orders processed, 2 exceptions, 1 PO raised, $0 overcharge paid, 3 delayed shipments handled. Report emailed to management. Agent sleeps — ready for 7 AM tomorrow.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UC-4: The Code ── -->
+  <div class="slide" id="s-wh-code">
+    <div class="pill pill-blue">Under the Hood</div>
+    <h2>How Hermes <span class="accent">Actually Does It</span></h2>
+    <p style="text-align:center;color:#64748b;margin-bottom:20px">Three function calls — one natural-language trigger.</p>
+    <div class="code-wrap" style="max-width:900px;font-size:.82rem">
+<span class="cmt"># Step 1 — Hermes reads the email and extracts structure</span>
+<span class="kw">tools</span> = [
+  { <span class="str">"name"</span>: <span class="str">"check_inventory"</span>,   <span class="str">"desc"</span>: <span class="str">"Query ERP stock levels for a list of SKUs"</span> },
+  { <span class="str">"name"</span>: <span class="str">"create_order"</span>,       <span class="str">"desc"</span>: <span class="str">"Create a new sales order and return order_id"</span> },
+  { <span class="str">"name"</span>: <span class="str">"send_pick_list"</span>,     <span class="str">"desc"</span>: <span class="str">"Push a zone-optimised pick list to staff app"</span> },
+  { <span class="str">"name"</span>: <span class="str">"raise_purchase_order"</span>, <span class="str">"desc"</span>: <span class="str">"Create &amp; email a PO to the approved supplier"</span> },
+  { <span class="str">"name"</span>: <span class="str">"notify_client"</span>,      <span class="str">"desc"</span>: <span class="str">"Send confirmation/delay email to client"</span> },
+]
+
+<span class="cmt"># Step 2 — Hermes reasons and chains the right calls</span>
+<span class="cmt"># Input: raw email text  →  Hermes decides the sequence</span>
+
+<span class="kw">tool_call</span>: <span class="fn">check_inventory</span>({ <span class="str">"skus"</span>: [<span class="str">"BOX-500"</span>, <span class="str">"PAL-L"</span>, <span class="str">"WRAP-CL"</span>] })
+<span class="cmt">#  ↳ returns: { "BOX-500": 340, "PAL-L": 12, "WRAP-CL": 890 }</span>
+<span class="cmt">#  ↳ Hermes sees PAL-L = 12 (below reorder 50) → flags it</span>
+
+<span class="kw">tool_call</span>: <span class="fn">create_order</span>({ <span class="str">"client_id"</span>: <span class="str">"C-204"</span>, <span class="str">"items"</span>: [...], <span class="str">"delivery"</span>: <span class="str">"2026-05-20"</span> })
+<span class="cmt">#  ↳ returns: { "order_id": "ORD-9981", "status": "confirmed" }</span>
+
+<span class="kw">tool_call</span>: <span class="fn">send_pick_list</span>({ <span class="str">"order_id"</span>: <span class="str">"ORD-9981"</span>, <span class="str">"optimise_by"</span>: <span class="str">"zone"</span> })
+<span class="kw">tool_call</span>: <span class="fn">raise_purchase_order</span>({ <span class="str">"sku"</span>: <span class="str">"PAL-L"</span>, <span class="str">"qty"</span>: <span class="num">200</span>, <span class="str">"supplier"</span>: <span class="str">"SUP-07"</span> })
+<span class="kw">tool_call</span>: <span class="fn">notify_client</span>({ <span class="str">"client_id"</span>: <span class="str">"C-204"</span>, <span class="str">"message"</span>: <span class="str">"Order ORD-9981 confirmed, ETA May 20"</span> })
+
+<span class="cmt"># All 5 calls triggered by one email — zero human keystrokes</span>
+    </div>
+  </div>
+
+  <!-- ── UC-5: Before vs After ── -->
+  <div class="slide" id="s-wh-impact">
+    <div class="pill pill-green">The Impact</div>
+    <h2>SwiftStock: <span class="accent">Before</span> vs <span class="green">After</span> Hermes</h2>
+    <div style="width:100%;max-width:860px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:12px 16px;color:#64748b;border-bottom:2px solid #1e293b;width:30%">Task</th>
+            <th style="padding:12px 16px;color:#f87171;border-bottom:2px solid #1e293b;text-align:center">❌ Before</th>
+            <th style="padding:12px 16px;color:#34d399;border-bottom:2px solid #1e293b;text-align:center">✅ After Hermes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#131929">
+            <td style="padding:11px 16px;color:#cbd5e1;border-bottom:1px solid #0f172a">Order data entry</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">2 hrs/day, manual</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">0 min — fully automated</td>
+          </tr>
+          <tr>
+            <td style="padding:11px 16px;color:#cbd5e1;border-bottom:1px solid #0f172a">Stockout detection</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">After customer complains</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Proactive, before it happens</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:11px 16px;color:#cbd5e1;border-bottom:1px solid #0f172a">Restock purchase order</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Manual, often late</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Auto-raised in seconds</td>
+          </tr>
+          <tr>
+            <td style="padding:11px 16px;color:#cbd5e1;border-bottom:1px solid #0f172a">Invoice matching</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">3 hrs/week, error-prone</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Instant, flags discrepancies</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:11px 16px;color:#cbd5e1;border-bottom:1px solid #0f172a">Delivery delay response</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Customer calls first</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Agent notifies proactively</td>
+          </tr>
+          <tr>
+            <td style="padding:11px 16px;color:#cbd5e1;border-bottom:1px solid #0f172a">Pick list distribution</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Printed paper, morning only</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Real-time, zone-optimised, mobile</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:11px 16px;color:#cbd5e1">Daily ops report</td>
+            <td style="text-align:center;color:#f87171">Friday Excel, 1 hr to build</td>
+            <td style="text-align:center;color:#34d399">6 PM daily, auto-generated</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="stat-grid" style="margin-top:26px">
+      <div class="stat"><div class="number green">87%</div><div class="label">Reduction in manual data entry</div></div>
+      <div class="stat"><div class="number accent">0</div><div class="label">Stockouts in 30 days post-deploy</div></div>
+      <div class="stat"><div class="number amber">$24K</div><div class="label">Overpayments caught in month 1</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- COMPARISON SECTION                        -->
+  <!-- ══════════════════════════════════════════ -->
+
+  <!-- ── S12: Section Break ── -->
+  <div class="slide" id="s-comp-intro" style="background:radial-gradient(ellipse at 50% 50%, #0f172a 0%, #0b0f1a 80%)">
+    <div class="pill pill-rose">The Competition</div>
+    <h1 style="text-align:center">How does Hermes<br/><span class="accent">stack up?</span></h1>
+    <p style="margin-top:18px;font-size:1.1rem;color:#64748b;text-align:center">
+      Comparing four leading AI agents — honestly.
+    </p>
+    <div style="display:flex;gap:28px;margin-top:40px;flex-wrap:wrap;justify-content:center">
+      <div style="text-align:center;padding:14px 20px;background:#131929;border:1px solid #1e293b;border-radius:12px">
+        <div style="font-size:1.6rem">🐍</div>
+        <div style="font-size:.85rem;margin-top:6px;color:#818cf8;font-weight:700">Hermes</div>
+        <div style="font-size:.72rem;color:#475569">Nous Research</div>
+      </div>
+      <div style="text-align:center;padding:14px 20px;background:#131929;border:1px solid #1e293b;border-radius:12px">
+        <div style="font-size:1.6rem">🦞</div>
+        <div style="font-size:.85rem;margin-top:6px;color:#34d399;font-weight:700">OpenClaw</div>
+        <div style="font-size:.72rem;color:#475569">Open Foundation</div>
+      </div>
+      <div style="text-align:center;padding:14px 20px;background:#131929;border:1px solid #1e293b;border-radius:12px">
+        <div style="font-size:1.6rem">🤖</div>
+        <div style="font-size:.85rem;margin-top:6px;color:#22d3ee;font-weight:700">Claude Code</div>
+        <div style="font-size:.72rem;color:#475569">Anthropic</div>
+      </div>
+      <div style="text-align:center;padding:14px 20px;background:#131929;border:1px solid #1e293b;border-radius:12px">
+        <div style="font-size:1.6rem">⚡</div>
+        <div style="font-size:.85rem;margin-top:6px;color:#fbbf24;font-weight:700">OpenAI Codex</div>
+        <div style="font-size:.72rem;color:#475569">OpenAI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S13: Identity Cards ── -->
+  <div class="slide" id="s-cards">
+    <div class="pill pill-rose">Meet the Players</div>
+    <h2>Four Agents, <span class="accent">Four Philosophies</span></h2>
+    <div class="grid grid-2" style="max-width:900px">
+      <div class="card" style="border-color:#4f46e5">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.6rem">🐍</span>
+          <div><h3 class="accent">Hermes</h3><span style="font-size:.75rem;color:#475569">Open LLM · Nous Research</span></div>
+        </div>
+        <p>A fine-tuned open-weights model you <strong>own and run anywhere</strong>. The engine behind agent pipelines — you bring the scaffolding.</p>
+        <div style="margin-top:10px;font-size:.82rem;color:#6366f1">★ Best-in-class function calling · 100% private · free</div>
+      </div>
+      <div class="card" style="border-color:#34d399">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.6rem">🦞</span>
+          <div><h3 class="green">OpenClaw</h3><span style="font-size:.75rem;color:#475569">Personal Agent · 247K ★ on GitHub</span></div>
+        </div>
+        <p>Self-hosted <em>personal</em> AI assistant ("the lobster way"). Plug-and-play with <strong>50+ integrations</strong>. Mobile app included. Bring your own API key.</p>
+        <div style="margin-top:10px;font-size:.82rem;color:#34d399">★ No subscription · memory across sessions · every OS</div>
+      </div>
+      <div class="card" style="border-color:#22d3ee">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.6rem">🤖</span>
+          <div><h3 class="cyan">Claude Code</h3><span style="font-size:.75rem;color:#475569">Coding Agent · Anthropic</span></div>
+        </div>
+        <p>Terminal CLI that <strong>reads, edits, tests, and commits</strong> code. Supervised and interactive — you stay in the loop at every step.</p>
+        <div style="margin-top:10px;font-size:.82rem;color:#22d3ee">★ Deep codebase understanding · git-native · safe by design</div>
+      </div>
+      <div class="card" style="border-color:#fbbf24">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.6rem">⚡</span>
+          <div><h3 class="amber">OpenAI Codex</h3><span style="font-size:.75rem;color:#475569">Cloud Agent · OpenAI · GPT-5.4</span></div>
+        </div>
+        <p>Cloud sandboxes with <strong>parallel agents</strong>. Computer use, 90+ plugins, automatic PRs, security scanning — autonomous at scale.</p>
+        <div style="margin-top:10px;font-size:.82rem;color:#fbbf24">★ Weeks of work in days · no local setup · enterprise-grade</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S14a: Hermes Deep Dive ── -->
+  <div class="slide" id="s-hermes-deep">
+    <div class="pill pill-blue">🐍 Deep Dive</div>
+    <h2><span class="accent">Hermes</span> — Use Cases, Advantages &amp; Why</h2>
+    <div class="grid grid-3" style="max-width:960px">
+      <div class="card" style="border-top:3px solid #6366f1">
+        <h3 class="accent" style="margin-bottom:14px">🗂️ Use Cases</h3>
+        <ul style="font-size:.86rem">
+          <li>Custom AI pipelines &amp; agents</li>
+          <li>Structured JSON extraction from docs</li>
+          <li>Private enterprise Q&amp;A over internal data</li>
+          <li>RAG (Retrieval-Augmented Generation)</li>
+          <li>Edge &amp; embedded device deployment</li>
+          <li>Fine-tuning on your own domain data</li>
+          <li>Academic &amp; NLP research</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #818cf8">
+        <h3 style="color:#818cf8;margin-bottom:14px">⚡ Advantages</h3>
+        <ul style="font-size:.86rem">
+          <li>#1 open model for function calling</li>
+          <li>100% offline — zero data egress</li>
+          <li>Open weights — inspect &amp; modify freely</li>
+          <li>No subscription, no API bill</li>
+          <li>Runs on consumer GPU or CPU</li>
+          <li>Compatible with OpenAI SDK</li>
+          <li>Active Nous Research community</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #34d399">
+        <h3 class="green" style="margin-bottom:14px">💡 Why Use It</h3>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Own your AI.</strong> Hermes gives you full sovereignty — your model, your data, your rules.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">No vendor lock-in.</strong> Deploy to any cloud, any edge, any air-gapped environment.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8">
+          <strong style="color:#e2e8f0">Build anything.</strong> It's the brain — you choose the body. Pair with LangChain, CrewAI, or your own framework.
+        </p>
+      </div>
+    </div>
+    <div class="callout" style="max-width:960px;margin-top:18px;font-size:.88rem">
+      <span class="accent">Real example:</span> A healthcare company uses Hermes on-prem to extract structured data from patient notes — HIPAA compliant, zero cloud, free to run.
+    </div>
+  </div>
+
+  <!-- ── S14b: OpenClaw Deep Dive ── -->
+  <div class="slide" id="s-openclaw-deep">
+    <div class="pill pill-green">🦞 Deep Dive</div>
+    <h2><span class="green">OpenClaw</span> — Use Cases, Advantages &amp; Why</h2>
+    <div class="grid grid-3" style="max-width:960px">
+      <div class="card" style="border-top:3px solid #34d399">
+        <h3 class="green" style="margin-bottom:14px">🗂️ Use Cases</h3>
+        <ul style="font-size:.86rem">
+          <li>Personal daily assistant (email, calendar, Slack)</li>
+          <li>Smart home &amp; IoT automation</li>
+          <li>Research &amp; web browsing on command</li>
+          <li>Music &amp; media control via voice/chat</li>
+          <li>Meeting notes &amp; action-item tracking</li>
+          <li>Cross-app workflows (Notion → Slack → Gmail)</li>
+          <li>Running tasks while you sleep</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #059669">
+        <h3 style="color:#6ee7b7;margin-bottom:14px">⚡ Advantages</h3>
+        <ul style="font-size:.86rem">
+          <li>247,000+ GitHub stars — massive community</li>
+          <li>50+ integrations out of the box</li>
+          <li>Works on every OS (Mac, Windows, Linux)</li>
+          <li>Mobile app — control from your phone</li>
+          <li>Persistent memory across sessions</li>
+          <li>Multi-model: swap GPT / Claude / Gemini</li>
+          <li>Zero subscription — BYOK (bring your own key)</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #6ee7b7">
+        <h3 style="color:#6ee7b7;margin-bottom:14px">💡 Why Use It</h3>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Replaces 5 tools.</strong> Email manager, to-do app, smart home controller, research bot, and scheduler — in one agent.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Works without you.</strong> Schedule tasks, get morning briefings, have it act while you're away.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8">
+          <strong style="color:#e2e8f0">Privacy first.</strong> Self-hosted. Your data never leaves your machine — unlike cloud SaaS alternatives.
+        </p>
+      </div>
+    </div>
+    <div class="callout" style="max-width:960px;margin-top:18px;font-size:.88rem">
+      <span class="green">Real example:</span> A freelancer uses OpenClaw to auto-summarise client emails, update Notion tasks, and send a daily briefing to their phone — zero manual effort.
+    </div>
+  </div>
+
+  <!-- ── S14c: Claude Code Deep Dive ── -->
+  <div class="slide" id="s-claudecode-deep">
+    <div class="pill" style="background:#0c2a3b;color:#22d3ee;border:1px solid #0e4f6d">🤖 Deep Dive</div>
+    <h2><span class="cyan">Claude Code</span> — Use Cases, Advantages &amp; Why</h2>
+    <div class="grid grid-3" style="max-width:960px">
+      <div class="card" style="border-top:3px solid #22d3ee">
+        <h3 class="cyan" style="margin-bottom:14px">🗂️ Use Cases</h3>
+        <ul style="font-size:.86rem">
+          <li>Reading &amp; navigating large codebases</li>
+          <li>Bug fixing with root-cause analysis</li>
+          <li>Test generation (unit, integration, e2e)</li>
+          <li>Large-scale refactors across many files</li>
+          <li>Auto-creating pull requests with summaries</li>
+          <li>Code review &amp; security auditing</li>
+          <li>Documentation generation from code</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #0891b2">
+        <h3 style="color:#67e8f9;margin-bottom:14px">⚡ Advantages</h3>
+        <ul style="font-size:.86rem">
+          <li>200K token context — reads whole repos</li>
+          <li>Git-native: commits, diffs, PRs all built-in</li>
+          <li>Transparent — shows every change before applying</li>
+          <li>Multi-agent SDK for parallel sub-tasks</li>
+          <li>Works in VS Code, JetBrains, terminal</li>
+          <li>MCP (Model Context Protocol) for tool plugins</li>
+          <li>Supervised &amp; safe by design</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #67e8f9">
+        <h3 style="color:#67e8f9;margin-bottom:14px">💡 Why Use It</h3>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Trusted pair programmer.</strong> You stay in control — Claude Code asks, suggests, and waits for approval on risky actions.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Understands your whole project.</strong> Not just the open file — the entire codebase, tests, git history, and dependencies.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8">
+          <strong style="color:#e2e8f0">Professional-grade.</strong> Built for engineers who need to ship reliable code, not just autocomplete lines.
+        </p>
+      </div>
+    </div>
+    <div class="callout" style="max-width:960px;margin-top:18px;font-size:.88rem">
+      <span class="cyan">Real example:</span> A backend team uses Claude Code to refactor a 40-file authentication module — it reads all files, proposes a plan, executes changes, runs tests, and opens a PR.
+    </div>
+  </div>
+
+  <!-- ── S14d: OpenAI Codex Deep Dive ── -->
+  <div class="slide" id="s-codex-deep">
+    <div class="pill pill-amber">⚡ Deep Dive</div>
+    <h2><span class="amber">OpenAI Codex</span> — Use Cases, Advantages &amp; Why</h2>
+    <div class="grid grid-3" style="max-width:960px">
+      <div class="card" style="border-top:3px solid #fbbf24">
+        <h3 class="amber" style="margin-bottom:14px">🗂️ Use Cases</h3>
+        <ul style="font-size:.86rem">
+          <li>Autonomous feature development overnight</li>
+          <li>Cross-repo migrations at enterprise scale</li>
+          <li>Parallel agents tackling multiple bugs at once</li>
+          <li>Security vulnerability scanning &amp; patching</li>
+          <li>CI/CD pipeline integration</li>
+          <li>Computer use — clicking &amp; interacting with apps</li>
+          <li>Business workflow automation (Jira, Confluence, GitLab)</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #d97706">
+        <h3 style="color:#fcd34d;margin-bottom:14px">⚡ Advantages</h3>
+        <ul style="font-size:.86rem">
+          <li>Powered by GPT-5.4 — frontier performance</li>
+          <li>Infinite context via compaction</li>
+          <li>90+ plugins (Jira, CircleCI, GitLab, MS Suite…)</li>
+          <li>Parallel agents — weeks of work in days</li>
+          <li>Native computer use (sees, clicks, types)</li>
+          <li>Codex Security: 1.2M commits tested, finds CVEs</li>
+          <li>Cloud sandboxes — no local setup needed</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #fcd34d">
+        <h3 style="color:#fcd34d;margin-bottom:14px">💡 Why Use It</h3>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Fully autonomous.</strong> Assign it a goal on Friday evening. Review the completed PRs Monday morning.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8;margin-bottom:10px">
+          <strong style="color:#e2e8f0">Scales horizontally.</strong> One engineer + parallel Codex agents = output of a full team.
+        </p>
+        <p style="font-size:.86rem;color:#94a3b8">
+          <strong style="color:#e2e8f0">Zero setup.</strong> No GPU, no local install — just log in, connect your repo, and go.
+        </p>
+      </div>
+    </div>
+    <div class="callout" style="max-width:960px;margin-top:18px;font-size:.88rem">
+      <span class="amber">Real example:</span> A startup runs 8 Codex agents in parallel on a weekend — each migrates a different service from Python 3.9 → 3.12, opens PRs, and runs CI. Done by Monday.
+    </div>
+  </div>
+
+  <!-- ── S14: Feature Matrix ── -->
+  <div class="slide" id="s-matrix">
+    <div class="pill pill-rose">Side by Side</div>
+    <h2>Feature <span class="accent">Matrix</span></h2>
+    <div style="width:100%;max-width:900px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px 14px;color:#64748b;border-bottom:1px solid #1e293b;width:22%">Feature</th>
+            <th style="padding:10px 14px;color:#818cf8;border-bottom:1px solid #1e293b;text-align:center">🐍 Hermes</th>
+            <th style="padding:10px 14px;color:#34d399;border-bottom:1px solid #1e293b;text-align:center">🦞 OpenClaw</th>
+            <th style="padding:10px 14px;color:#22d3ee;border-bottom:1px solid #1e293b;text-align:center">🤖 Claude Code</th>
+            <th style="padding:10px 14px;color:#fbbf24;border-bottom:1px solid #1e293b;text-align:center">⚡ Codex</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#131929">
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Open Source</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ weights</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ full</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">❌</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">❌</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Runs Locally</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ CLI</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">☁️ cloud</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Data Privacy</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ 100%</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ 100%</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">⚠️ API</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">❌ cloud</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Tool / Function Calling</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★★</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★☆</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★★</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★★</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Code Intelligence</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★☆</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#fbbf24">★★★☆☆</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★★</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">★★★★★</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Persistent Memory</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">DIY</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ built-in</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">⚠️ CLAUDE.md</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">⚠️ limited</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Mobile App</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">❌</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">❌</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Autonomous / No-human</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">DIY</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a;color:#fbbf24">⚠️ supervised</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">✅ parallel</td>
+          </tr>
+          <tr style="background:#131929">
+            <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Cost</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">Free</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">Free + key</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">API / sub</td>
+            <td style="text-align:center;border-bottom:1px solid #0f172a">Paid</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;color:#cbd5e1">Context Window</td>
+            <td style="text-align:center">128K</td>
+            <td style="text-align:center">model-dep.</td>
+            <td style="text-align:center">200K</td>
+            <td style="text-align:center">∞ compacted</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── S15: Pick Your Fighter ── -->
+  <div class="slide" id="s-pick">
+    <div class="pill pill-rose">Decision Guide</div>
+    <h2>Pick Your <span class="accent">Fighter</span></h2>
+    <div class="grid grid-2" style="max-width:880px">
+      <div class="card" style="border-left:4px solid #6366f1;border-radius:0 14px 14px 0">
+        <span style="font-size:1.4rem">🐍</span>
+        <h3 class="accent" style="margin:6px 0 4px">Choose Hermes if…</h3>
+        <ul style="font-size:.88rem">
+          <li>You're building your own agent pipeline</li>
+          <li>100% offline / air-gapped is a requirement</li>
+          <li>You need best-in-class structured output</li>
+          <li>You want to fine-tune on your own data</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid #34d399;border-radius:0 14px 14px 0">
+        <span style="font-size:1.4rem">🦞</span>
+        <h3 class="green" style="margin:6px 0 4px">Choose OpenClaw if…</h3>
+        <ul style="font-size:.88rem">
+          <li>You want a personal always-on assistant</li>
+          <li>You need 50+ app integrations out of the box</li>
+          <li>Mobile access matters to you</li>
+          <li>You don't want to pay a subscription</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid #22d3ee;border-radius:0 14px 14px 0">
+        <span style="font-size:1.4rem">🤖</span>
+        <h3 class="cyan" style="margin:6px 0 4px">Choose Claude Code if…</h3>
+        <ul style="font-size:.88rem">
+          <li>You're doing deep, complex software work</li>
+          <li>You want to stay in the loop — supervised AI</li>
+          <li>You work in a professional dev team</li>
+          <li>Git, tests, and refactors are daily life</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid #fbbf24;border-radius:0 14px 14px 0">
+        <span style="font-size:1.4rem">⚡</span>
+        <h3 class="amber" style="margin:6px 0 4px">Choose Codex if…</h3>
+        <ul style="font-size:.88rem">
+          <li>You want it to just <em>go</em> — no babysitting</li>
+          <li>Parallel agents across multiple repos</li>
+          <li>Enterprise scale with security scanning</li>
+          <li>Cloud-first, no local GPU needed</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="max-width:880px;margin-top:18px;font-size:.9rem">
+      <span class="accent">Pro tip:</span> The best setups combine them — Hermes as the brain, OpenClaw for personal tasks, Claude Code for coding sessions, Codex for overnight autonomous runs.
+    </div>
+  </div>
+
+  <!-- ── S11: Closing ── -->
+  <div class="slide" id="s-close" style="background:radial-gradient(ellipse at 40% 60%, #1a1040 0%, #0b0f1a 70%)">
+    <div class="hero-glow" style="left:40%;top:60%"></div>
+    <div class="pill pill-blue">Thank You</div>
+    <h1 style="text-align:center">Start <span class="accent">Small</span>,<br/>Think <span class="green">Agent</span>.</h1>
+    <p style="margin-top:22px;max-width:580px;text-align:center;font-size:1.1rem">
+      Every great AI system starts with one conversation.<br/>
+      Add tools. Add loops. Add agents. Let Hermes do the rest.
+    </p>
+    <div style="display:flex;gap:24px;margin-top:36px;flex-wrap:wrap;justify-content:center">
+      <div style="text-align:center">
+        <div style="color:#64748b;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Models</div>
+        <div style="color:#818cf8;font-size:.95rem">huggingface.co/NousResearch</div>
+      </div>
+      <div style="text-align:center">
+        <div style="color:#64748b;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Run Locally</div>
+        <div style="color:#818cf8;font-size:.95rem">ollama.com</div>
+      </div>
+      <div style="text-align:center">
+        <div style="color:#64748b;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Community</div>
+        <div style="color:#818cf8;font-size:.95rem">discord.gg/nousresearch</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- ── Nav ── -->
+<div id="nav">
+  <button class="nav-btn" id="prev" title="Previous (←)">&#8592;</button>
+  <span id="progress-text">1 / 12</span>
+  <button class="nav-btn" id="next" title="Next (→)">&#8594;</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total  = slides.length;
+  let   cur    = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('exit');
+    const prev = cur;
+    setTimeout(() => slides[prev].classList.remove('exit'), 500);
+    cur = n;
+    slides[cur].classList.add('active');
+    document.getElementById('progress-text').textContent = `${cur + 1} / ${total}`;
+    animateBars();
+  }
+
+  document.getElementById('next').onclick = () => goTo(cur + 1);
+  document.getElementById('prev').onclick = () => goTo(cur - 1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ')  goTo(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  goTo(cur - 1);
+  });
+
+  // Touch / swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) goTo(cur + (dx < 0 ? 1 : -1));
+  });
+
+  // Animate progress bars when their slide becomes active
+  function animateBars() {
+    const active = slides[cur];
+    active.querySelectorAll('.bar-fill').forEach(bar => {
+      const w = bar.dataset.w;
+      setTimeout(() => { bar.style.width = w + '%'; }, 100);
+    });
+  }
+
+  // Init first slide bars
+  animateBars();
+</script>
+</body>
+</html>

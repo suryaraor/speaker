@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>04 - Feature Engineering: Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #F5956D 0%, #FF9B50 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 0.95em;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .architecture-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #F5956D 0%, #FF9B50 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        /* Core Principle */
+        .core-principle {
+            background: linear-gradient(135deg, #fff8f3 0%, #ffe5d0 100%);
+            border-left: 5px solid #FF9B50;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .principle-icon {
+            font-size: 2.5em;
+            float: left;
+            margin-right: 20px;
+        }
+
+        /* Feature Categories */
+        .feature-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .feature-category {
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 4px solid white;
+        }
+
+        .feature-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .feature-category.temporal {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+        }
+
+        .feature-category.categorical {
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+        }
+
+        .feature-category.velocity {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-category.derived {
+            background: linear-gradient(135deg, #F5956D 0%, #FF9B50 100%);
+        }
+
+        .feature-category h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-category p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .feature-category ul {
+            list-style: none;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .feature-category li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-category li:before {
+            content: "▸";
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Feature Flow */
+        .feature-flow {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .flow-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flow-diagram {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            padding: 20px 0;
+            align-items: center;
+        }
+
+        .flow-step {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 0 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            border-top: 4px solid #FF9B50;
+        }
+
+        .flow-step h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .flow-step p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .flow-arrow {
+            flex-shrink: 0;
+            font-size: 2em;
+            color: #FF9B50;
+            font-weight: bold;
+        }
+
+        /* Raw vs Processed Data */
+        .data-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .data-box {
+            border-radius: 12px;
+            padding: 30px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+        }
+
+        .data-box h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-box.raw {
+            border-left: 5px solid #FF6B6B;
+        }
+
+        .data-box.processed {
+            border-left: 5px solid #48BB78;
+        }
+
+        .data-sample {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        /* Feature Engineering Rules */
+        .rules-section {
+            background: linear-gradient(135deg, #fff5f5 0%, #fee6e6 100%);
+            border: 2px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .rules-title {
+            color: #FF6B6B;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .rule {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #FF9B50;
+            transition: all 0.3s ease;
+        }
+
+        .rule:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(255, 155, 80, 0.2);
+        }
+
+        .rule h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .rule p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        /* Key Insights */
+        .insights-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        .insights-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .insight-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #FF9B50;
+        }
+
+        .insight-box h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        /* Code Example */
+        .code-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 40px 0;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            color: #f8f8f2;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .code-block {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-comment { color: #75715e; }
+        .code-keyword { color: #66d9ef; }
+        .code-string { color: #e6db74; }
+        .code-class { color: #a1efe4; }
+
+        /* Metadata Benefits */
+        .metadata-section {
+            background: linear-gradient(135deg, #fff5f5 0%, #fee6e6 100%);
+            border: 2px solid #FF9B50;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .metadata-title {
+            color: #FF6B6B;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        .metadata-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .metadata-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #FF9B50;
+        }
+
+        .metadata-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .metadata-item p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .data-comparison {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .architecture-section {
+                padding: 30px;
+            }
+
+            .flow-diagram {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Feature Engineering in Java</h1>
+            <p class="subtitle">Where Domain Knowledge Lives • The Heart of Enterprise ML</p>
+            <p class="tagline">Temporal Features • Categorical Encoding • Velocity Tracking • Amount Normalization</p>
+        </header>
+
+        <div class="architecture-section">
+            <h2 class="section-title">
+                <span class="section-icon">🧠</span>
+                Feature Engineering: The Most Important Layer
+            </h2>
+
+            <!-- Core Principle -->
+            <div class="core-principle">
+                <span class="principle-icon">💡</span>
+                <strong>Core Principle:</strong> Feature engineering is where the domain knowledge lives — and that knowledge belongs in Java. Business data access, merchant risk tables, geo risk databases, and business rules are already wired up in Java. The ML model should only see clean, numeric features — not raw domain objects.
+            </div>
+
+            <!-- Feature Categories -->
+            <h3 style="color: #333; margin-top: 50px; margin-bottom: 30px; font-size: 1.5em;">🔧 Feature Engineering Categories</h3>
+            <div class="feature-categories">
+                <div class="feature-category temporal">
+                    <h3>
+                        <span>⏰</span>
+                        Temporal Features
+                    </h3>
+                    <p>Time-based risk signals extracted from transaction timestamp:</p>
+                    <ul>
+                        <li><strong>Hour of Day</strong> (0-23) — fraud peaks at 2-4 AM</li>
+                        <li><strong>Day of Week</strong> (0-6) — weekend patterns differ</li>
+                        <li><strong>Is Overnight</strong> (bool) — overnight = higher risk</li>
+                        <li><strong>Is Weekend</strong> (bool) — weekend fraud profile distinct</li>
+                    </ul>
+                </div>
+
+                <div class="feature-category categorical">
+                    <h3>
+                        <span>🏷️</span>
+                        Categorical Encoding
+                    </h3>
+                    <p>Domain knowledge → normalized risk scores:</p>
+                    <ul>
+                        <li><strong>Merchant Category</strong> → 0.0-1.0 risk</li>
+                        <li><strong>Country Code</strong> (ISO-2) → geo risk</li>
+                        <li><strong>Channel</strong> (ONLINE, ATM, etc) → risk</li>
+                        <li><strong>Domain Lookup Tables</strong> — pre-computed risk scores</li>
+                    </ul>
+                </div>
+
+                <div class="feature-category velocity">
+                    <h3>
+                        <span>📊</span>
+                        Velocity Features
+                    </h3>
+                    <p>Detects abnormal transaction bursts:</p>
+                    <ul>
+                        <li><strong>Txn 1h</strong> — count in last 1 hour</li>
+                        <li><strong>Txn 24h</strong> — count in last 24 hours</li>
+                        <li><strong>Txn 30d</strong> — count in last 30 days</li>
+                        <li><strong>Requires VelocityStore</strong> — Redis or in-memory cache</li>
+                    </ul>
+                </div>
+
+                <div class="feature-category derived">
+                    <h3>
+                        <span>📈</span>
+                        Derived Ratios
+                    </h3>
+                    <p>Complex features from amount + history:</p>
+                    <ul>
+                        <li><strong>Amount Normalized</strong> — log1p(amount)</li>
+                        <li><strong>Avg Amount 7d</strong> — rolling average</li>
+                        <li><strong>Amount to Avg Ratio</strong> — detects abnormal spends</li>
+                        <li><strong>Requires Transaction History</strong> — time-series cache</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Feature Flow -->
+            <div class="feature-flow">
+                <h3 class="flow-title">
+                    <span>🔄</span>
+                    Feature Engineering Pipeline
+                </h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <h4>Raw Transaction</h4>
+                        <p>accountId, amount, timestamp, merchant, country, channel</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <h4>Temporal</h4>
+                        <p>Extract hour, day, overnight flag, weekend flag</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <h4>Categorical</h4>
+                        <p>Lookup risks: merchant, country, channel</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <h4>Velocity</h4>
+                        <p>Query counts: last 1h, 24h, 30d</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <h4>Derived</h4>
+                        <p>Ratios: normalized amount, avg ratio, burst detection</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <h4>ML Features</h4>
+                        <p>~12 clean numeric features ready for model</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw vs Processed -->
+            <h3 style="color: #333; margin-top: 40px; margin-bottom: 30px; font-size: 1.5em;">📊 Raw Data vs. ML Features</h3>
+            <div class="data-comparison">
+                <div class="data-box raw">
+                    <h3>
+                        <span>❌</span>
+                        Raw Transaction (Not for ML)
+                    </h3>
+                    <div class="data-sample">{
+  "transactionId": "TXN-12345",
+  "accountId": "ACC-100",
+  "amount": 1850.00,
+  "timestamp": "2026-05-26T02:30:00Z",
+  "merchantId": "MERCH-CRYPTO-999",
+  "merchantCategory": "CRYPTO",
+  "countryCode": "NG",
+  "channel": "ONLINE",
+  "ipAddress": "41.203.150.200"
+}</div>
+                    <p style="margin-top: 15px; color: #EE5A6F;"><strong>⚠️ Problem:</strong> Contains non-numeric data, requires domain knowledge to interpret, not normalized.</p>
+                </div>
+
+                <div class="data-box processed">
+                    <h3>
+                        <span>✅</span>
+                        Engineered Features (ML-Ready)
+                    </h3>
+                    <div class="data-sample">{
+  "amountNormalized": 7.522,
+  "hourOfDay": 2,
+  "dayOfWeek": 5,
+  "merchantRiskScore": 0.85,
+  "geoRiskScore": 0.75,
+  "channelRiskScore": 0.30,
+  "txn1h": 1,
+  "txn24h": 3,
+  "txn30d": 18,
+  "avgAmount7d": 245.50,
+  "amountToAvgRatio": 7.54,
+  "velocity1hBurst": true
+}</div>
+                    <p style="margin-top: 15px; color: #48BB78;"><strong>✓ Solution:</strong> All numeric, normalized, domain-enriched, ready for RandomForest.</p>
+                </div>
+            </div>
+
+            <!-- Feature Engineering Rules -->
+            <div class="rules-section">
+                <h3 class="rules-title">
+                    <span>📋</span>
+                    Feature Engineering Best Practices
+                </h3>
+                <div class="rules-grid">
+                    <div class="rule">
+                        <h4>🔢 Always Normalize Amount</h4>
+                        <p>Use log1p(amount) to reduce skew from large outliers. Fraud amounts follow long-tail distribution — ML models handle log-space better.</p>
+                    </div>
+                    <div class="rule">
+                        <h4>🏠 Keep Domain Knowledge Separate</h4>
+                        <p>Risk lookup tables (merchant, geo, channel) belong in Java config/database, not hardcoded in models. Easy to update business rules without retraining.</p>
+                    </div>
+                    <div class="rule">
+                        <h4>📚 Preserve Raw Values in Metadata</h4>
+                        <p>Alongside normalized features, keep original values for debugging, audit trails, and explainability. "Why was this flagged?" — check metadata.</p>
+                    </div>
+                    <div class="rule">
+                        <h4>⏱️ Use Velocity with Caution</h4>
+                        <p>Velocity features require state management (Redis, in-memory cache). Cold-start problem for new accounts. Consider time-decay functions for old transactions.</p>
+                    </div>
+                    <div class="rule">
+                        <h4>🎯 Feature Independence</h4>
+                        <p>Avoid highly correlated features (e.g., amount and log-amount together). More features ≠ better. Domain knowledge guides feature selection.</p>
+                    </div>
+                    <div class="rule">
+                        <h4>🔄 Track Feature Definitions</h4>
+                        <p>Document every feature: source, transformation, normalization. Version your feature definitions. Retraining with different features invalidates old models.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Insights -->
+            <div class="insights-section">
+                <h3 class="insights-title">
+                    <span>💡</span>
+                    Key Insights from the Talk
+                </h3>
+                <div class="insight-box">
+                    <h4>🏗️ Enterprise ML Success = 80% Feature Engineering</h4>
+                    <p>The model is only 20%. The other 80% is getting clean, relevant features. Spend time on domain understanding, business rule translation, and data quality.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>☕ Feature Engineering Belongs in Java</h4>
+                    <p>Because: (1) Business rules are in Java, (2) Database connections are in Java, (3) Merchant/geo tables are Java, (4) Team owns the code. Don't separate concerns artificially.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>🔗 The ML Model is Dumb</h4>
+                    <p>The model only knows how to find patterns. It doesn't know "2 AM is risky" or "Nigeria is high-risk" — YOU tell it via features. Garbage in = garbage out.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>🎯 Feature Engineering is Iterative</h4>
+                    <p>Start simple. Measure model performance. Add features strategically. Backtest against historical fraud. Don't over-engineer. Simpler = faster + easier to explain.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>📊 Explainability Starts with Features</h4>
+                    <p>If fraud alerts are hard to explain to Risk Ops, check your features. Keep metadata. Include "why" alongside predictions: "CRYPTO + NG + 2AM + high velocity = HIGH RISK".</p>
+                </div>
+            </div>
+
+            <!-- Code Example -->
+            <div class="code-section">
+                <h3>💻 Java Feature Engineering Code</h3>
+                <div class="code-block">
+<span class="code-comment">// FeatureEngineer: Core feature extraction logic</span>
+<span class="code-keyword">public</span> <span class="code-class">TransactionFeatures</span> extract(<span class="code-class">Transaction</span> txn) {
+    <span class="code-comment">// Temporal features</span>
+    <span class="code-keyword">int</span> hourOfDay = txn.timestamp().getHour();
+    <span class="code-keyword">int</span> dayOfWeek = txn.timestamp().getDayOfWeek().getValue();
+    
+    <span class="code-comment">// Categorical encoding via lookup tables</span>
+    <span class="code-keyword">double</span> merchantRisk = merchantRiskTable.get(txn.merchantCategory());
+    <span class="code-keyword">double</span> geoRisk = geoRiskTable.get(txn.location());
+    
+    <span class="code-comment">// Velocity features via cache query</span>
+    <span class="code-keyword">int</span> count1h = velocityStore.getCount(<span class="code-string">"1h"</span>, txn.accountId());
+    <span class="code-keyword">int</span> count30d = velocityStore.getCount(<span class="code-string">"30d"</span>, txn.accountId());
+    
+    <span class="code-comment">// Derived ratios</span>
+    <span class="code-keyword">double</span> amountNormalized = Math.log1p(txn.amount());
+    <span class="code-keyword">double</span> avgAmount = historyStore.getAvgAmount7d(txn.accountId());
+    <span class="code-keyword">double</span> amountRatio = txn.amount() / Math.max(1, avgAmount);
+    
+    <span class="code-comment">// Return both features + metadata</span>
+    <span class="code-keyword">return</span> <span class="code-keyword">new</span> <span class="code-class">TransactionFeatures</span>(
+        amountNormalized, hourOfDay, dayOfWeek,
+        merchantRisk, geoRisk,
+        count1h, count30d, amountRatio,
+        <span class="code-class">Metadata</span>.of(txn)  <span class="code-comment">// Keep raw values</span>
+    );
+}
+                </div>
+            </div>
+
+            <!-- Metadata Benefits -->
+            <div class="metadata-section">
+                <h3 class="metadata-title">🏷️ Why Keep Metadata?</h3>
+                <div class="metadata-items">
+                    <div class="metadata-item">
+                        <strong>🔍 Debugging</strong>
+                        <p>When prediction is wrong, metadata shows you exactly what inputs led to the decision.</p>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>📋 Compliance & Audit</strong>
+                        <p>Regulators require "why was this flagged". Metadata provides full audit trail from raw data to features to decision.</p>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>🎯 Explainability</strong>
+                        <p>Risk Ops wants to understand: "Is it the amount, the time, the merchant, or the geography?" Metadata answers that.</p>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>📊 Feature Validation</strong>
+                        <p>Monitor feature distributions over time. Detect data drift. Compare raw vs engineered values to catch bugs.</p>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>🔄 Retraining</strong>
+                        <p>When retraining, you need to replay historical transactions through the same feature pipeline. Metadata helps rebuild context.</p>
+                    </div>
+                    <div class="metadata-item">
+                        <strong>🚀 Feature Evolution</strong>
+                        <p>Store metadata, then try new features. A/B test old vs new features on same raw data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Feature Engineering • Domain Knowledge in Java • ML-Ready Features • Explainability</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Created for CommunityDays KC 2026</p>
+    </footer>
+</body>
+</html>

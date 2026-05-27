@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>01 - Model as a Service: Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 0.95em;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* Architecture Section */
+        .architecture-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        /* Main Architecture Diagram */
+        .diagram-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 60px;
+            align-items: center;
+        }
+
+        .component {
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .component:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .component-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .component-title {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .component-subtitle {
+            font-size: 0.9em;
+            opacity: 0.85;
+            margin-bottom: 20px;
+        }
+
+        .component-list {
+            list-style: none;
+            font-size: 0.95em;
+        }
+
+        .component-list li {
+            padding: 10px 0;
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-list li:before {
+            content: "▸";
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Java Client Component */
+        .java-client {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+            border: 3px solid #FF5252;
+        }
+
+        /* Python ML Service Component */
+        .python-ml {
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            border: 3px solid #1ABC9C;
+        }
+
+        /* Data Flow */
+        .data-flow {
+            position: relative;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .arrow-container {
+            position: relative;
+            width: 100%;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .arrow {
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: translateY(-50%);
+            clip-path: polygon(0 50%, 70% 0, 70% 100%);
+            animation: float 1.5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { left: -20px; }
+            50% { left: calc(100% - 10px); }
+        }
+
+        .flow-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid #667eea;
+            font-size: 0.85em;
+            white-space: nowrap;
+            color: #333;
+        }
+
+        .flow-label.request {
+            color: #FF6B6B;
+        }
+
+        .flow-label.response {
+            color: #4ECDC4;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+        }
+
+        .detail-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .detail-card h3 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+
+        .detail-card p {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .detail-card.highlight-java {
+            border-left-color: #FF6B6B;
+            background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+        }
+
+        .detail-card.highlight-ai {
+            border-left-color: #4ECDC4;
+            background: linear-gradient(135deg, #e5f9f7 0%, #d6f3f0 100%);
+        }
+
+        /* Data Models Section */
+        .models-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .model-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .model-box h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .model-box code {
+            color: #555;
+            display: block;
+            line-height: 1.6;
+        }
+
+        .type-string { color: #c41e3a; }
+        .type-number { color: #0066cc; }
+        .type-boolean { color: #d73896; }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin-right: 30px;
+            margin-top: 5px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 5px rgba(102, 126, 234, 0.2);
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-content strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        /* Key Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-box:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .feature-box h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .feature-box p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        /* AI Interaction Highlight */
+        .ai-interaction {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(68, 160, 141, 0.1) 100%);
+            border: 2px dashed #4ECDC4;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 40px;
+        }
+
+        .ai-interaction h3 {
+            color: #1ABC9C;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
+        }
+
+        .ai-interaction-icon {
+            width: 30px;
+            height: 30px;
+            background: #4ECDC4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .ai-flow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .flow-step {
+            background: white;
+            border-left: 4px solid #4ECDC4;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .flow-step h4 {
+            color: #1ABC9C;
+            margin-bottom: 10px;
+        }
+
+        .flow-step p {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .step-number {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: #4ECDC4;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-comment { color: #75715e; }
+        .code-keyword { color: #66d9ef; }
+        .code-string { color: #e6db74; }
+        .code-class { color: #a1efe4; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .diagram-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .architecture-section {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .models-section {
+                grid-template-columns: 1fr;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .component {
+                padding: 20px;
+            }
+
+            .component-title {
+                font-size: 1.3em;
+            }
+
+            .component-icon {
+                font-size: 2em;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ Model as a Service</h1>
+            <p class="subtitle">REST Pattern: Python ML Service + Spring Boot Client</p>
+            <p class="tagline">Feature Engineering in Java • Inference in Python • REST API Contract</p>
+        </header>
+
+        <div class="architecture-section">
+            <h2 class="section-title">
+                <span class="section-icon">📐</span>
+                System Architecture
+            </h2>
+
+            <div class="diagram-container">
+                <!-- Java Spring Boot Client -->
+                <div class="component java-client">
+                    <div class="component-icon">☕</div>
+                    <div class="component-title">Spring Boot Client</div>
+                    <div class="component-subtitle">Java Application Layer</div>
+                    <ul class="component-list">
+                        <li>REST API Endpoints (/api/fraud/*)</li>
+                        <li>Feature Engineering Logic</li>
+                        <li>WebClient (Non-blocking)</li>
+                        <li>200ms Timeout + Fallback</li>
+                        <li>Transaction Processing</li>
+                        <li>Domain Knowledge</li>
+                    </ul>
+                </div>
+
+                <!-- Python ML Service -->
+                <div class="component python-ml">
+                    <div class="component-icon">🐍</div>
+                    <div class="component-title">FastAPI ML Service</div>
+                    <div class="component-subtitle">Python AI Layer</div>
+                    <ul class="component-list">
+                        <li>RandomForest Model (sklearn)</li>
+                        <li>Fraud Detection Inference</li>
+                        <li>Pydantic Validation</li>
+                        <li>Feature Importance Scores</li>
+                        <li>Health Monitoring</li>
+                        <li>Model Versioning</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Data Flow -->
+            <div class="data-flow">
+                <div class="arrow-container">
+                    <div class="arrow"></div>
+                    <div class="flow-label request">POST /predict/fraud (JSON)</div>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="details-grid">
+                <div class="detail-card highlight-java">
+                    <h3>🔧 Java: Feature Engineering</h3>
+                    <p>Business domain knowledge stays in the Java layer. Transforms raw transactions into ML-ready features (amount, hour, merchant risk, velocity, geo risk).</p>
+                </div>
+                <div class="detail-card highlight-ai">
+                    <h3>🤖 Python: AI Inference</h3>
+                    <p>Dedicated ML layer handles predictions. RandomForest model trained on synthetic fraud patterns. Returns fraud probability, risk level, and feature importances.</p>
+                </div>
+                <div class="detail-card">
+                    <h3>⚡ Non-blocking Calls</h3>
+                    <p>Spring Boot uses WebClient for async HTTP calls. 200ms SLA timeout prevents blocking. Graceful fallback when ML service is unavailable.</p>
+                </div>
+                <div class="detail-card">
+                    <h3>📊 Typed Contracts</h3>
+                    <p>Jackson Records (Java) ↔ Pydantic Models (Python). Strong typing ensures consistency across language boundaries.</p>
+                </div>
+                <div class="detail-card">
+                    <h3>🎯 API Pattern</h3>
+                    <p>RESTful endpoints for easy testing, monitoring, and scaling. Health checks and metrics endpoints included.</p>
+                </div>
+                <div class="detail-card">
+                    <h3>📈 Model Versioning</h3>
+                    <p>ML responses include version info. Easy to track which model version made predictions for debugging and compliance.</p>
+                </div>
+            </div>
+
+            <!-- Data Models Section -->
+            <h3 style="margin-top: 60px; color: #333; margin-bottom: 20px;">📋 Data Models</h3>
+            <div class="models-section">
+                <div class="model-box">
+                    <h4>Request: TransactionFeatures (From Java)</h4>
+                    <code>{
+  <span class="type-string">"amount"</span>: <span class="type-number">1850.0</span>,
+  <span class="type-string">"hour_of_day"</span>: <span class="type-number">3</span>,
+  <span class="type-string">"merchant_risk_score"</span>: <span class="type-number">0.8</span>,
+  <span class="type-string">"velocity_30d"</span>: <span class="type-number">22</span>,
+  <span class="type-string">"geo_risk_score"</span>: <span class="type-number">0.75</span>
+}</code>
+                </div>
+
+                <div class="model-box">
+                    <h4>Response: FraudScore (From Python)</h4>
+                    <code>{
+  <span class="type-string">"fraud_probability"</span>: <span class="type-number">0.92</span>,
+  <span class="type-string">"is_fraud"</span>: <span class="type-boolean">true</span>,
+  <span class="type-string">"model_version"</span>: <span class="type-string">"v1.0.0"</span>,
+  <span class="type-string">"risk_level"</span>: <span class="type-string">"HIGH"</span>,
+  <span class="type-string">"feature_importances"</span>: {...}
+}</code>
+                </div>
+            </div>
+
+            <!-- AI Interaction Flow -->
+            <div class="ai-interaction">
+                <h3>
+                    <span class="ai-interaction-icon">🔗</span>
+                    Java-AI Interaction Flow
+                </h3>
+                <div class="ai-flow-steps">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <h4>Client Request (Java)</h4>
+                        <p>Spring Boot receives raw transaction. Feature Engineer extracts 5 key features from transaction object.</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <h4>HTTP POST Request</h4>
+                        <p>WebClient sends TransactionFeatures as JSON to Python ML service with 200ms timeout.</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <h4>ML Inference (Python)</h4>
+                        <p>FastAPI receives request, validates with Pydantic, passes to RandomForest model for prediction.</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <h4>Return Score</h4>
+                        <p>Python calculates fraud probability, risk level, and feature importances. Returns FraudScore JSON.</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">5</div>
+                        <h4>Response Handling (Java)</h4>
+                        <p>Spring Boot receives response, maps to FraudScore Record, returns to REST client.</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">6</div>
+                        <h4>Fallback (Optional)</h4>
+                        <p>If Python service times out (200ms), return conservative fraud score to prevent fraud while system recovers.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Features -->
+            <h3 style="margin-top: 60px; color: #333; margin-bottom: 20px;">⭐ Key Features</h3>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon">🔀</div>
+                    <h4>Separation of Concerns</h4>
+                    <p>Business logic (Java) separate from ML logic (Python). Easy to evolve each independently.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">⚙️</div>
+                    <h4>Loose Coupling</h4>
+                    <p>REST API contract allows any language replacement. Could swap Python for Rust, Go, etc.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">⏱️</div>
+                    <h4>Async Non-blocking</h4>
+                    <p>WebClient doesn't block threads. Efficient under load. 200ms timeout prevents system hang.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🛡️</div>
+                    <h4>Graceful Degradation</h4>
+                    <p>When ML service fails, fallback strategy ensures system continues operating safely.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">📊</div>
+                    <h4>Model Transparency</h4>
+                    <p>Feature importances returned with every prediction. Explainable AI for audit/compliance.</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🔍</div>
+                    <h4>Easy Testing</h4>
+                    <p>HTTP endpoints mockable. Postman collection for integration testing. Health checks for monitoring.</p>
+                </div>
+            </div>
+
+            <!-- Request/Response Timeline -->
+            <h3 style="margin-top: 60px; color: #333; margin-bottom: 20px;">⏲️ Request/Response Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <strong>0ms: Client Request</strong>
+                        <p>Spring Boot receives transaction, creates FeatureEngineer, extracts features</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <strong>5-10ms: HTTP POST Sent</strong>
+                        <p>WebClient sends TransactionFeatures JSON to FastAPI endpoint</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <strong>10-50ms: ML Inference</strong>
+                        <p>RandomForest processes features, generates prediction probabilities and importances</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <strong>50-60ms: Response Sent</strong>
+                        <p>FastAPI returns FraudScore JSON with all details</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <strong>60-80ms: Client Receives</strong>
+                        <p>Spring Boot maps response to FraudScore record, applies business logic</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <strong>80-100ms: Response Ready</strong>
+                        <p>Fraud decision returned to REST client (well under 200ms SLA)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Example -->
+            <h3 style="margin-top: 60px; color: #333; margin-bottom: 20px;">💻 Code Integration Pattern</h3>
+            <div class="code-block">
+<span class="code-comment">// Java: Feature extraction</span>
+<span class="code-keyword">TransactionFeatures</span> features = featureEngineer.extract(transaction);
+
+<span class="code-comment">// Call Python ML service via WebClient</span>
+<span class="code-keyword">Mono</span>&lt;<span class="code-class">FraudScore</span>&gt; response = webClient
+    .post()
+    .uri(<span class="code-string">"http://localhost:8000/predict/fraud"</span>)
+    .bodyValue(features)
+    .timeout(<span class="code-keyword">Duration</span>.ofMillis(200))
+    .retrieve()
+    .bodyToMono(<span class="code-class">FraudScore</span>.class);
+
+<span class="code-comment">// Handle timeout gracefully</span>
+<span class="code-keyword">return</span> response.onErrorReturn(
+    <span class="code-keyword">new</span> <span class="code-class">FraudScore</span>(..., true, <span class="code-string">"FALLBACK"</span>)
+);
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Model as a Service • REST Pattern • Java ↔ Python • Feature Engineering • ML Inference</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Created for CommunityDays KC 2026</p>
+    </footer>
+</body>
+</html>

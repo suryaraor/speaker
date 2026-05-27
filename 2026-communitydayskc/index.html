@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>From Java to AI — Community Day KC 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  #deck {
+    width: 100vw; height: 100vh;
+    background: #0b0f1a;
+    color: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 56px 80px;
+    opacity: 0; transform: translateX(60px);
+    transition: opacity .5s ease, transform .5s ease;
+    pointer-events: none;
+  }
+  .slide.active  { opacity: 1; transform: translateX(0);   pointer-events: auto; }
+  .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+  h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.1; }
+  h2 { font-size: clamp(1.6rem, 3.5vw, 2.5rem); font-weight: 700; margin-bottom: 26px; }
+  h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+  p, li { font-size: clamp(.9rem, 1.7vw, 1.1rem); line-height: 1.7; color: #94a3b8; }
+  ul { list-style: none; padding: 0; }
+  li::before { content: '→ '; color: #6366f1; font-weight: 700; }
+
+  .accent { color: #6366f1; }
+  .green  { color: #34d399; }
+  .amber  { color: #fbbf24; }
+  .rose   { color: #f87171; }
+  .cyan   { color: #22d3ee; }
+  .purple { color: #c084fc; }
+
+  .pill {
+    display: inline-block;
+    padding: 4px 14px; border-radius: 999px;
+    font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .pill-blue  { background: #1e1b4b; color: #818cf8; border: 1px solid #3730a3; }
+  .pill-green { background: #064e3b; color: #34d399; border: 1px solid #065f46; }
+  .pill-amber { background: #451a03; color: #fbbf24; border: 1px solid #78350f; }
+  .pill-rose  { background: #4c0519; color: #f87171; border: 1px solid #9f1239; }
+  .pill-cyan  { background: #0c2a3b; color: #22d3ee; border: 1px solid #0e4f6d; }
+  .pill-purple{ background: #2e1065; color: #c084fc; border: 1px solid #6d28d9; }
+
+  .grid { display: grid; gap: 18px; width: 100%; max-width: 960px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: #131929; border: 1px solid #1e293b;
+    border-radius: 14px; padding: 22px 24px;
+    transition: border-color .25s, transform .25s;
+  }
+  .card:hover { border-color: #4f46e5; transform: translateY(-3px); }
+  .card .icon { font-size: 1.7rem; margin-bottom: 10px; }
+
+  .code-wrap {
+    background: #090d16; border: 1px solid #1e293b;
+    border-radius: 12px; padding: 20px 26px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: clamp(.74rem, 1.4vw, .88rem);
+    line-height: 1.75; width: 100%; max-width: 860px;
+    overflow-x: auto; text-align: left;
+  }
+  .kw  { color: #c084fc; }
+  .str { color: #86efac; }
+  .cmt { color: #475569; font-style: italic; }
+  .fn  { color: #67e8f9; }
+  .num { color: #fbbf24; }
+  .ann { color: #f87171; }
+
+  .stat-grid { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+  .stat {
+    text-align: center; background: #131929;
+    border: 1px solid #1e293b; border-radius: 14px; padding: 26px 34px;
+    min-width: 150px;
+  }
+  .stat .number { font-size: 2.6rem; font-weight: 800; }
+  .stat .label  { font-size: .82rem; color: #64748b; margin-top: 4px; }
+
+  .timeline { width: 100%; max-width: 800px; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 22px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, #6366f1, #22d3ee);
+  }
+  .tl-item { padding: 0 0 24px 56px; position: relative; }
+  .tl-dot {
+    position: absolute; left: 12px; top: 4px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #0b0f1a; border: 3px solid #6366f1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .62rem; font-weight: 800;
+  }
+  .tl-item h3 { color: #e2e8f0; }
+
+  .flow {
+    display: flex; align-items: center; gap: 0;
+    flex-wrap: wrap; justify-content: center;
+    width: 100%; max-width: 960px;
+  }
+  .flow-box {
+    background: #131929; border: 1px solid #334155;
+    border-radius: 10px; padding: 12px 16px;
+    text-align: center; min-width: 110px; font-size: .85rem;
+    font-weight: 600;
+  }
+  .flow-arrow { font-size: 1.4rem; color: #4f46e5; margin: 0 4px; }
+
+  .level-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; font-size: .9rem; }
+  .level-bar .name { width: 220px; flex-shrink: 0; color: #cbd5e1; }
+  .bar-track { flex: 1; height: 8px; background: #1e293b; border-radius: 999px; overflow: hidden; }
+  .bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #6366f1, #22d3ee);
+    width: 0; transition: width 1.2s cubic-bezier(.22,1,.36,1);
+  }
+
+  #nav {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px; z-index: 100;
+  }
+  .nav-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #1e293b; border: 1px solid #334155;
+    color: #e2e8f0; font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, border-color .2s;
+  }
+  .nav-btn:hover { background: #4f46e5; border-color: #4f46e5; }
+  #progress-text { font-size: .82rem; color: #64748b; min-width: 54px; text-align: center; }
+
+  .callout {
+    border-left: 4px solid #6366f1; background: #131929;
+    border-radius: 0 10px 10px 0; padding: 13px 20px;
+    margin-top: 16px; font-size: .93rem;
+  }
+
+  .hero-glow {
+    position: absolute; width: 640px; height: 640px;
+    background: radial-gradient(circle, #4f46e520 0%, transparent 70%);
+    top: 50%; left: 60%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .slide { padding: 36px 24px; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- ── S0: Cover ── -->
+<div class="slide active" id="s-cover" style="background:radial-gradient(ellipse at 60% 40%, #1a1040 0%, #0b0f1a 70%)">
+  <div class="hero-glow"></div>
+  <div class="pill pill-blue">Community Day KC · May 2026 · Room 4 · 9:00 AM</div>
+  <h1 style="text-align:center">From <span class="accent">Java</span> to <span class="green">AI</span></h1>
+  <p style="font-size:1.3rem;color:#cbd5e1;margin-top:10px;text-align:center;font-weight:600">
+    Modernizing Enterprise Systems with Machine Learning
+  </p>
+  <div style="margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:6px">
+    <p style="color:#e2e8f0;font-size:1.05rem;font-weight:700">Surya Rao Rayarao</p>
+    <p style="color:#64748b;font-size:.9rem">Lead Software Engineer · SS&amp;C Technologies</p>
+    <div style="display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;justify-content:center">
+      <span class="pill pill-cyan" style="margin-bottom:0">IEEE Senior Member</span>
+      <span class="pill pill-purple" style="margin-bottom:0">MS Data Science · UT Austin</span>
+      <span class="pill pill-green" style="margin-bottom:0">20+ Years Java</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── S1: The Big Question ── -->
+<div class="slide" id="s-question" style="background:radial-gradient(ellipse at 50% 50%, #0f1729 0%, #0b0f1a 80%)">
+  <h1 style="text-align:center;font-size:clamp(1.8rem,4.5vw,3.2rem)">
+    Java has powered enterprise<br/>systems for <span class="amber">30 years</span>.
+  </h1>
+  <p style="font-size:1.25rem;text-align:center;margin-top:24px;color:#cbd5e1">
+    AI and ML are redefining what those systems can <span class="green">do</span>.
+  </p>
+  <div style="margin-top:48px;display:flex;gap:40px;flex-wrap:wrap;justify-content:center">
+    <div class="stat" style="border-color:#6366f1">
+      <div class="number accent">#1</div>
+      <div class="label">Enterprise language<br/>for 3 decades</div>
+    </div>
+    <div class="stat" style="border-color:#34d399">
+      <div class="number green">$500B</div>
+      <div class="label">Enterprise AI market<br/>by 2030</div>
+    </div>
+    <div class="stat" style="border-color:#fbbf24">
+      <div class="number amber">87%</div>
+      <div class="label">Enterprises keeping<br/>Java systems</div>
+    </div>
+    <div class="stat" style="border-color:#f87171">
+      <div class="number rose">0</div>
+      <div class="label">Reason to do<br/>a full rewrite</div>
+    </div>
+  </div>
+  <div class="callout" style="max-width:760px;margin-top:32px;font-size:.97rem">
+    The question is not Java <span class="rose">or</span> AI. The question is Java <span class="green">with</span> AI — and the bridge already exists.
+  </div>
+</div>
+
+<!-- ── S2: About Surya ── -->
+<div class="slide" id="s-about">
+  <div class="pill pill-blue">Your Speaker</div>
+  <h2>20+ Years in the <span class="accent">Trenches</span></h2>
+  <div class="grid grid-2" style="max-width:860px">
+    <div>
+      <div class="card" style="border-top:3px solid #6366f1;margin-bottom:16px">
+        <div class="icon">🏗️</div>
+        <h3 class="accent">Enterprise Java Veteran</h3>
+        <p>From Servlets and EJBs to Spring Boot microservices — every generation of Java enterprise architecture, production-hardened at scale inside SS&amp;C Technologies FinTech systems.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #22d3ee">
+        <div class="icon">📊</div>
+        <h3 class="cyan">MS Data Science — UT Austin</h3>
+        <p>Not a theorist — a practitioner. Built ML pipelines that plug directly into existing Java backends, solving real FinTech problems without burning down what works.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="border-top:3px solid #34d399;margin-bottom:16px">
+        <div class="icon">🏛️</div>
+        <h3 class="green">IEEE Senior Member</h3>
+        <p>Recognized for sustained contributions to software engineering. Bridges academic rigor with the pragmatic constraints of production enterprise systems.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #fbbf24">
+        <div class="icon">💼</div>
+        <h3 class="amber">SS&amp;C Technologies</h3>
+        <p>Lead Software Engineer building financial technology used by the world's largest asset managers, hedge funds, and financial institutions — where correctness isn't optional.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S3: Evolution Timeline ── -->
+<div class="slide" id="s-evolution">
+  <div class="pill pill-blue">The Journey</div>
+  <h2>Java Enterprise: From <span class="accent">J2EE</span> to <span class="green">AI-Ready</span></h2>
+  <div class="timeline" style="max-width:860px">
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#64748b">1</div>
+      <h3 style="color:#94a3b8">1997–2006 · <span style="color:#64748b;font-weight:400">J2EE Era</span></h3>
+      <p>EJBs, Servlets, JSP, XML configuration hell. Heavy, monolithic, but <em>it ran the world's banks</em>. Deployed on WebSphere and WebLogic.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#818cf8">2</div>
+      <h3 style="color:#818cf8">2006–2014 · <span style="color:#64748b;font-weight:400">Spring Framework</span></h3>
+      <p>IoC containers, AOP, JDBC templates. The great simplification. Hibernate took over persistence. Developers finally had joy again.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#6366f1">3</div>
+      <h3 class="accent">2014–2020 · <span style="color:#64748b;font-weight:400">Spring Boot + Microservices</span></h3>
+      <p>Convention over configuration. 12-factor apps. Docker, Kubernetes, REST APIs. The monolith was dead (mostly). Cloud-native Java was born.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#22d3ee">4</div>
+      <h3 class="cyan">2020–2023 · <span style="color:#64748b;font-weight:400">Reactive + Event-Driven</span></h3>
+      <p>Spring WebFlux, Kafka, Reactive Streams. Non-blocking, high-throughput pipelines. The groundwork for streaming ML inference was laid here.</p>
+    </div>
+    <div class="tl-item" style="padding-bottom:0">
+      <div class="tl-dot" style="border-color:#34d399;background:#064e3b">5</div>
+      <h3 class="green">2023–Now · <span style="color:#64748b;font-weight:400">AI-Ready Architecture</span></h3>
+      <p>ML models as services, ONNX Runtime in-process, vector databases, LLM orchestration. <strong style="color:#e2e8f0">This is where we are. This is what today is about.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ── S4: Why Not Rewrite ── -->
+<div class="slide" id="s-no-rewrite">
+  <div class="pill pill-amber">The Hard Truth</div>
+  <h2>Why You <span class="rose">Cannot</span> Just Rewrite</h2>
+  <div class="grid grid-3" style="max-width:960px;margin-bottom:20px">
+    <div class="card" style="border-top:3px solid #f87171">
+      <div class="icon">💰</div>
+      <h3 style="color:#f87171">Cost</h3>
+      <p>Enterprise Java codebases represent <strong style="color:#e2e8f0">decades of business logic</strong>. A full rewrite in Python costs millions and takes years — with no guarantee of correctness.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #f87171">
+      <div class="icon">⚠️</div>
+      <h3 style="color:#f87171">Risk</h3>
+      <p>Financial systems process trillions of dollars. The Java code has been <strong style="color:#e2e8f0">battle-tested for years</strong>. Rewriting introduces regression risk that regulators and auditors will not accept.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #f87171">
+      <div class="icon">🔒</div>
+      <h3 style="color:#f87171">Compliance</h3>
+      <p>SOX, FINRA, MiFID II, GDPR — enterprise systems are audited. <strong style="color:#e2e8f0">Every line of code is accountable</strong>. Rewrites require re-certification from scratch.</p>
+    </div>
+  </div>
+  <div class="callout" style="max-width:960px;font-size:.97rem">
+    <strong style="color:#34d399">The winning strategy:</strong> Embed ML capabilities <em>alongside</em> existing Java systems using well-defined integration patterns — no big bang, no rewrite, no risk.
+  </div>
+  <div class="stat-grid" style="margin-top:24px">
+    <div class="stat"><div class="number amber">3–5×</div><div class="label">Cost overrun in failed rewrites</div></div>
+    <div class="stat"><div class="number rose">68%</div><div class="label">Large IT rewrites that fail or are cancelled</div></div>
+    <div class="stat"><div class="number green">∞</div><div class="label">Value in the business logic you already have</div></div>
+  </div>
+</div>
+
+<!-- ── S5: Integration Patterns Overview ── -->
+<div class="slide" id="s-patterns">
+  <div class="pill pill-blue">Architecture</div>
+  <h2>Three Patterns to <span class="accent">Bridge</span> Java and ML</h2>
+  <div class="grid grid-3" style="max-width:960px;margin-bottom:20px">
+    <div class="card" style="border-top:3px solid #6366f1">
+      <div class="icon">🌐</div>
+      <h3 class="accent">Pattern 1: Model as a Service</h3>
+      <p>ML model runs in Python (Flask / FastAPI). Java calls it over HTTP REST. <strong style="color:#e2e8f0">Clean separation.</strong> Python team owns the model; Java team owns the integration.</p>
+      <div style="margin-top:12px;font-size:.8rem;color:#6366f1">Best for: large models, GPU inference, frequent retraining</div>
+    </div>
+    <div class="card" style="border-top:3px solid #22d3ee">
+      <div class="icon">⚙️</div>
+      <h3 class="cyan">Pattern 2: In-Process via ONNX</h3>
+      <p>Train in Python, export to ONNX, load with <strong style="color:#e2e8f0">ONNX Runtime for Java</strong>. Inference happens inside the JVM — no network hop, no latency.</p>
+      <div style="margin-top:12px;font-size:.8rem;color:#22d3ee">Best for: low-latency scoring, edge cases, high-throughput</div>
+    </div>
+    <div class="card" style="border-top:3px solid #34d399">
+      <div class="icon">☕</div>
+      <h3 class="green">Pattern 3: Java-Native ML</h3>
+      <p>Use <strong style="color:#e2e8f0">Tribuo, Weka, or DL4J</strong> — train and serve entirely in Java. No Python, no polyglot stack. Full JVM control.</p>
+      <div style="margin-top:12px;font-size:.8rem;color:#34d399">Best for: simple models, regulated environments, Java-only shops</div>
+    </div>
+  </div>
+  <div class="flow" style="margin-top:4px">
+    <div class="flow-box" style="border-color:#6366f1">Java Service<br/><small>Business Logic</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:#818cf8">Feature<br/>Engineering</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:#22d3ee">ML Model<br/>(any pattern)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:#34d399">Prediction /<br/>Score</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:#fbbf24">Business<br/>Decision</div>
+  </div>
+</div>
+
+<!-- ── ARCH-01: Model as a Service ── -->
+<div class="slide" id="s-arch-01" style="padding:28px 50px;gap:10px">
+  <div class="pill pill-blue">Pattern 01 · Architecture</div>
+  <h2 style="margin-bottom:8px"><span class="accent">Model as a Service</span> — REST Integration</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Model as a Service Architecture Diagram">
+    <defs>
+      <marker id="a1f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="a1b" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+      <marker id="a1g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+    </defs>
+    <!-- Java zone -->
+    <rect x="4" y="4" width="432" height="382" rx="12" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <text x="220" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA · SPRING BOOT JVM</text>
+    <!-- FraudController -->
+    <rect x="20" y="38" width="186" height="68" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="113" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudController</text>
+    <text x="113" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">@RestController</text>
+    <text x="113" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/score</text>
+    <!-- FeatureEngineer -->
+    <rect x="226" y="38" width="192" height="68" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="322" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FeatureEngineer</text>
+    <text x="322" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Domain logic stays in Java</text>
+    <text x="322" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">5 features → float[]</text>
+    <!-- Arrow: Controller → FE -->
+    <line x1="206" y1="72" x2="224" y2="72" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a1f)"/>
+    <!-- FraudDetectionService -->
+    <rect x="106" y="160" width="232" height="70" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="222" y="183" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudDetectionService</text>
+    <text x="222" y="201" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">WebClient · non-blocking</text>
+    <text x="222" y="219" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">200ms SLA · graceful fallback</text>
+    <!-- Arrow: FE → FraudDetectionService -->
+    <line x1="322" y1="106" x2="268" y2="158" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a1f)"/>
+    <!-- Decision Engine -->
+    <rect x="106" y="290" width="232" height="72" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="222" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#34d399">Decision Engine</text>
+    <text x="222" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">prob &gt; 0.85 → BLOCK transaction</text>
+    <text x="222" y="350" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">prob ≤ 0.85 → ALLOW + audit log</text>
+    <!-- Arrow: FraudDetectionService → Decision -->
+    <line x1="222" y1="230" x2="222" y2="288" stroke="#34d399" stroke-width="1.5" marker-end="url(#a1g)"/>
+    <!-- HTTP arrows in center gap (x 436–504) -->
+    <text x="470" y="152" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#818cf8">HTTP REST</text>
+    <line x1="436" y1="140" x2="504" y2="78" stroke="#6366f1" stroke-width="2" marker-end="url(#a1f)"/>
+    <text x="434" y="132" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#6366f1">POST /predict/fraud</text>
+    <text x="434" y="144" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" fill="#4f46e5">TransactionFeatures JSON</text>
+    <line x1="504" y1="148" x2="436" y2="210" stroke="#22d3ee" stroke-width="2" marker-end="url(#a1b)"/>
+    <text x="434" y="228" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#22d3ee">FraudScore JSON</text>
+    <text x="434" y="240" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" fill="#0e7490">{probability, risk_level}</text>
+    <!-- Python zone -->
+    <rect x="504" y="4" width="392" height="382" rx="12" fill="#0d111e" stroke="#0e4f6d" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <text x="700" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#22d3ee" letter-spacing="2">🐍  PYTHON · FASTAPI :8000</text>
+    <!-- FastAPI Endpoint -->
+    <rect x="520" y="38" width="178" height="68" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="609" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">FastAPI Endpoint</text>
+    <text x="609" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /predict/fraud</text>
+    <text x="609" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">async def predict()</text>
+    <!-- Pydantic -->
+    <rect x="520" y="160" width="178" height="68" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="609" y="183" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">Pydantic Model</text>
+    <text x="609" y="201" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">TransactionFeatures</text>
+    <text x="609" y="219" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Type-safe contract</text>
+    <!-- Arrow: FastAPI → Pydantic -->
+    <line x1="609" y1="106" x2="609" y2="158" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a1b)"/>
+    <!-- RandomForest -->
+    <rect x="520" y="290" width="178" height="72" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="609" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">RandomForest Model</text>
+    <text x="609" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">scikit-learn · fraud_model.pkl</text>
+    <text x="609" y="350" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">predict_proba() inference</text>
+    <!-- Arrow: Pydantic → RandomForest -->
+    <line x1="609" y1="228" x2="609" y2="288" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a1b)"/>
+    <!-- Metrics panel -->
+    <rect x="716" y="38" width="168" height="156" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="58" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Characteristics</text>
+    <line x1="726" y1="66" x2="874" y2="66" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="84" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">⏱  Latency 50–100ms</text>
+    <text x="800" y="103" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">🔄  Teams fully decoupled</text>
+    <text x="800" y="122" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">🚀  Independent deploys</text>
+    <text x="800" y="141" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">📦  Model versioning</text>
+    <text x="800" y="160" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">✓  GPU models supported</text>
+    <text x="800" y="179" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">✓  Fallback on timeout</text>
+    <!-- Best For panel -->
+    <rect x="716" y="212" width="168" height="174" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="232" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#c084fc">Best For</text>
+    <line x1="726" y1="240" x2="874" y2="240" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="260" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Large / GPU models</text>
+    <text x="800" y="280" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Frequent retraining</text>
+    <text x="800" y="300" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Complex Python deps</text>
+    <text x="800" y="320" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Polyglot teams</text>
+    <text x="800" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Microservice orgs</text>
+    <text x="800" y="368" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">Pattern: REST Contract</text>
+  </svg>
+</div>
+
+<!-- ── ARCH-02: ONNX In-JVM ── -->
+<div class="slide" id="s-arch-02" style="padding:28px 50px;gap:10px">
+  <div class="pill pill-cyan">Pattern 02 · Architecture</div>
+  <h2 style="margin-bottom:8px"><span class="cyan">ONNX In-JVM</span> — Model Embedded in the JVM</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="ONNX In-JVM Architecture Diagram">
+    <defs>
+      <marker id="a2f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="a2c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+      <marker id="a2g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="a2a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+    </defs>
+    <!-- OFFLINE PHASE: Python Training -->
+    <rect x="4" y="4" width="894" height="144" rx="12" fill="#0d111e" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text x="200" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="2">🐍  PYTHON · OFFLINE TRAINING PHASE (one-time)</text>
+    <!-- Python Train -->
+    <rect x="20" y="36" width="178" height="98" rx="8" fill="#1c2433" stroke="#334155" stroke-width="1.5"/>
+    <text x="109" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#94a3b8">train_export.py</text>
+    <text x="109" y="78" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">scikit-learn / XGBoost</text>
+    <text x="109" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">Train on labeled data</text>
+    <text x="109" y="114" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">Cross-validate model</text>
+    <!-- ONNX Export -->
+    <rect x="220" y="36" width="178" height="98" rx="8" fill="#1c2433" stroke="#334155" stroke-width="1.5"/>
+    <text x="309" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#94a3b8">ONNX Export</text>
+    <text x="309" y="78" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">skl2onnx / torch.onnx</text>
+    <text x="309" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">Universal binary format</text>
+    <text x="309" y="114" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">Framework-agnostic</text>
+    <!-- Arrow: Train → Export -->
+    <line x1="198" y1="85" x2="218" y2="85" stroke="#475569" stroke-width="1.5" marker-end="url(#a2f)"/>
+    <!-- ONNX File -->
+    <rect x="420" y="36" width="160" height="98" rx="8" fill="#1a2a1a" stroke="#4a7c59" stroke-width="2"/>
+    <text x="500" y="58" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="20" fill="#86efac">📦</text>
+    <text x="500" y="82" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#86efac">fraud_model.onnx</text>
+    <text x="500" y="100" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">~14 KB · portable</text>
+    <text x="500" y="118" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Bundled in JAR</text>
+    <!-- Arrow: Export → ONNX File -->
+    <line x1="398" y1="85" x2="418" y2="85" stroke="#475569" stroke-width="1.5" marker-end="url(#a2f)"/>
+    <!-- Arrow: ONNX File → Runtime phase -->
+    <line x1="500" y1="134" x2="500" y2="160" stroke="#34d399" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#a2g)"/>
+    <text x="520" y="152" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">Deploy to JAR resources/</text>
+    <!-- When to retrain label -->
+    <rect x="596" y="48" width="288" height="78" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="740" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#64748b">Retrain Trigger</text>
+    <text x="740" y="88" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">Model drift detected · Weekly schedule</text>
+    <text x="740" y="106" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">New labeled data available</text>
+    <text x="740" y="116" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">→ re-export .onnx · swap file · restart JVM</text>
+    <!-- JAVA RUNTIME ZONE -->
+    <rect x="4" y="164" width="894" height="222" rx="12" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="220" y="184" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA · SPRING BOOT JVM · PRODUCTION RUNTIME</text>
+    <!-- OrtEnvironment -->
+    <rect x="20" y="196" width="155" height="78" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="97" y="220" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">OrtEnvironment</text>
+    <text x="97" y="238" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Singleton · @Bean</text>
+    <text x="97" y="256" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Global context</text>
+    <!-- OrtSession -->
+    <rect x="192" y="196" width="155" height="78" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="269" y="220" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">OrtSession</text>
+    <text x="269" y="238" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Loads .onnx at startup</text>
+    <text x="269" y="256" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Thread-safe · pooled</text>
+    <!-- Arrow: Env → Session -->
+    <line x1="175" y1="235" x2="190" y2="235" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a2f)"/>
+    <!-- OnnxTensor -->
+    <rect x="364" y="196" width="155" height="78" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="441" y="220" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">OnnxTensor</text>
+    <text x="441" y="238" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">float[][] features</text>
+    <text x="441" y="256" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">createTensor(env, data)</text>
+    <!-- Arrow: Session → Tensor -->
+    <line x1="347" y1="235" x2="362" y2="235" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a2f)"/>
+    <!-- session.run() -->
+    <rect x="536" y="196" width="155" height="78" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="613" y="218" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">session.run()</text>
+    <text x="613" y="236" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">ONNX inference engine</text>
+    <text x="613" y="254" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">No network · in-memory</text>
+    <text x="613" y="268" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">⚡ 0.18 ms per call</text>
+    <!-- Arrow: Tensor → Run -->
+    <line x1="519" y1="235" x2="534" y2="235" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a2f)"/>
+    <!-- FraudPrediction output -->
+    <rect x="708" y="196" width="178" height="78" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="797" y="220" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">FraudPrediction</text>
+    <text x="797" y="238" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">probability: 0.92</text>
+    <text x="797" y="256" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">isFraud: true</text>
+    <text x="797" y="268" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">risk: HIGH</text>
+    <!-- Arrow: Run → FraudPrediction -->
+    <line x1="691" y1="235" x2="706" y2="235" stroke="#34d399" stroke-width="1.5" marker-end="url(#a2g)"/>
+    <!-- Bottom comparison strip -->
+    <rect x="20" y="296" width="196" height="72" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="118" y="316" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">ONNX In-JVM</text>
+    <text x="118" y="334" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="18" font-weight="800" fill="#34d399">0.18 ms</text>
+    <text x="118" y="354" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">per prediction</text>
+    <rect x="232" y="296" width="196" height="72" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="330" y="316" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#f87171">REST API (Pattern 1)</text>
+    <text x="330" y="334" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="18" font-weight="800" fill="#f87171">~50 ms</text>
+    <text x="330" y="354" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">per prediction</text>
+    <rect x="444" y="296" width="430" height="72" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1"/>
+    <text x="659" y="316" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">Why ONNX wins for high-frequency scoring</text>
+    <text x="659" y="334" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">No HTTP overhead · No Python runtime · No network timeout risk</text>
+    <text x="659" y="352" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Single JAR deployment · Air-gap friendly · 10,000+ txns/sec on one JVM</text>
+  </svg>
+</div>
+
+<!-- ── ARCH-03: Java Native ML ── -->
+<div class="slide" id="s-arch-03" style="padding:28px 50px;gap:10px">
+  <div class="pill pill-green">Pattern 03 · Architecture</div>
+  <h2 style="margin-bottom:8px"><span class="green">Java-Native ML</span> — Zero External Dependencies</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Java Native ML Architecture Diagram">
+    <defs>
+      <marker id="a3f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="a3g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="a3a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+      <marker id="a3r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f87171"/></marker>
+    </defs>
+    <!-- JVM outer boundary — everything inside -->
+    <rect x="4" y="4" width="894" height="382" rx="14" fill="#0d111e" stroke="#4f46e5" stroke-width="2"/>
+    <text x="450" y="26" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA ONLY · SPRING BOOT JVM · NO PYTHON · NO ONNX · NO HTTP</text>
+    <!-- Input: LoanApplication -->
+    <rect x="20" y="46" width="175" height="124" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="107" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">LoanApplication</text>
+    <line x1="30" y1="76" x2="185" y2="76" stroke="#2d3a5e" stroke-width="1"/>
+    <text x="107" y="94" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">creditScore: 650</text>
+    <text x="107" y="112" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">annualIncome: $72,000</text>
+    <text x="107" y="130" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">debtRatio: 0.32</text>
+    <text x="107" y="148" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">employmentYears: 7</text>
+    <!-- Arrow: Input → Classifier -->
+    <line x1="195" y1="108" x2="226" y2="108" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a3f)"/>
+    <!-- CreditRiskClassifier box -->
+    <rect x="228" y="46" width="440" height="260" rx="10" fill="#131929" stroke="#3730a3" stroke-width="1.5"/>
+    <text x="448" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#818cf8">CreditRiskClassifier — Pure Java Decision Tree</text>
+    <line x1="238" y1="76" x2="658" y2="76" stroke="#1e293b" stroke-width="1"/>
+    <!-- Decision tree nodes -->
+    <!-- Root node -->
+    <rect x="358" y="88" width="180" height="44" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="448" y="107" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">creditScore &lt; 580?</text>
+    <text x="448" y="123" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Root split · Gini impurity</text>
+    <!-- NO branch → right sub-tree -->
+    <line x1="538" y1="110" x2="580" y2="148" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
+    <text x="572" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">NO →</text>
+    <!-- YES branch → DENY -->
+    <line x1="358" y1="110" x2="290" y2="148" stroke="#f87171" stroke-width="1.5" marker-end="url(#a3r)"/>
+    <text x="308" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#f87171">← YES</text>
+    <!-- DENY leaf -->
+    <rect x="248" y="150" width="120" height="38" rx="6" fill="#4c0519" stroke="#f87171" stroke-width="1.5"/>
+    <text x="308" y="173" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#f87171">⛔ DENY</text>
+    <!-- Second split: debtRatio -->
+    <rect x="548" y="150" width="180" height="44" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="638" y="169" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">debtRatio &gt; 0.43?</text>
+    <text x="638" y="185" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Level 2 split</text>
+    <!-- YES → REVIEW -->
+    <line x1="548" y1="172" x2="480" y2="220" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a3a)"/>
+    <text x="498" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">← YES</text>
+    <!-- REVIEW leaf -->
+    <rect x="380" y="222" width="122" height="38" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="441" y="245" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">⚠ REVIEW</text>
+    <!-- NO → APPROVE -->
+    <line x1="728" y1="172" x2="620" y2="220" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
+    <text x="692" y="200" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">NO →</text>
+    <!-- APPROVE leaf -->
+    <rect x="590" y="222" width="124" height="38" rx="6" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="652" y="245" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">✓ APPROVE</text>
+    <!-- classifier footer note -->
+    <text x="448" y="278" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">Gini impurity splits · confidence scores · decision path logged for audit trail</text>
+    <!-- Arrow: Classifier → Output -->
+    <line x1="668" y1="108" x2="700" y2="108" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
+    <!-- Output: CreditDecision -->
+    <rect x="702" y="46" width="178" height="124" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="791" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">CreditDecision</text>
+    <line x1="712" y1="76" x2="870" y2="76" stroke="#065f46" stroke-width="1"/>
+    <text x="791" y="95" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">decision: APPROVE</text>
+    <text x="791" y="113" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">confidence: 0.87</text>
+    <text x="791" y="131" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">path: root→right→approve</text>
+    <text x="791" y="149" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">reason: "Score &gt; 580, DTI safe"</text>
+    <!-- Bottom stats row -->
+    <rect x="20" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="121" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">No Python Runtime</text>
+    <text x="121" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Zero polyglot complexity</text>
+    <rect x="240" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="341" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Sub-millisecond</text>
+    <text x="341" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Pure in-memory inference</text>
+    <rect x="460" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="561" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Audit-Ready</text>
+    <text x="561" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Full decision path logged</text>
+    <rect x="680" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="781" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Regulated Environments</text>
+    <text x="781" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Weka · Tribuo · DL4J ready</text>
+  </svg>
+</div>
+
+<!-- ── ARCH-04: Feature Engineering ── -->
+<div class="slide" id="s-arch-04" style="padding:28px 50px;gap:10px">
+  <div class="pill pill-amber">Example 04 · Architecture</div>
+  <h2 style="margin-bottom:8px">Feature Engineering — <span class="amber">Domain Logic in Java</span></h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Feature Engineering Architecture Diagram">
+    <defs>
+      <marker id="a4f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+      <marker id="a4g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="a4c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+    </defs>
+    <!-- Input Box -->
+    <rect x="4" y="4" width="894" height="76" rx="10" fill="#1c1a10" stroke="#78350f" stroke-width="1.5"/>
+    <text x="60" y="26" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24" letter-spacing="2">RAW TRANSACTION INPUT</text>
+    <text x="60" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">accountId: "ACC-8821"</text>
+    <text x="240" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">amount: $1,850.00</text>
+    <text x="430" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">merchantId: "M-GAS-44"</text>
+    <text x="630" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">timestamp: 2026-05-26T03:14Z</text>
+    <text x="60" y="68" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">location: "47.6062,-122.3321"</text>
+    <text x="430" y="68" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">category: "FUEL"</text>
+    <text x="630" y="68" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">cardPresent: false</text>
+    <!-- 5 transformation arrows downward -->
+    <line x1="86" y1="80" x2="86" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
+    <line x1="260" y1="80" x2="260" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
+    <line x1="450" y1="80" x2="450" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
+    <line x1="640" y1="80" x2="640" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
+    <line x1="810" y1="80" x2="810" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
+    <!-- Feature engineering service label -->
+    <rect x="4" y="100" width="894" height="16" rx="0" fill="none"/>
+    <text x="450" y="112" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24" letter-spacing="1.5">FEATURE ENGINEERING SERVICE — FeatureEngineer.java</text>
+    <!-- 5 Feature transformation boxes -->
+    <!-- Box 1: Amount Normalization -->
+    <rect x="4" y="122" width="166" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="87" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Amount Norm.</text>
+    <line x1="14" y1="152" x2="160" y2="152" stroke="#78350f" stroke-width="1"/>
+    <text x="87" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">÷ account tier limit</text>
+    <text x="87" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">log-transform for skew</text>
+    <text x="87" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">clip outliers at 99th %ile</text>
+    <rect x="30" y="220" width="114" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
+    <text x="87" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0.42</text>
+    <!-- Box 2: Time Binning -->
+    <rect x="178" y="122" width="166" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="261" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Time Binning</text>
+    <line x1="188" y1="152" x2="334" y2="152" stroke="#78350f" stroke-width="1"/>
+    <text x="261" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">hour: 3 AM = night</text>
+    <text x="261" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">0=night 1=morning</text>
+    <text x="261" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">2=afternoon 3=evening</text>
+    <rect x="204" y="220" width="114" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
+    <text x="261" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0 (night)</text>
+    <!-- Box 3: Merchant Risk -->
+    <rect x="352" y="122" width="196" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="450" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Merchant Risk Score</text>
+    <line x1="362" y1="152" x2="538" y2="152" stroke="#78350f" stroke-width="1"/>
+    <text x="450" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">lookup: merchantId → category</text>
+    <text x="450" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">FUEL → medium-risk (0.5)</text>
+    <text x="450" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Java enum + risk map</text>
+    <rect x="390" y="220" width="120" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
+    <text x="450" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0.80</text>
+    <!-- Box 4: Velocity (with Redis) -->
+    <rect x="556" y="122" width="180" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="646" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Velocity (30-day)</text>
+    <line x1="566" y1="152" x2="726" y2="152" stroke="#78350f" stroke-width="1"/>
+    <text x="646" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">rolling txn count</text>
+    <text x="646" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">VelocityStore → Redis</text>
+    <text x="646" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">INCR key with TTL</text>
+    <rect x="586" y="220" width="120" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
+    <text x="646" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">22 txns</text>
+    <!-- Redis badge -->
+    <rect x="556" y="96" width="100" height="22" rx="6" fill="#f87171" opacity="0.15" stroke="#f87171" stroke-width="1"/>
+    <text x="606" y="111" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#f87171">⟵ Redis Store</text>
+    <!-- Box 5: Geo Risk -->
+    <rect x="744" y="122" width="152" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="820" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Geo Risk Score</text>
+    <line x1="754" y1="152" x2="886" y2="152" stroke="#78350f" stroke-width="1"/>
+    <text x="820" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">coords → region</text>
+    <text x="820" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">home vs. foreign</text>
+    <text x="820" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">IP anomaly check</text>
+    <rect x="760" y="220" width="120" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
+    <text x="820" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0.75</text>
+    <!-- Arrows down to output -->
+    <line x1="87" y1="260" x2="87" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
+    <line x1="261" y1="260" x2="261" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
+    <line x1="450" y1="260" x2="450" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
+    <line x1="646" y1="260" x2="646" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
+    <line x1="820" y1="260" x2="820" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
+    <!-- Output: feature vector -->
+    <rect x="4" y="280" width="894" height="60" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="60" y="302" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399" letter-spacing="1.5">TRANSACTIONFEATURES  →  ML MODEL INPUT</text>
+    <text x="60" y="326" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0" font-family="Cascadia Code,Fira Code,monospace">float[]  { 0.42,  0,  0.80,  22,  0.75 }</text>
+    <text x="420" y="326" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">amount_norm  hour_bin  merchant_risk  velocity_30d  geo_risk</text>
+    <!-- Output label arrow -->
+    <line x1="830" y1="310" x2="890" y2="310" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
+    <text x="896" y="314" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399"> →</text>
+    <!-- Insight boxes -->
+    <rect x="4" y="348" width="430" height="38" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="217" y="365" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Key Insight: Business domain knowledge stays in Java — the ML model only sees clean numbers</text>
+    <text x="217" y="381" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">Domain experts write features in Java, ML engineers train on them in Python</text>
+    <rect x="442" y="348" width="456" height="38" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="670" y="365" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Feature reuse: same vector feeds REST pattern, ONNX pattern, and native ML pattern</text>
+    <text x="670" y="381" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">VelocityStore (Redis) shared across all three integration patterns</text>
+  </svg>
+</div>
+
+<!-- ── ARCH-05: Full Pipeline ── -->
+<div class="slide" id="s-arch-05" style="padding:28px 50px;gap:10px">
+  <div class="pill pill-green">Example 05 · Architecture</div>
+  <h2 style="margin-bottom:8px"><span class="green">Full ML Pipeline</span> — Kafka + Docker + ONNX</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Full Pipeline Architecture Diagram">
+    <defs>
+      <marker id="a5f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="a5g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="a5a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+      <marker id="a5r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f87171"/></marker>
+      <marker id="a5c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+    </defs>
+    <!-- Docker network boundary -->
+    <rect x="4" y="4" width="894" height="380" rx="14" fill="none" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,5"/>
+    <text x="820" y="22" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#334155" letter-spacing="1">🐳 DOCKER NETWORK</text>
+    <!-- Producer block -->
+    <rect x="16" y="30" width="140" height="86" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+    <text x="86" y="52" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#94a3b8">Transaction</text>
+    <text x="86" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#94a3b8">Source</text>
+    <text x="86" y="88" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">REST API / Trading</text>
+    <text x="86" y="104" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">System / Batch</text>
+    <!-- Arrow to Kafka -->
+    <line x1="156" y1="73" x2="196" y2="73" stroke="#6366f1" stroke-width="2" marker-end="url(#a5f)"/>
+    <!-- Kafka broker (center column) -->
+    <rect x="196" y="8" width="140" height="370" rx="10" fill="#0d111e" stroke="#fbbf24" stroke-width="2"/>
+    <text x="266" y="28" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24" letter-spacing="1">⚡ KAFKA</text>
+    <!-- topic: transactions -->
+    <rect x="208" y="36" width="116" height="52" rx="6" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="266" y="56" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#fbbf24">topic:</text>
+    <text x="266" y="72" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">transactions</text>
+    <!-- topic: fraud-alerts -->
+    <rect x="208" y="104" width="116" height="52" rx="6" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="266" y="124" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#fbbf24">topic:</text>
+    <text x="266" y="140" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">fraud-alerts</text>
+    <!-- topic: model-events -->
+    <rect x="208" y="172" width="116" height="52" rx="6" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
+    <text x="266" y="192" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#fbbf24">topic:</text>
+    <text x="266" y="208" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">model-events</text>
+    <text x="266" y="260" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="8" fill="#475569">Kafka on Docker</text>
+    <text x="266" y="276" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="8" fill="#475569">Zookeeper</text>
+    <text x="266" y="292" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="8" fill="#475569">Partitioned topics</text>
+    <text x="266" y="308" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="8" fill="#475569">Offset tracking</text>
+    <!-- Java Pipeline service boundary -->
+    <rect x="352" y="8" width="380" height="248" rx="10" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="542" y="26" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#818cf8" letter-spacing="1">☕  java-pipeline (Spring Boot · Docker)</text>
+    <!-- TransactionConsumer -->
+    <rect x="364" y="36" width="168" height="60" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="448" y="58" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">TransactionConsumer</text>
+    <text x="448" y="75" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">@KafkaListener</text>
+    <text x="448" y="89" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Deserialize · validate</text>
+    <!-- FeatureEngineer -->
+    <rect x="364" y="114" width="168" height="60" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="448" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">FeatureEngineer</text>
+    <text x="448" y="153" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">5-feature extraction</text>
+    <text x="448" y="167" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">velocity from Redis</text>
+    <!-- FraudScoringService (ONNX) -->
+    <rect x="364" y="192" width="168" height="52" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="448" y="213" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">FraudScoringService</text>
+    <text x="448" y="230" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">ONNX Runtime · &lt;1ms</text>
+    <!-- FraudAlertService -->
+    <rect x="550" y="36" width="168" height="208" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="634" y="58" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">FraudAlertService</text>
+    <line x1="560" y1="66" x2="708" y2="66" stroke="#065f46" stroke-width="1"/>
+    <rect x="562" y="74" width="144" height="34" rx="6" fill="#4c0519" stroke="#f87171" stroke-width="1"/>
+    <text x="634" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#f87171">prob &gt; 0.85 → BLOCK</text>
+    <rect x="562" y="116" width="144" height="34" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
+    <text x="634" y="138" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">0.5–0.85 → REVIEW</text>
+    <rect x="562" y="158" width="144" height="34" rx="6" fill="#1a2a1a" stroke="#34d399" stroke-width="1"/>
+    <text x="634" y="180" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#34d399">prob &lt; 0.5 → ALLOW</text>
+    <text x="634" y="214" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">→ Kafka fraud-alerts</text>
+    <text x="634" y="230" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">→ Audit log</text>
+    <!-- Arrows inside pipeline -->
+    <line x1="448" y1="96" x2="448" y2="112" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a5f)"/>
+    <line x1="448" y1="174" x2="448" y2="190" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a5f)"/>
+    <line x1="532" y1="218" x2="548" y2="140" stroke="#34d399" stroke-width="1.5" marker-end="url(#a5g)"/>
+    <!-- Arrows from Kafka to pipeline -->
+    <line x1="336" y1="62" x2="362" y2="62" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a5a)"/>
+    <!-- Return alert to Kafka -->
+    <line x1="550" y1="140" x2="336" y2="130" stroke="#f87171" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a5r)"/>
+    <!-- Python ML Service -->
+    <rect x="352" y="270" width="200" height="106" rx="10" fill="#0d111e" stroke="#0e4f6d" stroke-width="1.5"/>
+    <text x="452" y="290" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#22d3ee">🐍 python-ml-service</text>
+    <text x="452" y="308" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">FastAPI + scikit-learn</text>
+    <text x="452" y="324" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Scheduled retraining</text>
+    <text x="452" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Exports updated .onnx</text>
+    <text x="452" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#22d3ee">Dockerfile · port 8001</text>
+    <!-- Arrow: Python → Java (model update) -->
+    <line x1="452" y1="270" x2="448" y2="248" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a5c)"/>
+    <text x="460" y="263" font-family="Segoe UI,sans-serif" font-size="8" fill="#22d3ee">model update</text>
+    <!-- Monitoring -->
+    <rect x="568" y="270" width="164" height="106" rx="10" fill="#0d111e" stroke="#334155" stroke-width="1.5"/>
+    <text x="650" y="290" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#94a3b8">Monitoring</text>
+    <text x="650" y="308" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Prometheus metrics</text>
+    <text x="650" y="324" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Grafana dashboards</text>
+    <text x="650" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Spring Micrometer</text>
+    <text x="650" y="356" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Model drift alerts</text>
+    <!-- docker-compose label -->
+    <rect x="748" y="270" width="140" height="106" rx="10" fill="#0d111e" stroke="#334155" stroke-width="1.5"/>
+    <text x="818" y="290" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#94a3b8">docker-compose</text>
+    <text x="818" y="310" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">java-pipeline svc</text>
+    <text x="818" y="328" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">python-ml-service</text>
+    <text x="818" y="346" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">kafka + zookeeper</text>
+    <text x="818" y="364" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">One cmd: up -d</text>
+    <!-- Redis badge -->
+    <rect x="748" y="30" width="140" height="230" rx="10" fill="#0d111e" stroke="#334155" stroke-width="1.5"/>
+    <text x="818" y="52" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#94a3b8">Infrastructure</text>
+    <line x1="758" y1="60" x2="878" y2="60" stroke="#1e293b" stroke-width="1"/>
+    <text x="818" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Redis</text>
+    <text x="818" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">velocity store</text>
+    <text x="818" y="120" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">PostgreSQL</text>
+    <text x="818" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">audit + raw events</text>
+    <text x="818" y="160" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">ONNX Runtime</text>
+    <text x="818" y="176" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">embedded in JVM</text>
+    <text x="818" y="200" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Spring Kafka</text>
+    <text x="818" y="216" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">consumer groups</text>
+    <text x="818" y="240" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">Throughput: 10k/s</text>
+  </svg>
+</div>
+
+<!-- ── S6: Spring Boot + ML Code ── -->
+<div class="slide" id="s-springboot-ml">
+  <div class="pill pill-cyan">Pattern 1 in Action</div>
+  <h2>Spring Boot <span class="accent">Calling</span> an ML Service</h2>
+  <div class="code-wrap" style="max-width:920px;font-size:.81rem">
+<span class="ann">@Service</span>
+<span class="kw">public class</span> <span class="fn">FraudDetectionService</span> {
+
+    <span class="kw">private final</span> WebClient mlClient;
+
+    <span class="ann">@Autowired</span>
+    <span class="kw">public</span> <span class="fn">FraudDetectionService</span>(WebClient.Builder builder) {
+        <span class="kw">this</span>.mlClient = builder.baseUrl(<span class="str">"http://ml-service:8000"</span>).build();
+    }
+
+    <span class="kw">public</span> FraudScore <span class="fn">score</span>(Transaction tx) {
+        <span class="cmt">// 1. Feature engineering — in Java, where the business logic lives</span>
+        TransactionFeatures features = FeatureEngineer.<span class="fn">extract</span>(tx);
+
+        <span class="cmt">// 2. Call ML model over HTTP — non-blocking with WebClient</span>
+        <span class="kw">return</span> mlClient.post()
+            .uri(<span class="str">"/predict/fraud"</span>)
+            .bodyValue(features)
+            .retrieve()
+            .bodyToMono(FraudScore.<span class="kw">class</span>)
+            .block(Duration.<span class="fn">ofMillis</span>(<span class="num">50</span>)); <span class="cmt">// 50ms SLA</span>
+    }
+}
+
+<span class="cmt">// Feature engineering happens HERE — in Java — where domain knowledge lives</span>
+<span class="kw">public class</span> <span class="fn">FeatureEngineer</span> {
+    <span class="kw">public static</span> TransactionFeatures <span class="fn">extract</span>(Transaction tx) {
+        <span class="kw">return new</span> TransactionFeatures(
+            tx.<span class="fn">getAmount</span>(),
+            tx.<span class="fn">getHourOfDay</span>(),
+            tx.<span class="fn">getMerchantCategory</span>(),
+            accountHistory.<span class="fn">getVelocity30d</span>(tx.<span class="fn">getAccountId</span>()),
+            geoService.<span class="fn">getRiskScore</span>(tx.<span class="fn">getLocation</span>())
+        );
+    }
+}
+  </div>
+  <div class="callout" style="max-width:920px">
+    <span class="accent">Key insight:</span> Feature engineering stays in Java — that's where your domain knowledge, business rules, and data access live. The ML model only sees clean, structured features.
+  </div>
+</div>
+
+<!-- ── S7: ONNX In-Process Code ── -->
+<div class="slide" id="s-onnx">
+  <div class="pill pill-cyan">Pattern 2 in Action</div>
+  <h2>ONNX Runtime <span class="accent">Inside the JVM</span></h2>
+  <div class="grid grid-2" style="max-width:940px">
+    <div>
+      <div class="code-wrap" style="font-size:.78rem">
+<span class="cmt">// Maven dependency</span>
+<span class="str">&lt;dependency&gt;</span>
+  <span class="str">&lt;groupId&gt;</span>com.microsoft.onnxruntime<span class="str">&lt;/groupId&gt;</span>
+  <span class="str">&lt;artifactId&gt;</span>onnxruntime<span class="str">&lt;/artifactId&gt;</span>
+  <span class="str">&lt;version&gt;</span>1.17.0<span class="str">&lt;/version&gt;</span>
+<span class="str">&lt;/dependency&gt;</span>
+
+<span class="cmt">// Load model once at startup</span>
+<span class="ann">@Bean</span>
+OrtSession <span class="fn">riskModel</span>() <span class="kw">throws</span> OrtException {
+    OrtEnvironment env = OrtEnvironment.<span class="fn">getEnvironment</span>();
+    <span class="kw">return</span> env.<span class="fn">createSession</span>(<span class="str">"models/risk_v3.onnx"</span>);
+}
+
+<span class="cmt">// Inference — pure Java, no HTTP, sub-millisecond</span>
+<span class="kw">public float</span> <span class="fn">predictRisk</span>(float[] features) {
+    OnnxTensor input = OnnxTensor
+        .<span class="fn">createTensor</span>(env, <span class="kw">new</span> float[][]{features});
+    OrtSession.Result result = session.<span class="fn">run</span>(
+        Map.<span class="fn">of</span>(<span class="str">"input"</span>, input));
+    <span class="kw">return</span> ((float[][]) result.<span class="fn">get</span>(<span class="num">0</span>)
+        .getValue())[<span class="num">0</span>][<span class="num">0</span>];
+}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;justify-content:center">
+      <div class="card" style="border-color:#22d3ee">
+        <h3 class="cyan">Why ONNX?</h3>
+        <p>Train in scikit-learn, XGBoost, or PyTorch. Export once. Run everywhere — including inside your Spring Boot app, no Python runtime needed.</p>
+      </div>
+      <div class="card" style="border-color:#34d399">
+        <h3 class="green">Performance</h3>
+        <p>Sub-millisecond inference. No network overhead. Ideal for high-frequency scoring: 10,000+ transactions/second on a standard JVM.</p>
+      </div>
+      <div class="card" style="border-color:#fbbf24">
+        <h3 class="amber">Model Lifecycle</h3>
+        <p>Retrain in Python on schedule. Swap the .onnx file. The Java service reloads seamlessly — zero downtime, zero code changes.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S8: FinTech Use Case ── -->
+<div class="slide" id="s-fintech">
+  <div class="pill pill-amber">Real World · FinTech</div>
+  <h2>AI in <span class="amber">Financial Systems</span> — The Hard Problems</h2>
+  <div class="grid grid-3" style="max-width:960px;margin-bottom:20px">
+    <div class="card" style="border-top:3px solid #f87171">
+      <div class="icon">🚨</div>
+      <h3 style="color:#f87171">Fraud Detection</h3>
+      <p>Rule-based systems miss novel fraud patterns. ML models trained on transaction graphs catch <strong style="color:#e2e8f0">95%+ of fraud</strong> with &lt;50ms latency embedded in Java payment processors.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #fbbf24">
+      <div class="icon">📉</div>
+      <h3 class="amber">Risk Scoring</h3>
+      <p>Portfolio risk calculated by legacy Java engines. ML adds <strong style="color:#e2e8f0">real-time market sentiment</strong>, counterparty network analysis, and non-linear risk factor correlations.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22d3ee">
+      <div class="icon">📄</div>
+      <h3 class="cyan">Document Intelligence</h3>
+      <p>Fund prospectuses, trade confirmations, regulatory filings. NLP extracts structured data from PDFs — feeding <strong style="color:#e2e8f0">existing Java workflows</strong> that expect clean data objects.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #34d399">
+      <div class="icon">🔮</div>
+      <h3 class="green">Anomaly Detection</h3>
+      <p>Autoencoders trained on normal settlement patterns flag <strong style="color:#e2e8f0">operational breaks</strong> before they cascade. Java reconciliation engines act on the signals.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #c084fc">
+      <div class="icon">📊</div>
+      <h3 class="purple">Predictive Analytics</h3>
+      <p>Time-series models forecast cash flow, redemption pressure, and liquidity needs. Results surface through <strong style="color:#e2e8f0">existing Java reporting pipelines</strong> with zero UI changes.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #6366f1">
+      <div class="icon">🤖</div>
+      <h3 class="accent">Intelligent Routing</h3>
+      <p>ML decides optimal order routing paths, execution venues, and settlement instructions — plugged into <strong style="color:#e2e8f0">Java OMS/EMS systems</strong> via clean service interfaces.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── S9: Full Architecture ── -->
+<div class="slide" id="s-arch">
+  <div class="pill pill-blue">Blueprint</div>
+  <h2>AI-Ready <span class="accent">Spring Boot</span> Architecture</h2>
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:center;max-width:960px;width:100%">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.2rem">📱</span><span style="font-size:.83rem">Client / Trading System</span>
+      </div>
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.2rem">📨</span><span style="font-size:.83rem">Kafka Event Stream</span>
+      </div>
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.2rem">🗄️</span><span style="font-size:.83rem">Oracle / PostgreSQL</span>
+      </div>
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.2rem">📊</span><span style="font-size:.83rem">Feature Store (Redis)</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;padding:0 24px">
+      <div style="font-size:.78rem;color:#475569;margin-bottom:8px">standard I/O</div>
+      <div style="font-size:1.8rem;color:#4f46e5;margin-bottom:-4px">→</div>
+      <div style="background:linear-gradient(135deg,#1a1040,#131929);border:2px solid #6366f1;border-radius:18px;padding:20px 18px;text-align:center;min-width:150px">
+        <div style="font-size:1.8rem">☕</div>
+        <div style="font-weight:800;color:#818cf8;font-size:.95rem;margin-top:6px">Spring Boot</div>
+        <div style="font-size:.7rem;color:#475569;margin-top:2px">AI-Ready Service</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+          <div style="font-size:.7rem;background:#1e293b;border-radius:6px;padding:3px 8px;color:#22d3ee">ONNX Runtime</div>
+          <div style="font-size:.7rem;background:#1e293b;border-radius:6px;padding:3px 8px;color:#34d399">ML Client</div>
+          <div style="font-size:.7rem;background:#1e293b;border-radius:6px;padding:3px 8px;color:#fbbf24">Feature Eng.</div>
+        </div>
+      </div>
+      <div style="font-size:1.8rem;color:#4f46e5;margin-top:-4px">→</div>
+      <div style="font-size:.78rem;color:#475569;margin-top:8px">scored results</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#6366f1">
+        <span style="font-size:1.2rem">🐍</span><span style="font-size:.83rem;color:#818cf8">Python ML Service (FastAPI)</span>
+      </div>
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#22d3ee">
+        <span style="font-size:1.2rem">📦</span><span style="font-size:.83rem;color:#22d3ee">ONNX Model Registry</span>
+      </div>
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#34d399">
+        <span style="font-size:1.2rem">✅</span><span style="font-size:.83rem;color:#34d399">Downstream Java Services</span>
+      </div>
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#fbbf24">
+        <span style="font-size:1.2rem">📈</span><span style="font-size:.83rem;color:#fbbf24">Monitoring + Drift Detection</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S10: ML as REST API ── -->
+<div class="slide" id="s-rest-api">
+  <div class="pill pill-purple">Serving Models</div>
+  <h2>Exposing ML Models as <span class="accent">REST APIs</span></h2>
+  <div class="grid grid-2" style="max-width:940px">
+    <div class="code-wrap" style="font-size:.78rem">
+<span class="cmt"># Python FastAPI — the ML model server</span>
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">import</span> joblib, numpy <span class="kw">as</span> np
+
+app = <span class="fn">FastAPI</span>()
+model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pkl"</span>)
+
+<span class="ann">@app.post</span>(<span class="str">"/predict/fraud"</span>)
+<span class="kw">async def</span> <span class="fn">predict</span>(features: TransactionFeatures):
+    X = np.<span class="fn">array</span>([[
+        features.amount,
+        features.hour_of_day,
+        features.merchant_risk,
+        features.velocity_30d,
+        features.geo_risk
+    ]])
+    prob = model.<span class="fn">predict_proba</span>(X)[<span class="num">0</span>][<span class="num">1</span>]
+    <span class="kw">return</span> {
+        <span class="str">"fraud_probability"</span>: float(prob),
+        <span class="str">"is_fraud"</span>: prob > <span class="num">0.85</span>,
+        <span class="str">"model_version"</span>: <span class="str">"v3.2.1"</span>
+    }
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <div class="card" style="border-color:#c084fc">
+        <h3 class="purple">Why FastAPI?</h3>
+        <p>Auto-generated OpenAPI schema. Java's RestTemplate or WebClient generates a typed client automatically. Contract-first integration.</p>
+      </div>
+      <div class="card" style="border-color:#6366f1">
+        <h3 class="accent">Versioning Strategy</h3>
+        <p>Version the model URL (<code style="color:#86efac">/v3/predict</code>). Java consumers pin to a version. Retrain without breaking existing Java callers.</p>
+      </div>
+      <div class="card" style="border-color:#34d399">
+        <h3 class="green">Health + Observability</h3>
+        <p>Expose <code style="color:#86efac">/health</code> and <code style="color:#86efac">/metrics</code>. Spring Actuator monitors it like any other downstream dependency. Track latency and drift together.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S11: FinTech Deep Dive ── -->
+<div class="slide" id="s-fintech-deep">
+  <div class="pill pill-amber">Case Study · SS&amp;C Context</div>
+  <h2>Real-Time Fraud Detection: <span class="accent">Before</span> vs <span class="green">After</span></h2>
+  <div style="width:100%;max-width:900px;overflow-x:auto;margin-bottom:20px">
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:10px 14px;color:#64748b;border-bottom:2px solid #1e293b;width:28%">Dimension</th>
+          <th style="padding:10px 14px;color:#f87171;border-bottom:2px solid #1e293b;text-align:center">❌ Rules-Only Java</th>
+          <th style="padding:10px 14px;color:#34d399;border-bottom:2px solid #1e293b;text-align:center">✅ Java + ML</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#131929">
+          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Detection rate</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">62% known patterns</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">95%+ including novel fraud</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">False positives</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">High — blocks legit txns</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">72% reduction</td>
+        </tr>
+        <tr style="background:#131929">
+          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Latency added</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a">0ms (rules in-JVM)</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">&lt;2ms (ONNX in-JVM)</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Rule maintenance</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Manual, months per update</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Automated retraining weekly</td>
+        </tr>
+        <tr style="background:#131929">
+          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Adaptation to new fraud</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Weeks–months</td>
+          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Next training cycle (days)</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px;color:#cbd5e1">Java code changes</td>
+          <td style="text-align:center;color:#fbbf24">New rule = new deploy</td>
+          <td style="text-align:center;color:#34d399">Model swap = zero deploy</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="stat-grid">
+    <div class="stat"><div class="number green">95%</div><div class="label">Fraud detection rate</div></div>
+    <div class="stat"><div class="number accent">&lt;2ms</div><div class="label">ML inference latency</div></div>
+    <div class="stat"><div class="number amber">$0</div><div class="label">Java codebase changes needed</div></div>
+  </div>
+</div>
+
+<!-- ── S12: ML Pipeline in Java ── -->
+<div class="slide" id="s-pipeline">
+  <div class="pill pill-green">End to End</div>
+  <h2>ML Pipeline <span class="accent">Embedded</span> in a Java Microservice</h2>
+  <div class="timeline" style="max-width:860px">
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#6366f1">1</div>
+      <h3 class="accent">Data Ingestion — Kafka Consumer (Java)</h3>
+      <p>Spring Kafka listener consumes transaction events. Raw events stored in PostgreSQL. Feature store (Redis) populated with rolling aggregates (velocity, averages).</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#818cf8">2</div>
+      <h3 style="color:#818cf8">Feature Engineering — Spring Service (Java)</h3>
+      <p>Business-logic-heavy transformation: normalize amounts by account tier, compute time-of-day bins, enrich with merchant category risk from Java lookup tables.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#22d3ee">3</div>
+      <h3 class="cyan">Model Inference — ONNX Runtime (in-JVM)</h3>
+      <p>Feature vector passed to ONNX session. Random Forest / XGBoost model returns probability score. Sub-millisecond. No network call. Thread-safe session pool.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:#34d399">4</div>
+      <h3 class="green">Decision Logic — Spring Service (Java)</h3>
+      <p>Score thresholding, confidence bands, ensemble voting. Business rules and ML scores combined — Java stays the decision authority. Full audit trail.</p>
+    </div>
+    <div class="tl-item" style="padding-bottom:0">
+      <div class="tl-dot" style="border-color:#fbbf24">5</div>
+      <h3 class="amber">Action + Monitoring — Spring Actuator + Micrometer</h3>
+      <p>Block / allow / review decisions. ML prediction accuracy tracked via Micrometer. Drift alerts trigger model retraining pipeline in Python. Prometheus + Grafana visualize it all.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── S13: Career Evolution ── -->
+<div class="slide" id="s-career">
+  <div class="pill pill-purple">Career Paths</div>
+  <h2>Java Engineer → <span class="green">AI-Integrated</span> Roles</h2>
+  <div class="grid grid-2" style="max-width:920px;margin-bottom:18px">
+    <div>
+      <div style="width:100%;max-width:440px">
+        <div class="level-bar"><span class="name">Java Core Strength</span><div class="bar-track"><div class="bar-fill" data-w="100"></div></div></div>
+        <div class="level-bar"><span class="name">Python Basics</span><div class="bar-track"><div class="bar-fill" data-w="60"></div></div></div>
+        <div class="level-bar"><span class="name">ML Fundamentals</span><div class="bar-track"><div class="bar-fill" data-w="55"></div></div></div>
+        <div class="level-bar"><span class="name">REST / Integration Patterns</span><div class="bar-track"><div class="bar-fill" data-w="90"></div></div></div>
+        <div class="level-bar"><span class="name">Data Engineering</span><div class="bar-track"><div class="bar-fill" data-w="50"></div></div></div>
+        <div class="level-bar"><span class="name">MLOps / Model Lifecycle</span><div class="bar-track"><div class="bar-fill" data-w="40"></div></div></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card" style="border-left:4px solid #34d399;border-radius:0 14px 14px 0">
+        <h3 class="green">AI-Augmented Java Lead</h3>
+        <p style="font-size:.85rem">Architect the integration layer. Own the ML &rarr; Java contracts. Design feature engineering pipelines. Most in-demand role at FinTech firms today.</p>
+      </div>
+      <div class="card" style="border-left:4px solid #22d3ee;border-radius:0 14px 14px 0">
+        <h3 class="cyan">ML Platform Engineer (Java)</h3>
+        <p style="font-size:.85rem">Build the infrastructure: feature stores, model registries, A/B testing frameworks — all in Java/Spring. The plumbing that makes ML production-ready.</p>
+      </div>
+      <div class="card" style="border-left:4px solid #c084fc;border-radius:0 14px 14px 0">
+        <h3 class="purple">MLOps Engineer</h3>
+        <p style="font-size:.85rem">Bridge Python data science and Java engineering. CI/CD for models. Monitoring, drift detection, retraining pipelines. Rare skill set, high salary ceiling.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S14: Your Roadmap ── -->
+<div class="slide" id="s-roadmap">
+  <div class="pill pill-green">Action Plan</div>
+  <h2>Your 90-Day <span class="accent">Roadmap</span></h2>
+  <div class="grid grid-3" style="max-width:960px;margin-bottom:20px">
+    <div class="card" style="border-top:3px solid #6366f1">
+      <div style="font-size:.78rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Days 1–30 · Learn</div>
+      <ul style="font-size:.84rem">
+        <li>Complete fast.ai or Coursera ML fundamentals</li>
+        <li>Learn scikit-learn, pandas, numpy basics</li>
+        <li>Understand model training vs. inference</li>
+        <li>Run a local Python FastAPI model server</li>
+        <li>Call it from a Spring Boot app you build</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid #22d3ee">
+      <div style="font-size:.78rem;font-weight:700;color:#22d3ee;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Days 31–60 · Build</div>
+      <ul style="font-size:.84rem">
+        <li>Add ONNX Runtime to an existing Spring Boot project</li>
+        <li>Train an XGBoost model, export to ONNX, serve in-JVM</li>
+        <li>Build a feature engineering service layer</li>
+        <li>Wire Micrometer to track model prediction metrics</li>
+        <li>Deploy the full stack to a Docker Compose environment</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid #34d399">
+      <div style="font-size:.78rem;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Days 61–90 · Ship</div>
+      <ul style="font-size:.84rem">
+        <li>Identify ONE ML use case in your current system</li>
+        <li>Build the minimal proof-of-concept end-to-end</li>
+        <li>Add drift monitoring with automated alerting</li>
+        <li>Document the architecture pattern for your team</li>
+        <li>Present results to stakeholders — show the business value</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout" style="max-width:960px;font-size:.95rem">
+    <span class="accent">The secret:</span> Don't ask permission to "add AI." Find a problem your Java system already has — missed fraud, slow reconciliation, manual classification — and quietly solve it. Then show the results.
+  </div>
+</div>
+
+<!-- ── SPRING-AI-01: What is Spring AI ── -->
+<div class="slide" id="s-springai-intro">
+  <div class="pill pill-purple">Pattern 04 · Spring AI</div>
+  <h2>Spring <span class="accent">AI</span> — The Missing Bridge</h2>
+  <div class="grid grid-3" style="max-width:960px;margin-bottom:18px">
+    <div class="card" style="border-top:3px solid #6366f1">
+      <div class="icon">🔌</div>
+      <h3 class="accent">What is Spring AI?</h3>
+      <p>Spring Framework's official AI integration library. Adds a <strong style="color:#e2e8f0">unified abstraction</strong> over LLMs — the same way Spring Data abstracts databases. One API, any provider.</p>
+      <div style="margin-top:10px;font-size:.8rem;color:#6366f1">spring.io/projects/spring-ai</div>
+    </div>
+    <div class="card" style="border-top:3px solid #22d3ee">
+      <div class="icon">🔄</div>
+      <h3 class="cyan">Provider Portability</h3>
+      <p>Swap the Maven starter and one property — your <strong style="color:#e2e8f0">Java code never changes</strong>. OpenAI → Claude → Ollama (local) → Azure OpenAI. Pick the right model for the right job.</p>
+      <div style="margin-top:10px;font-size:.8rem;color:#22d3ee">Zero code change per provider switch</div>
+    </div>
+    <div class="card" style="border-top:3px solid #34d399">
+      <div class="icon">🎯</div>
+      <h3 class="green">Structured Output</h3>
+      <p>Call <code style="color:#86efac">.entity(MyRecord.class)</code> — Spring AI reflects on your Java record, builds a JSON schema, instructs the LLM, and <strong style="color:#e2e8f0">deserialises the response automatically</strong>.</p>
+      <div style="margin-top:10px;font-size:.8rem;color:#34d399">LLM → Java record in one line</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:16px;width:100%;max-width:960px">
+    <div class="card" style="flex:1;border-top:3px solid #fbbf24">
+      <div class="icon">✍️</div>
+      <h3 class="amber">Prompt Templates</h3>
+      <p>Parameterised prompts with <code style="color:#86efac">.text("...{param}...").param(k, v)</code> — no string concatenation, no injection risk, clean separation of prompt logic from data.</p>
+    </div>
+    <div class="card" style="flex:1;border-top:3px solid #c084fc">
+      <div class="icon">🧠</div>
+      <h3 class="purple">Advisors &amp; RAG</h3>
+      <p>Built-in <strong style="color:#e2e8f0">Retrieval Augmented Generation</strong> with vector stores (Postgres pgvector, Redis, Pinecone). Answer questions over your own documents with a few lines of Java.</p>
+    </div>
+    <div class="card" style="flex:1;border-top:3px solid #f87171">
+      <div class="icon">🔧</div>
+      <h3 style="color:#f87171">Function Calling</h3>
+      <p>Expose Java methods as LLM tools. The model decides when to call them. <strong style="color:#e2e8f0">LLM orchestrates your existing Spring services</strong> — no agent framework needed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SPRING-AI-02: Spring AI in Action ── -->
+<div class="slide" id="s-springai-arch" style="padding:28px 50px;gap:10px">
+  <div class="pill pill-purple">Example 06 · Architecture</div>
+  <h2>Spring <span class="accent">AI</span> — Fraud Explainer Service</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0">
+    <defs>
+      <marker id="saf" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="sag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="sac" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+    </defs>
+    <!-- Spring Boot boundary -->
+    <rect x="4" y="4" width="554" height="382" rx="12" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="281" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#818cf8" letter-spacing="2">☕  SPRING BOOT  ·  spring-ai-fraud-explainer  :8006</text>
+    <!-- Controller -->
+    <rect x="20" y="38" width="188" height="88" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="114" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">FraudExplainerController</text>
+    <text x="114" y="82" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/explain</text>
+    <text x="114" y="100" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/ask</text>
+    <text x="114" y="116" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">@RestController</text>
+    <!-- Arrow: Controller → Service -->
+    <line x1="114" y1="126" x2="114" y2="148" stroke="#6366f1" stroke-width="1.5" marker-end="url(#saf)"/>
+    <!-- Service -->
+    <rect x="20" y="150" width="188" height="118" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="114" y="174" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">FraudExplainerService</text>
+    <line x1="30" y1="182" x2="198" y2="182" stroke="#2d3a5e" stroke-width="1"/>
+    <text x="114" y="202" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">chatClient.prompt()</text>
+    <text x="114" y="220" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">  .user(u-&gt;u.text(…).param(k,v))</text>
+    <text x="114" y="238" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">  .call()</text>
+    <text x="114" y="256" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">  .entity(FraudExplanation.class)</text>
+    <!-- Arrow: Service → ChatClient -->
+    <line x1="114" y1="268" x2="114" y2="302" stroke="#6366f1" stroke-width="1.5" marker-end="url(#saf)"/>
+    <!-- ChatClient -->
+    <rect x="20" y="304" width="188" height="70" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="114" y="326" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">ChatClient @Bean</text>
+    <text x="114" y="346" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">builder.defaultSystem("Senior</text>
+    <text x="114" y="362" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">fraud analyst…").build()</text>
+    <!-- Prompt Template box -->
+    <rect x="230" y="38" width="194" height="150" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+    <text x="327" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Prompt Template</text>
+    <line x1="240" y1="68" x2="414" y2="68" stroke="#1e293b" stroke-width="1"/>
+    <text x="327" y="88" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">system: "You are a senior</text>
+    <text x="327" y="106" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">fraud analyst at a bank..."</text>
+    <text x="327" y="128" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">user: "Analyze TX {txId}</text>
+    <text x="327" y="146" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">amount {amount} prob {prob}%"</text>
+    <text x="327" y="166" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">→ filled at call time</text>
+    <!-- Structured Output box -->
+    <rect x="230" y="210" width="194" height="150" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+    <text x="327" y="232" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Structured Output</text>
+    <line x1="240" y1="240" x2="414" y2="240" stroke="#1e293b" stroke-width="1"/>
+    <text x="327" y="260" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Reflects FraudExplanation</text>
+    <text x="327" y="278" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">→ builds JSON schema</text>
+    <text x="327" y="296" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">→ instructs LLM</text>
+    <text x="327" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#34d399">→ auto-deserialises</text>
+    <text x="327" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#34d399">to Java record ✓</text>
+    <!-- Arrows -->
+    <line x1="208" y1="210" x2="230" y2="156" stroke="#6366f1" stroke-width="1.5" marker-end="url(#saf)"/>
+    <line x1="230" y1="290" x2="208" y2="258" stroke="#34d399" stroke-width="1.5" marker-end="url(#sag)"/>
+    <!-- Arrow: ChatClient → AI provider -->
+    <line x1="560" y1="340" x2="596" y2="290" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#sac)"/>
+    <line x1="208" y1="340" x2="558" y2="340" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <!-- AI Provider zone -->
+    <rect x="566" y="4" width="330" height="382" rx="12" fill="#0d111e" stroke="#0e4f6d" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <text x="731" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#22d3ee" letter-spacing="2">AI PROVIDER</text>
+    <!-- OpenAI -->
+    <rect x="582" y="38" width="298" height="76" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="731" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">OpenAI (default)</text>
+    <text x="731" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">gpt-4o-mini · spring-ai-openai-spring-boot-starter</text>
+    <text x="731" y="100" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">OPENAI_API_KEY env var · temperature=0.2</text>
+    <!-- Anthropic -->
+    <rect x="582" y="130" width="298" height="76" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+    <text x="731" y="152" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#94a3b8">Anthropic Claude</text>
+    <text x="731" y="172" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">claude-3-5-sonnet · spring-ai-anthropic-starter</text>
+    <text x="731" y="192" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">swap starter in pom.xml · zero code change</text>
+    <!-- Ollama -->
+    <rect x="582" y="222" width="298" height="76" rx="8" fill="#131929" stroke="#334155" stroke-width="1.5"/>
+    <text x="731" y="244" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#94a3b8">Ollama (local, free)</text>
+    <text x="731" y="264" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#475569">llama3.1 · spring-ai-ollama-starter</text>
+    <text x="731" y="282" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">No API key · runs offline · perfect for demos</text>
+    <!-- Input / Output -->
+    <rect x="440" y="38" width="114" height="74" rx="8" fill="#1c1a10" stroke="#78350f" stroke-width="1.5"/>
+    <text x="497" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">FraudAlert IN</text>
+    <text x="497" y="78" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">from ML pipeline</text>
+    <text x="497" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">(examples 01–05)</text>
+    <rect x="440" y="246" width="114" height="96" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="497" y="268" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">FraudExplanation</text>
+    <text x="497" y="288" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#86efac">summary</text>
+    <text x="497" y="304" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#86efac">riskFactors[3]</text>
+    <text x="497" y="320" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#86efac">recommendedAction</text>
+    <text x="497" y="336" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#86efac">urgencyScore 1–10</text>
+    <!-- Arrow IN → Controller -->
+    <line x1="440" y1="75" x2="210" y2="75" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#saf)"/>
+    <!-- Arrow Service → OUT -->
+    <line x1="208" y1="258" x2="438" y2="290" stroke="#34d399" stroke-width="1.5" marker-end="url(#sag)"/>
+  </svg>
+</div>
+
+<!-- ── SPRING-AI-03: Code ── -->
+<div class="slide" id="s-springai-code">
+  <div class="pill pill-purple">Example 06 · Code</div>
+  <h2>Spring AI in <span class="accent">3 Steps</span></h2>
+  <div class="grid grid-2" style="max-width:960px">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="code-wrap" style="font-size:.77rem">
+<span class="cmt">// Step 1 — pom.xml: add ONE starter</span>
+<span class="str">&lt;dependency&gt;</span>
+  <span class="str">&lt;groupId&gt;</span>org.springframework.ai<span class="str">&lt;/groupId&gt;</span>
+  <span class="str">&lt;artifactId&gt;</span>spring-ai-openai-spring-boot-starter<span class="str">&lt;/artifactId&gt;</span>
+<span class="str">&lt;/dependency&gt;</span>
+
+<span class="cmt">// Step 2 — AiConfig.java: configure the ChatClient bean</span>
+<span class="ann">@Bean</span>
+<span class="fn">ChatClient</span> <span class="fn">chatClient</span>(ChatClient.Builder builder) {
+    <span class="kw">return</span> builder
+        .<span class="fn">defaultSystem</span>(<span class="str">"You are a senior fraud analyst..."</span>)
+        .<span class="fn">build</span>();
+}
+
+<span class="cmt">// Step 3 — Service: prompt + structured output</span>
+<span class="kw">public</span> FraudExplanation <span class="fn">explain</span>(FraudAlert alert) {
+    <span class="kw">return</span> chatClient.prompt()
+        .<span class="fn">user</span>(u -> u
+            .<span class="fn">text</span>(<span class="str">"Analyze TX {txId}: amount {amount}..."</span>)
+            .<span class="fn">param</span>(<span class="str">"txId"</span>,   alert.<span class="fn">transactionId</span>())
+            .<span class="fn">param</span>(<span class="str">"amount"</span>, alert.<span class="fn">amount</span>()))
+        .<span class="fn">call</span>()
+        .<span class="fn">entity</span>(FraudExplanation.<span class="kw">class</span>); <span class="cmt">// LLM → Java record</span>
+}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <div class="code-wrap" style="font-size:.75rem">
+<span class="cmt">// FraudExplanation.java — Spring AI reflects on this</span>
+<span class="kw">public record</span> <span class="fn">FraudExplanation</span>(
+    String summary,              <span class="cmt">// one-sentence verdict</span>
+    List&lt;String&gt; riskFactors,   <span class="cmt">// exactly 3 factors</span>
+    String recommendedAction,    <span class="cmt">// BLOCK | REVIEW | ALLOW</span>
+    String customerMessage,      <span class="cmt">// plain-English</span>
+    String analystNote,          <span class="cmt">// technical detail</span>
+    <span class="kw">int</span> urgencyScore             <span class="cmt">// 1–10</span>
+) {}
+
+<span class="cmt">// Example LLM response (auto-mapped):</span>
+{
+  <span class="str">"summary"</span>: <span class="str">"3 AM card-not-present FUEL exceeds normal patterns"</span>,
+  <span class="str">"riskFactors"</span>: [<span class="str">"3 AM hour"</span>, <span class="str">"geo mismatch"</span>, <span class="str">"high velocity"</span>],
+  <span class="str">"recommendedAction"</span>: <span class="str">"BLOCK"</span>,
+  <span class="str">"customerMessage"</span>: <span class="str">"We placed a hold for your security..."</span>,
+  <span class="str">"analystNote"</span>: <span class="str">"92% prob — matches card-testing pattern"</span>,
+  <span class="str">"urgencyScore"</span>: <span class="num">9</span>
+}
+      </div>
+      <div class="callout" style="margin-top:0">
+        <span class="accent">The insight:</span> Spring AI turns the raw <strong style="color:#e2e8f0">0.92 probability score</strong> into a <span class="green">human-readable explanation</span> with recommended action — bridging ML output and business decisions.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S15: Key Takeaways ── -->
+<div class="slide" id="s-takeaways">
+  <div class="pill pill-blue">Summary</div>
+  <h2>5 Things to <span class="accent">Remember</span></h2>
+  <div class="grid grid-2" style="max-width:900px">
+    <div class="card" style="border-left:4px solid #6366f1;border-radius:0 14px 14px 0">
+      <h3 class="accent" style="margin-bottom:8px">1. Java is not the problem</h3>
+      <p>30 years of battle-tested code, domain knowledge, and business logic cannot be replaced. It must be extended. Java is your foundation, not your limitation.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #34d399;border-radius:0 14px 14px 0">
+      <h3 class="green" style="margin-bottom:8px">2. Three integration patterns work</h3>
+      <p>Model-as-a-service (REST), ONNX in-JVM, or Java-native ML. Each fits different latency, privacy, and operational requirements. Pick the right one per use case.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #22d3ee;border-radius:0 14px 14px 0">
+      <h3 class="cyan" style="margin-bottom:8px">3. Feature engineering stays in Java</h3>
+      <p>Your domain logic, business rules, and data access are in Java — that's where features should be built. The ML model should only see clean, engineered inputs.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #fbbf24;border-radius:0 14px 14px 0">
+      <h3 class="amber" style="margin-bottom:8px">4. Start with one production problem</h3>
+      <p>Don't build a platform. Don't rewrite. Find one real problem — fraud, classification, anomaly detection — solve it end-to-end, and prove value before scaling.</p>
+    </div>
+  </div>
+  <div class="card" style="border-left:4px solid #c084fc;border-radius:0 14px 14px 0;max-width:900px;margin-top:14px">
+    <h3 class="purple" style="margin-bottom:8px">5. Your Java skills are an unfair advantage</h3>
+    <p>Most ML engineers don't know how to operate production systems. You do. The Java engineer who learns ML integration is 10× more valuable than either alone.</p>
+  </div>
+</div>
+
+<!-- ── S16: Closing ── -->
+<div class="slide" id="s-close" style="background:radial-gradient(ellipse at 40% 60%, #1a1040 0%, #0b0f1a 70%)">
+  <div class="hero-glow" style="left:40%;top:60%"></div>
+  <div class="pill pill-blue">Thank You</div>
+  <h1 style="text-align:center">
+    Don't <span class="rose">Replace</span> Java.<br/>
+    <span class="green">Supercharge</span> It.
+  </h1>
+  <p style="margin-top:20px;max-width:600px;text-align:center;font-size:1.1rem">
+    Your 20 years of Java knowledge is not a liability in the AI era.<br/>
+    It is the <strong style="color:#e2e8f0">most valuable context</strong> an ML pipeline can have.
+  </p>
+  <div style="display:flex;gap:28px;margin-top:38px;flex-wrap:wrap;justify-content:center">
+    <div style="text-align:center">
+      <div style="color:#64748b;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Slides</div>
+      <div style="color:#818cf8;font-size:.92rem">github.com/suryaraor/speaker</div>
+    </div>
+    <div style="text-align:center">
+      <div style="color:#64748b;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">ONNX Runtime</div>
+      <div style="color:#818cf8;font-size:.92rem">onnxruntime.ai</div>
+    </div>
+    <div style="text-align:center">
+      <div style="color:#64748b;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Tribuo (Java ML)</div>
+      <div style="color:#818cf8;font-size:.92rem">tribuo.org</div>
+    </div>
+    <div style="text-align:center">
+      <div style="color:#64748b;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Speaker</div>
+      <div style="color:#818cf8;font-size:.92rem">linkedin.com/in/suryarao</div>
+    </div>
+  </div>
+  <div class="callout" style="max-width:700px;margin-top:32px;text-align:center;border-left:none;border:1px solid #6366f1;border-radius:12px">
+    Questions? Let's talk Java + AI. Find me after the session or reach out on LinkedIn.
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<div id="nav">
+  <button class="nav-btn" id="prev" title="Previous (←)">&#8592;</button>
+  <span id="progress-text">1 / 17</span>
+  <button class="nav-btn" id="next" title="Next (→)">&#8594;</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total  = slides.length;
+  let   cur    = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('exit');
+    const prev = cur;
+    setTimeout(() => slides[prev].classList.remove('exit'), 500);
+    cur = n;
+    slides[cur].classList.add('active');
+    document.getElementById('progress-text').textContent = `${cur + 1} / ${total}`;
+    animateBars();
+  }
+
+  document.getElementById('next').onclick = () => goTo(cur + 1);
+  document.getElementById('prev').onclick = () => goTo(cur - 1);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  goTo(cur - 1);
+  });
+
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) goTo(cur + (dx < 0 ? 1 : -1));
+  });
+
+  function animateBars() {
+    const active = slides[cur];
+    active.querySelectorAll('.bar-fill').forEach(bar => {
+      const w = bar.dataset.w;
+      setTimeout(() => { bar.style.width = w + '%'; }, 100);
+    });
+  }
+
+  animateBars();
+  document.getElementById('progress-text').textContent = `1 / ${total}`;
+</script>
+</body>
+</html>
