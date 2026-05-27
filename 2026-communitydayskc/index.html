@@ -317,11 +317,11 @@
   <div class="pill pill-blue">Architecture</div>
   <h2>Three Patterns to <span class="accent">Bridge</span> Java and ML</h2>
   <div class="grid grid-3" style="max-width:960px;margin-bottom:20px">
-    <div class="card" style="border-top:3px solid #6366f1">
-      <div class="icon">🌐</div>
-      <h3 class="accent">Pattern 1: Model as a Service</h3>
-      <p>ML model runs in Python (Flask / FastAPI). Java calls it over HTTP REST. <strong style="color:#e2e8f0">Clean separation.</strong> Python team owns the model; Java team owns the integration.</p>
-      <div style="margin-top:12px;font-size:.8rem;color:#6366f1">Best for: large models, GPU inference, frequent retraining</div>
+    <div class="card" style="border-top:3px solid #34d399">
+      <div class="icon">☕</div>
+      <h3 class="green">Pattern 1: Java-Native ML</h3>
+      <p>Use <strong style="color:#e2e8f0">Weka, Tribuo, or DL4J</strong> — train and serve entirely in Java. No Python, no polyglot stack. Full JVM control.</p>
+      <div style="margin-top:12px;font-size:.8rem;color:#34d399">Best for: regulated environments, Java-only shops, simple models</div>
     </div>
     <div class="card" style="border-top:3px solid #22d3ee">
       <div class="icon">⚙️</div>
@@ -329,11 +329,11 @@
       <p>Train in Python, export to ONNX, load with <strong style="color:#e2e8f0">ONNX Runtime for Java</strong>. Inference happens inside the JVM — no network hop, no latency.</p>
       <div style="margin-top:12px;font-size:.8rem;color:#22d3ee">Best for: low-latency scoring, edge cases, high-throughput</div>
     </div>
-    <div class="card" style="border-top:3px solid #34d399">
-      <div class="icon">☕</div>
-      <h3 class="green">Pattern 3: Java-Native ML</h3>
-      <p>Use <strong style="color:#e2e8f0">Tribuo, Weka, or DL4J</strong> — train and serve entirely in Java. No Python, no polyglot stack. Full JVM control.</p>
-      <div style="margin-top:12px;font-size:.8rem;color:#34d399">Best for: simple models, regulated environments, Java-only shops</div>
+    <div class="card" style="border-top:3px solid #6366f1">
+      <div class="icon">🌐</div>
+      <h3 class="accent">Pattern 3: Model as a Service</h3>
+      <p>ML model runs in Python (Flask / FastAPI). Java calls it over HTTP REST. <strong style="color:#e2e8f0">Clean separation.</strong> Python team owns the model; Java team owns the integration.</p>
+      <div style="margin-top:12px;font-size:.8rem;color:#6366f1">Best for: large models, GPU inference, frequent retraining</div>
     </div>
   </div>
   <div class="flow" style="margin-top:4px">
@@ -351,7 +351,7 @@
 
 <!-- ── ARCH-01: Model as a Service ── -->
 <div class="slide" id="s-arch-01" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-blue">Pattern 02 · Architecture</div>
+  <div class="pill pill-blue">Pattern 03 · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="accent">Model as a Service</span> — REST Integration</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Model as a Service Architecture Diagram">
     <defs>
@@ -443,7 +443,7 @@
 
 <!-- ── ARCH-02: ONNX In-JVM ── -->
 <div class="slide" id="s-arch-02" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-cyan">Pattern 03 · Architecture</div>
+  <div class="pill pill-cyan">Pattern 02 · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="cyan">ONNX In-JVM</span> — Model Embedded in the JVM</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="ONNX In-JVM Architecture Diagram">
     <defs>
@@ -530,7 +530,7 @@
     <text x="118" y="334" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="18" font-weight="800" fill="#34d399">0.18 ms</text>
     <text x="118" y="354" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">per prediction</text>
     <rect x="232" y="296" width="196" height="72" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="330" y="316" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#f87171">REST API (Pattern 1)</text>
+    <text x="330" y="316" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#f87171">REST API (Pattern 3)</text>
     <text x="330" y="334" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="18" font-weight="800" fill="#f87171">~50 ms</text>
     <text x="330" y="354" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">per prediction</text>
     <rect x="444" y="296" width="430" height="72" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1"/>
@@ -542,7 +542,7 @@
 
 <!-- ── ARCH-03: Java Native ML ── -->
 <div class="slide" id="s-arch-03" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-green">Pattern 04 · Architecture</div>
+  <div class="pill pill-green">Pattern 01 · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="green">Java-Native ML</span> — Zero External Dependencies</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Java Native ML Architecture Diagram">
     <defs>
@@ -747,7 +747,7 @@
 
 <!-- ── S6: Spring Boot + ML Code ── -->
 <div class="slide" id="s-springboot-ml">
-  <div class="pill pill-cyan">Pattern 1 in Action</div>
+  <div class="pill pill-cyan">Pattern 3 in Action</div>
   <h2>Spring Boot <span class="accent">Calling</span> an ML Service</h2>
   <div class="code-wrap" style="max-width:920px;font-size:.81rem">
 <span class="ann">@Service</span>
@@ -841,97 +841,7 @@ OrtSession <span class="fn">riskModel</span>() <span class="kw">throws</span> Or
   </div>
 </div>
 
-<!-- ── S8: FinTech Use Case ── -->
-<div class="slide" id="s-fintech">
-  <div class="pill pill-amber">Real World · FinTech</div>
-  <h2>AI in <span class="amber">Financial Systems</span> — The Hard Problems</h2>
-  <div class="grid grid-3" style="max-width:960px;margin-bottom:20px">
-    <div class="card" style="border-top:3px solid #f87171">
-      <div class="icon">🚨</div>
-      <h3 style="color:#f87171">Fraud Detection</h3>
-      <p>Rule-based systems miss novel fraud patterns. ML models trained on transaction graphs catch <strong style="color:#e2e8f0">95%+ of fraud</strong> with &lt;50ms latency embedded in Java payment processors.</p>
-    </div>
-    <div class="card" style="border-top:3px solid #fbbf24">
-      <div class="icon">📉</div>
-      <h3 class="amber">Risk Scoring</h3>
-      <p>Portfolio risk calculated by legacy Java engines. ML adds <strong style="color:#e2e8f0">real-time market sentiment</strong>, counterparty network analysis, and non-linear risk factor correlations.</p>
-    </div>
-    <div class="card" style="border-top:3px solid #22d3ee">
-      <div class="icon">📄</div>
-      <h3 class="cyan">Document Intelligence</h3>
-      <p>Fund prospectuses, trade confirmations, regulatory filings. NLP extracts structured data from PDFs — feeding <strong style="color:#e2e8f0">existing Java workflows</strong> that expect clean data objects.</p>
-    </div>
-    <div class="card" style="border-top:3px solid #34d399">
-      <div class="icon">🔮</div>
-      <h3 class="green">Anomaly Detection</h3>
-      <p>Autoencoders trained on normal settlement patterns flag <strong style="color:#e2e8f0">operational breaks</strong> before they cascade. Java reconciliation engines act on the signals.</p>
-    </div>
-    <div class="card" style="border-top:3px solid #c084fc">
-      <div class="icon">📊</div>
-      <h3 class="purple">Predictive Analytics</h3>
-      <p>Time-series models forecast cash flow, redemption pressure, and liquidity needs. Results surface through <strong style="color:#e2e8f0">existing Java reporting pipelines</strong> with zero UI changes.</p>
-    </div>
-    <div class="card" style="border-top:3px solid #6366f1">
-      <div class="icon">🤖</div>
-      <h3 class="accent">Intelligent Routing</h3>
-      <p>ML decides optimal order routing paths, execution venues, and settlement instructions — plugged into <strong style="color:#e2e8f0">Java OMS/EMS systems</strong> via clean service interfaces.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ── S9: Full Architecture ── -->
-<div class="slide" id="s-arch">
-  <div class="pill pill-blue">Blueprint</div>
-  <h2>AI-Ready <span class="accent">Spring Boot</span> Architecture</h2>
-  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:center;max-width:960px;width:100%">
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.2rem">📱</span><span style="font-size:.83rem">Client / Trading System</span>
-      </div>
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.2rem">📨</span><span style="font-size:.83rem">Kafka Event Stream</span>
-      </div>
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.2rem">🗄️</span><span style="font-size:.83rem">Oracle / PostgreSQL</span>
-      </div>
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.2rem">📊</span><span style="font-size:.83rem">Feature Store (Redis)</span>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;padding:0 24px">
-      <div style="font-size:.78rem;color:#475569;margin-bottom:8px">standard I/O</div>
-      <div style="font-size:1.8rem;color:#4f46e5;margin-bottom:-4px">→</div>
-      <div style="background:linear-gradient(135deg,#1a1040,#131929);border:2px solid #6366f1;border-radius:18px;padding:20px 18px;text-align:center;min-width:150px">
-        <div style="font-size:1.8rem">☕</div>
-        <div style="font-weight:800;color:#818cf8;font-size:.95rem;margin-top:6px">Spring Boot</div>
-        <div style="font-size:.7rem;color:#475569;margin-top:2px">AI-Ready Service</div>
-        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
-          <div style="font-size:.7rem;background:#1e293b;border-radius:6px;padding:3px 8px;color:#22d3ee">ONNX Runtime</div>
-          <div style="font-size:.7rem;background:#1e293b;border-radius:6px;padding:3px 8px;color:#34d399">ML Client</div>
-          <div style="font-size:.7rem;background:#1e293b;border-radius:6px;padding:3px 8px;color:#fbbf24">Feature Eng.</div>
-        </div>
-      </div>
-      <div style="font-size:1.8rem;color:#4f46e5;margin-top:-4px">→</div>
-      <div style="font-size:.78rem;color:#475569;margin-top:8px">scored results</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#6366f1">
-        <span style="font-size:1.2rem">🐍</span><span style="font-size:.83rem;color:#818cf8">Python ML Service (FastAPI)</span>
-      </div>
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#22d3ee">
-        <span style="font-size:1.2rem">📦</span><span style="font-size:.83rem;color:#22d3ee">ONNX Model Registry</span>
-      </div>
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#34d399">
-        <span style="font-size:1.2rem">✅</span><span style="font-size:.83rem;color:#34d399">Downstream Java Services</span>
-      </div>
-      <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-color:#fbbf24">
-        <span style="font-size:1.2rem">📈</span><span style="font-size:.83rem;color:#fbbf24">Monitoring + Drift Detection</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ── S10: ML as REST API ── -->
+<!-- ── S8: ML as REST API ── -->
 <div class="slide" id="s-rest-api">
   <div class="pill pill-purple">Serving Models</div>
   <h2>Exposing ML Models as <span class="accent">REST APIs</span></h2>
@@ -977,94 +887,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
   </div>
 </div>
 
-<!-- ── S11: FinTech Deep Dive ── -->
-<div class="slide" id="s-fintech-deep">
-  <div class="pill pill-amber">Case Study · SS&amp;C Context</div>
-  <h2>Real-Time Fraud Detection: <span class="accent">Before</span> vs <span class="green">After</span></h2>
-  <div style="width:100%;max-width:900px;overflow-x:auto;margin-bottom:20px">
-    <table style="width:100%;border-collapse:collapse;font-size:.88rem">
-      <thead>
-        <tr>
-          <th style="text-align:left;padding:10px 14px;color:#64748b;border-bottom:2px solid #1e293b;width:28%">Dimension</th>
-          <th style="padding:10px 14px;color:#f87171;border-bottom:2px solid #1e293b;text-align:center">❌ Rules-Only Java</th>
-          <th style="padding:10px 14px;color:#34d399;border-bottom:2px solid #1e293b;text-align:center">✅ Java + ML</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="background:#131929">
-          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Detection rate</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">62% known patterns</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">95%+ including novel fraud</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">False positives</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">High — blocks legit txns</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">72% reduction</td>
-        </tr>
-        <tr style="background:#131929">
-          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Latency added</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a">0ms (rules in-JVM)</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">&lt;2ms (ONNX in-JVM)</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Rule maintenance</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Manual, months per update</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Automated retraining weekly</td>
-        </tr>
-        <tr style="background:#131929">
-          <td style="padding:10px 14px;color:#cbd5e1;border-bottom:1px solid #0f172a">Adaptation to new fraud</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#f87171">Weeks–months</td>
-          <td style="text-align:center;border-bottom:1px solid #0f172a;color:#34d399">Next training cycle (days)</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px;color:#cbd5e1">Java code changes</td>
-          <td style="text-align:center;color:#fbbf24">New rule = new deploy</td>
-          <td style="text-align:center;color:#34d399">Model swap = zero deploy</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="stat-grid">
-    <div class="stat"><div class="number green">95%</div><div class="label">Fraud detection rate</div></div>
-    <div class="stat"><div class="number accent">&lt;2ms</div><div class="label">ML inference latency</div></div>
-    <div class="stat"><div class="number amber">$0</div><div class="label">Java codebase changes needed</div></div>
-  </div>
-</div>
-
-<!-- ── S12: ML Pipeline in Java ── -->
-<div class="slide" id="s-pipeline">
-  <div class="pill pill-green">End to End</div>
-  <h2>ML Pipeline <span class="accent">Embedded</span> in a Java Microservice</h2>
-  <div class="timeline" style="max-width:860px">
-    <div class="tl-item">
-      <div class="tl-dot" style="border-color:#6366f1">1</div>
-      <h3 class="accent">Data Ingestion — Kafka Consumer (Java)</h3>
-      <p>Spring Kafka listener consumes transaction events. Raw events stored in PostgreSQL. Feature store (Redis) populated with rolling aggregates (velocity, averages).</p>
-    </div>
-    <div class="tl-item">
-      <div class="tl-dot" style="border-color:#818cf8">2</div>
-      <h3 style="color:#818cf8">Feature Engineering — Spring Service (Java)</h3>
-      <p>Business-logic-heavy transformation: normalize amounts by account tier, compute time-of-day bins, enrich with merchant category risk from Java lookup tables.</p>
-    </div>
-    <div class="tl-item">
-      <div class="tl-dot" style="border-color:#22d3ee">3</div>
-      <h3 class="cyan">Model Inference — ONNX Runtime (in-JVM)</h3>
-      <p>Feature vector passed to ONNX session. Random Forest / XGBoost model returns probability score. Sub-millisecond. No network call. Thread-safe session pool.</p>
-    </div>
-    <div class="tl-item">
-      <div class="tl-dot" style="border-color:#34d399">4</div>
-      <h3 class="green">Decision Logic — Spring Service (Java)</h3>
-      <p>Score thresholding, confidence bands, ensemble voting. Business rules and ML scores combined — Java stays the decision authority. Full audit trail.</p>
-    </div>
-    <div class="tl-item" style="padding-bottom:0">
-      <div class="tl-dot" style="border-color:#fbbf24">5</div>
-      <h3 class="amber">Action + Monitoring — Spring Actuator + Micrometer</h3>
-      <p>Block / allow / review decisions. ML prediction accuracy tracked via Micrometer. Drift alerts trigger model retraining pipeline in Python. Prometheus + Grafana visualize it all.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ── S13: Career Evolution ── -->
+<!-- ── S9: Career Evolution ── -->
 <div class="slide" id="s-career">
   <div class="pill pill-purple">Career Paths</div>
   <h2>Java Engineer → <span class="green">AI-Integrated</span> Roles</h2>
@@ -1096,7 +919,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
   </div>
 </div>
 
-<!-- ── S14: Your Roadmap ── -->
+<!-- ── S10: Your Roadmap ── -->
 <div class="slide" id="s-roadmap">
   <div class="pill pill-green">Action Plan</div>
   <h2>Your 90-Day <span class="accent">Roadmap</span></h2>
@@ -1139,7 +962,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <!-- ── SPRING-AI-01: What is Spring AI ── -->
 <div class="slide" id="s-springai-intro">
-  <div class="pill pill-purple">Example 01 · Spring AI</div>
+  <div class="pill pill-purple">Example 04 · Spring AI</div>
   <h2>Spring <span class="accent">AI</span> — The Missing Bridge</h2>
   <div class="grid grid-3" style="max-width:960px;margin-bottom:18px">
     <div class="card" style="border-top:3px solid #6366f1">
@@ -1182,7 +1005,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <!-- ── SPRING-AI-02: Spring AI in Action ── -->
 <div class="slide" id="s-springai-arch" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-purple">Example 01 · Architecture</div>
+  <div class="pill pill-purple">Example 04 · Architecture</div>
   <h2>Spring <span class="accent">AI</span> — Fraud Explainer Service</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0">
     <defs>
@@ -1262,7 +1085,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
     <rect x="440" y="38" width="114" height="74" rx="8" fill="#1c1a10" stroke="#78350f" stroke-width="1.5"/>
     <text x="497" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">FraudAlert IN</text>
     <text x="497" y="78" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">from ML pipeline</text>
-    <text x="497" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">(examples 02–05)</text>
+    <text x="497" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">(examples 01–03, 05)</text>
     <rect x="440" y="246" width="114" height="96" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
     <text x="497" y="268" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">FraudExplanation</text>
     <text x="497" y="288" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#86efac">summary</text>
@@ -1278,7 +1101,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <!-- ── SPRING-AI-03: Code ── -->
 <div class="slide" id="s-springai-code">
-  <div class="pill pill-purple">Example 01 · Code</div>
+  <div class="pill pill-purple">Example 04 · Code</div>
   <h2>Spring AI in <span class="accent">3 Steps</span></h2>
   <div class="grid grid-2" style="max-width:960px">
     <div style="display:flex;flex-direction:column;gap:14px">
@@ -1405,7 +1228,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <div id="nav">
   <button class="nav-btn" id="prev" title="Previous (←)">&#8592;</button>
-  <span id="progress-text">1 / 17</span>
+  <span id="progress-text">1 / 20</span>
   <button class="nav-btn" id="next" title="Next (→)">&#8594;</button>
 </div>
 

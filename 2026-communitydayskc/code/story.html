@@ -343,8 +343,8 @@
 <!--  CHAPTER 1 · Model as a Service                                            -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch1">
-  <div class="chapter-dot">02</div>
-  <div class="chapter-num">Chapter 2 · example 02-model-as-service</div>
+  <div class="chapter-dot">03</div>
+  <div class="chapter-num">Chapter 2 · example 03-model-as-service</div>
   <h2>The Quick Win — Call Python Over HTTP</h2>
   <span class="tag tag-1">REST · WebClient · Fallback</span>
   <span class="tag tag-1">Python FastAPI + sklearn</span>
@@ -410,8 +410,8 @@
 <!--  CHAPTER 2 · ONNX in JVM                                                  -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch2">
-  <div class="chapter-dot">03</div>
-  <div class="chapter-num">Chapter 3 · example 03-onnx-in-jvm</div>
+  <div class="chapter-dot">02</div>
+  <div class="chapter-num">Chapter 3 · example 02-onnx-in-jvm</div>
   <h2>The Passport Trick — Train in Python, Run in Java</h2>
   <span class="tag tag-2">ONNX Runtime · In-JVM Inference</span>
   <span class="tag tag-2">Sub-millisecond · No Python at runtime</span>
@@ -489,8 +489,8 @@
 <!--  CHAPTER 3 · Java-Native ML                                                -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch3">
-  <div class="chapter-dot">04</div>
-  <div class="chapter-num">Chapter 4 · example 04-java-native-ml</div>
+  <div class="chapter-dot">01</div>
+  <div class="chapter-num">Chapter 4 · example 01-java-native-ml</div>
   <h2>The Compliance Team's Dream — 100% Java, Zero External Dependencies</h2>
   <span class="tag tag-3">Weka · RandomForest in Java</span>
   <span class="tag tag-3">Air-gapped · Fully auditable</span>
@@ -661,19 +661,19 @@ open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka U
       </thead>
       <tbody>
         <tr>
-          <td><span class="pattern-name" style="color:var(--accent)">02 · REST</span></td>
+          <td><span class="pattern-name" style="color:var(--accent)">03 · REST</span></td>
           <td>Data science team owns the model lifecycle independently. Model changes often. You need OpenAPI docs and monitoring for free.</td>
           <td style="color:var(--yellow)">10–50ms</td>
           <td style="color:var(--red)">High — another service to run</td>
         </tr>
         <tr>
-          <td><span class="pattern-name" style="color:var(--green)">03 · ONNX</span></td>
+          <td><span class="pattern-name" style="color:var(--green)">02 · ONNX</span></td>
           <td>Latency matters. You want sub-ms inference. Model changes occasionally. You're OK with Python at train time, not runtime.</td>
           <td style="color:var(--green)">&lt;1ms</td>
           <td style="color:var(--green)">Low — one .onnx file</td>
         </tr>
         <tr>
-          <td><span class="pattern-name" style="color:var(--purple)">04 · Native (Weka)</span></td>
+          <td><span class="pattern-name" style="color:var(--purple)">01 · Native (Weka)</span></td>
           <td>Air-gapped or compliance-restricted environment. No Python anywhere. Team is Java-only. Tabular data, not deep learning.</td>
           <td style="color:var(--green)">&lt;1ms</td>
           <td style="color:var(--green)">Zero — lives in the JAR</td>
@@ -688,11 +688,11 @@ open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka U
     </table>
 
     <div class="highlight">
-      "The realistic production journey: start with 02 (REST) to get something working fast. Migrate the hot path to 03 (ONNX) for low latency. Use 04 (Native) for compliance-restricted subsystems. Wire it all with 05 (Pipeline) for event-driven scale. And from day one, use 01 (Spring AI) to explain every score to your stakeholders."
+      "The realistic production journey: start with 03 (REST) to get something working fast. Migrate the hot path to 02 (ONNX) for low latency. Use 01 (Native) for compliance-restricted subsystems. Wire it all with 05 (Pipeline) for event-driven scale. And from day one, use 04 (Spring AI) to explain every score to your stakeholders."
     </div>
 
-    <p>The realistic production answer for most teams: start with <strong>02 (REST)</strong> to get something working fast and let data science iterate. Migrate the hot path to <strong>03 (ONNX)</strong> once you understand the load. Use <strong>04 (Native)</strong> for compliance-sensitive sub-systems. Wire it all together with <strong>05 (Pipeline)</strong> when you're ready for event-driven scale.</p>
-    <p>And from day one, use <strong>01 (Spring AI)</strong> to make every ML score explainable — because a score your stakeholders can't understand is a score they won't trust.</p>
+    <p>The realistic production answer for most teams: start with <strong>03 (REST)</strong> to get something working fast and let data science iterate. Migrate the hot path to <strong>02 (ONNX)</strong> once you understand the load. Use <strong>01 (Native)</strong> for compliance-sensitive sub-systems. Wire it all together with <strong>05 (Pipeline)</strong> when you're ready for event-driven scale.</p>
+    <p>And from day one, use <strong>04 (Spring AI)</strong> to make every ML score explainable — because a score your stakeholders can't understand is a score they won't trust.</p>
   </div>
 </div>
 
@@ -709,7 +709,7 @@ open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka U
 
 <div class="footer">
   <p>Community Day KC 2026 · Java + Machine Learning in Production</p>
-  <p style="margin-top:8px;font-size:12px">Examples: 01-spring-ai · 02-model-as-service · 03-onnx-in-jvm · 04-java-native-ml · 05-full-pipeline (bonus)</p>
+  <p style="margin-top:8px;font-size:12px">Examples: 01-java-native-ml · 02-onnx-in-jvm · 03-model-as-service · 04-spring-ai · 05-full-pipeline (bonus)</p>
 </div>
 
 </body>
