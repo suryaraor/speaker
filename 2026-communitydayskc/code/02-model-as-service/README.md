@@ -1,4 +1,4 @@
-# 01 — Model as a Service (REST Pattern)
+# 02 — Model as a Service (REST Pattern)
 
 **Pattern:** Python ML model runs as a FastAPI service. Spring Boot calls it over HTTP.
 

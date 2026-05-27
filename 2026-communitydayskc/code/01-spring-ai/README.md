@@ -1,11 +1,11 @@
-# 06 — Spring AI: LLM-Powered Fraud Explanation
+# 01 — Spring AI: LLM-Powered Fraud Explanation
 
 **Pattern:** Spring AI ChatClient → Structured Output → FraudExplanation  
-**Port:** 8006
+**Port:** 8001
 
 ## What This Shows
 
-Examples 01–05 detect fraud using ML models (REST, ONNX, native Java).  
+Examples 02–04 detect fraud using ML models (REST, ONNX, native Java). The Bonus example (05) wires them into a streaming pipeline.  
 This example answers the *next* question: **"Why was this flagged?"**
 
 Spring AI translates raw ML scores into structured, human-readable explanations

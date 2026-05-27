@@ -351,7 +351,7 @@
 
 <!-- ── ARCH-01: Model as a Service ── -->
 <div class="slide" id="s-arch-01" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-blue">Pattern 01 · Architecture</div>
+  <div class="pill pill-blue">Pattern 02 · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="accent">Model as a Service</span> — REST Integration</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Model as a Service Architecture Diagram">
     <defs>
@@ -443,7 +443,7 @@
 
 <!-- ── ARCH-02: ONNX In-JVM ── -->
 <div class="slide" id="s-arch-02" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-cyan">Pattern 02 · Architecture</div>
+  <div class="pill pill-cyan">Pattern 03 · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="cyan">ONNX In-JVM</span> — Model Embedded in the JVM</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="ONNX In-JVM Architecture Diagram">
     <defs>
@@ -542,7 +542,7 @@
 
 <!-- ── ARCH-03: Java Native ML ── -->
 <div class="slide" id="s-arch-03" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-green">Pattern 03 · Architecture</div>
+  <div class="pill pill-green">Pattern 04 · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="green">Java-Native ML</span> — Zero External Dependencies</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Java Native ML Architecture Diagram">
     <defs>
@@ -626,111 +626,9 @@
   </svg>
 </div>
 
-<!-- ── ARCH-04: Feature Engineering ── -->
-<div class="slide" id="s-arch-04" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-amber">Example 04 · Architecture</div>
-  <h2 style="margin-bottom:8px">Feature Engineering — <span class="amber">Domain Logic in Java</span></h2>
-  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Feature Engineering Architecture Diagram">
-    <defs>
-      <marker id="a4f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
-      <marker id="a4g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
-      <marker id="a4c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
-    </defs>
-    <!-- Input Box -->
-    <rect x="4" y="4" width="894" height="76" rx="10" fill="#1c1a10" stroke="#78350f" stroke-width="1.5"/>
-    <text x="60" y="26" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24" letter-spacing="2">RAW TRANSACTION INPUT</text>
-    <text x="60" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">accountId: "ACC-8821"</text>
-    <text x="240" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">amount: $1,850.00</text>
-    <text x="430" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">merchantId: "M-GAS-44"</text>
-    <text x="630" y="48" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">timestamp: 2026-05-26T03:14Z</text>
-    <text x="60" y="68" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">location: "47.6062,-122.3321"</text>
-    <text x="430" y="68" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">category: "FUEL"</text>
-    <text x="630" y="68" font-family="Segoe UI,sans-serif" font-size="11" fill="#94a3b8">cardPresent: false</text>
-    <!-- 5 transformation arrows downward -->
-    <line x1="86" y1="80" x2="86" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
-    <line x1="260" y1="80" x2="260" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
-    <line x1="450" y1="80" x2="450" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
-    <line x1="640" y1="80" x2="640" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
-    <line x1="810" y1="80" x2="810" y2="102" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a4f)"/>
-    <!-- Feature engineering service label -->
-    <rect x="4" y="100" width="894" height="16" rx="0" fill="none"/>
-    <text x="450" y="112" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24" letter-spacing="1.5">FEATURE ENGINEERING SERVICE — FeatureEngineer.java</text>
-    <!-- 5 Feature transformation boxes -->
-    <!-- Box 1: Amount Normalization -->
-    <rect x="4" y="122" width="166" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
-    <text x="87" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Amount Norm.</text>
-    <line x1="14" y1="152" x2="160" y2="152" stroke="#78350f" stroke-width="1"/>
-    <text x="87" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">÷ account tier limit</text>
-    <text x="87" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">log-transform for skew</text>
-    <text x="87" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">clip outliers at 99th %ile</text>
-    <rect x="30" y="220" width="114" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
-    <text x="87" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0.42</text>
-    <!-- Box 2: Time Binning -->
-    <rect x="178" y="122" width="166" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
-    <text x="261" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Time Binning</text>
-    <line x1="188" y1="152" x2="334" y2="152" stroke="#78350f" stroke-width="1"/>
-    <text x="261" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">hour: 3 AM = night</text>
-    <text x="261" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">0=night 1=morning</text>
-    <text x="261" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">2=afternoon 3=evening</text>
-    <rect x="204" y="220" width="114" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
-    <text x="261" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0 (night)</text>
-    <!-- Box 3: Merchant Risk -->
-    <rect x="352" y="122" width="196" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
-    <text x="450" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Merchant Risk Score</text>
-    <line x1="362" y1="152" x2="538" y2="152" stroke="#78350f" stroke-width="1"/>
-    <text x="450" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">lookup: merchantId → category</text>
-    <text x="450" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">FUEL → medium-risk (0.5)</text>
-    <text x="450" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Java enum + risk map</text>
-    <rect x="390" y="220" width="120" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
-    <text x="450" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0.80</text>
-    <!-- Box 4: Velocity (with Redis) -->
-    <rect x="556" y="122" width="180" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
-    <text x="646" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Velocity (30-day)</text>
-    <line x1="566" y1="152" x2="726" y2="152" stroke="#78350f" stroke-width="1"/>
-    <text x="646" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">rolling txn count</text>
-    <text x="646" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">VelocityStore → Redis</text>
-    <text x="646" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">INCR key with TTL</text>
-    <rect x="586" y="220" width="120" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
-    <text x="646" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">22 txns</text>
-    <!-- Redis badge -->
-    <rect x="556" y="96" width="100" height="22" rx="6" fill="#f87171" opacity="0.15" stroke="#f87171" stroke-width="1"/>
-    <text x="606" y="111" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#f87171">⟵ Redis Store</text>
-    <!-- Box 5: Geo Risk -->
-    <rect x="744" y="122" width="152" height="138" rx="8" fill="#1c1a10" stroke="#b45309" stroke-width="1.5"/>
-    <text x="820" y="144" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Geo Risk Score</text>
-    <line x1="754" y1="152" x2="886" y2="152" stroke="#78350f" stroke-width="1"/>
-    <text x="820" y="170" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">coords → region</text>
-    <text x="820" y="188" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">home vs. foreign</text>
-    <text x="820" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">IP anomaly check</text>
-    <rect x="760" y="220" width="120" height="28" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1"/>
-    <text x="820" y="239" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">0.75</text>
-    <!-- Arrows down to output -->
-    <line x1="87" y1="260" x2="87" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
-    <line x1="261" y1="260" x2="261" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
-    <line x1="450" y1="260" x2="450" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
-    <line x1="646" y1="260" x2="646" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
-    <line x1="820" y1="260" x2="820" y2="280" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
-    <!-- Output: feature vector -->
-    <rect x="4" y="280" width="894" height="60" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
-    <text x="60" y="302" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399" letter-spacing="1.5">TRANSACTIONFEATURES  →  ML MODEL INPUT</text>
-    <text x="60" y="326" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0" font-family="Cascadia Code,Fira Code,monospace">float[]  { 0.42,  0,  0.80,  22,  0.75 }</text>
-    <text x="420" y="326" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">amount_norm  hour_bin  merchant_risk  velocity_30d  geo_risk</text>
-    <!-- Output label arrow -->
-    <line x1="830" y1="310" x2="890" y2="310" stroke="#34d399" stroke-width="1.5" marker-end="url(#a4g)"/>
-    <text x="896" y="314" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399"> →</text>
-    <!-- Insight boxes -->
-    <rect x="4" y="348" width="430" height="38" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="217" y="365" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Key Insight: Business domain knowledge stays in Java — the ML model only sees clean numbers</text>
-    <text x="217" y="381" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">Domain experts write features in Java, ML engineers train on them in Python</text>
-    <rect x="442" y="348" width="456" height="38" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="670" y="365" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Feature reuse: same vector feeds REST pattern, ONNX pattern, and native ML pattern</text>
-    <text x="670" y="381" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#fbbf24">VelocityStore (Redis) shared across all three integration patterns</text>
-  </svg>
-</div>
-
 <!-- ── ARCH-05: Full Pipeline ── -->
 <div class="slide" id="s-arch-05" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-green">Example 05 · Architecture</div>
+  <div class="pill pill-green">Bonus · Architecture</div>
   <h2 style="margin-bottom:8px"><span class="green">Full ML Pipeline</span> — Kafka + Docker + ONNX</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Full Pipeline Architecture Diagram">
     <defs>
@@ -1241,7 +1139,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <!-- ── SPRING-AI-01: What is Spring AI ── -->
 <div class="slide" id="s-springai-intro">
-  <div class="pill pill-purple">Pattern 04 · Spring AI</div>
+  <div class="pill pill-purple">Example 01 · Spring AI</div>
   <h2>Spring <span class="accent">AI</span> — The Missing Bridge</h2>
   <div class="grid grid-3" style="max-width:960px;margin-bottom:18px">
     <div class="card" style="border-top:3px solid #6366f1">
@@ -1284,7 +1182,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <!-- ── SPRING-AI-02: Spring AI in Action ── -->
 <div class="slide" id="s-springai-arch" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-purple">Example 06 · Architecture</div>
+  <div class="pill pill-purple">Example 01 · Architecture</div>
   <h2>Spring <span class="accent">AI</span> — Fraud Explainer Service</h2>
   <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0">
     <defs>
@@ -1364,7 +1262,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
     <rect x="440" y="38" width="114" height="74" rx="8" fill="#1c1a10" stroke="#78350f" stroke-width="1.5"/>
     <text x="497" y="60" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">FraudAlert IN</text>
     <text x="497" y="78" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">from ML pipeline</text>
-    <text x="497" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">(examples 01–05)</text>
+    <text x="497" y="96" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">(examples 02–05)</text>
     <rect x="440" y="246" width="114" height="96" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
     <text x="497" y="268" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">FraudExplanation</text>
     <text x="497" y="288" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#86efac">summary</text>
@@ -1380,7 +1278,7 @@ model = joblib.<span class="fn">load</span>(<span class="str">"fraud_model_v3.pk
 
 <!-- ── SPRING-AI-03: Code ── -->
 <div class="slide" id="s-springai-code">
-  <div class="pill pill-purple">Example 06 · Code</div>
+  <div class="pill pill-purple">Example 01 · Code</div>
   <h2>Spring AI in <span class="accent">3 Steps</span></h2>
   <div class="grid grid-2" style="max-width:960px">
     <div style="display:flex;flex-direction:column;gap:14px">

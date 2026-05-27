@@ -49,7 +49,7 @@ open http://localhost:9090
 
 ```bash
 # Start Kafka locally or point to an existing broker
-# Start the Python ML service (see example 01)
+# Start the Python ML service (see example 02)
 cd python-ml-service && uvicorn main:app --port 8000
 
 # Run Java pipeline

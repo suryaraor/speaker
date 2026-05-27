@@ -1,4 +1,4 @@
-# 02 — ONNX In-JVM
+# 03 — ONNX In-JVM
 
 **Pattern:** Train in Python once, export to ONNX, run inference inside the JVM forever — no Python at runtime.
 

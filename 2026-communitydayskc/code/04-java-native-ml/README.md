@@ -1,4 +1,4 @@
-# 03 — Java-Native ML (Weka)
+# 04 — Java-Native ML (Weka)
 
 **Pattern:** Train and serve a machine learning classifier entirely in Java — no Python, no ONNX, no external model files.
 

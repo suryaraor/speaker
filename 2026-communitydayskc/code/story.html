@@ -343,8 +343,8 @@
 <!--  CHAPTER 1 · Model as a Service                                            -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch1">
-  <div class="chapter-dot">01</div>
-  <div class="chapter-num">Chapter 1 · example 01-model-as-service</div>
+  <div class="chapter-dot">02</div>
+  <div class="chapter-num">Chapter 2 · example 02-model-as-service</div>
   <h2>The Quick Win — Call Python Over HTTP</h2>
   <span class="tag tag-1">REST · WebClient · Fallback</span>
   <span class="tag tag-1">Python FastAPI + sklearn</span>
@@ -410,8 +410,8 @@
 <!--  CHAPTER 2 · ONNX in JVM                                                  -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch2">
-  <div class="chapter-dot">02</div>
-  <div class="chapter-num">Chapter 2 · example 02-onnx-in-jvm</div>
+  <div class="chapter-dot">03</div>
+  <div class="chapter-num">Chapter 3 · example 03-onnx-in-jvm</div>
   <h2>The Passport Trick — Train in Python, Run in Java</h2>
   <span class="tag tag-2">ONNX Runtime · In-JVM Inference</span>
   <span class="tag tag-2">Sub-millisecond · No Python at runtime</span>
@@ -489,8 +489,8 @@
 <!--  CHAPTER 3 · Java-Native ML                                                -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch3">
-  <div class="chapter-dot">03</div>
-  <div class="chapter-num">Chapter 3 · example 03-java-native-ml</div>
+  <div class="chapter-dot">04</div>
+  <div class="chapter-num">Chapter 4 · example 04-java-native-ml</div>
   <h2>The Compliance Team's Dream — 100% Java, Zero External Dependencies</h2>
   <span class="tag tag-3">Weka · RandomForest in Java</span>
   <span class="tag tag-3">Air-gapped · Fully auditable</span>
@@ -551,69 +551,6 @@
     </div>
 
     <p>Compliance was happy. But the performance team raised a new flag: the fraud scores for the same transaction were coming out slightly different depending on which service computed the features. Something was wrong upstream.</p>
-  </div>
-</div>
-
-<!-- ────────────────────────────────────────────────────────────────────────── -->
-<!--  CHAPTER 4 · Feature Engineering                                           -->
-<!-- ────────────────────────────────────────────────────────────────────────── -->
-<div class="chapter ch4">
-  <div class="chapter-dot">04</div>
-  <div class="chapter-num">Chapter 4 · example 04-feature-engineering</div>
-  <h2>The Hidden Foundation — Where the Real Intelligence Lives</h2>
-  <span class="tag tag-4">Velocity Windows · Temporal Features</span>
-  <span class="tag tag-4">Domain Encoding · The Most Important Example</span>
-
-  <div class="chapter-body">
-    <p>Here's the truth the team had been missing: <em>the model is only as smart as the features you feed it</em>. A bad feature set makes even the best model useless. And feature engineering — the act of turning raw transaction objects into ML-ready numeric vectors — was being done inconsistently in three different places.</p>
-
-    <p>This chapter is the most important one. Not because the code is the fanciest, but because getting feature engineering right is what separates a model that works in a notebook from one that works in production.</p>
-
-    <div class="highlight">
-      "Feature engineering belongs in Java because the domain knowledge is already there: merchant risk lookup tables, geographic risk mappings, business hours definitions, account tier rules — all living in Java code and Java databases."
-    </div>
-
-    <div class="code-block">
-      <div class="code-header">
-        <span class="lang-dot" style="color:var(--yellow)"></span>
-        <span>FeatureEngineer.java — six types of features, all in one place</span>
-      </div>
-      <pre><span class="cmt">// Temporal: what time patterns signal fraud?</span>
-<span class="kw">int</span> hourOfDay  = txn.<span class="fn">timestamp</span>().getHour();        <span class="cmt">// 3am? elevated risk</span>
-<span class="kw">int</span> dayOfWeek  = txn.<span class="fn">timestamp</span>().<span class="fn">getDayOfWeek</span>().<span class="fn">getValue</span>();
-
-<span class="cmt">// Domain encoding: risk scores from business lookup tables</span>
-<span class="kw">double</span> merchantRisk = MERCHANT_RISK.<span class="fn">getOrDefault</span>(txn.<span class="fn">merchantCategory</span>(), <span class="num">0.15</span>);
-<span class="kw">double</span> geoRisk      = GEO_RISK.<span class="fn">getOrDefault</span>(txn.<span class="fn">countryCode</span>(), <span class="num">0.30</span>);
-
-<span class="cmt">// Amount normalization: log1p reduces skew from outliers (e.g. $50k purchase)</span>
-<span class="kw">double</span> amountNorm = Math.<span class="fn">log1p</span>(txn.<span class="fn">amount</span>());
-
-<span class="cmt">// Velocity: how many transactions in the last 1h / 24h / 30d?</span>
-<span class="kw">int</span> txn1h  = velocityStore.<span class="fn">count</span>(accountId, <span class="num">1</span>);
-<span class="kw">int</span> txn24h = velocityStore.<span class="fn">count</span>(accountId, <span class="num">24</span>);
-<span class="kw">int</span> txn30d = velocityStore.<span class="fn">count</span>(accountId, <span class="num">720</span>);
-
-<span class="cmt">// Derived ratio: is this amount unusual for this account?</span>
-<span class="kw">double</span> amountToAvgRatio = txn.<span class="fn">amount</span>() / Math.<span class="fn">max</span>(avgAmount7d, <span class="num">1.0</span>);</pre>
-    </div>
-
-    <p>The velocity features are especially powerful. A single $1,850 transaction from a Nigerian IP at 3am looks suspicious. But ten transactions from the same account in the last hour — all under $50, all to different online merchants — is a classic card-testing attack. Without the velocity window, the model sees ten individually "normal" transactions.</p>
-
-    <div class="tradeoff">
-      <div class="tradeoff-item pro">
-        <div class="label">What you get</div>
-        Consistent features across all three scoring paths (REST, ONNX, native). Single source of truth for domain logic.
-      </div>
-      <div class="tradeoff-item con">
-        <div class="label">The discipline required</div>
-        Training data features must be computed the same way as inference features. Feature drift is silent and deadly.
-      </div>
-    </div>
-
-    <div class="highlight">
-      "The rule: the model should only ever see clean, numeric features. Never raw domain objects. The FeatureEngineer is the contract between your business domain and your ML model."
-    </div>
   </div>
 </div>
 
@@ -724,28 +661,22 @@ open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka U
       </thead>
       <tbody>
         <tr>
-          <td><span class="pattern-name" style="color:var(--accent)">01 · REST</span></td>
+          <td><span class="pattern-name" style="color:var(--accent)">02 · REST</span></td>
           <td>Data science team owns the model lifecycle independently. Model changes often. You need OpenAPI docs and monitoring for free.</td>
           <td style="color:var(--yellow)">10–50ms</td>
           <td style="color:var(--red)">High — another service to run</td>
         </tr>
         <tr>
-          <td><span class="pattern-name" style="color:var(--green)">02 · ONNX</span></td>
+          <td><span class="pattern-name" style="color:var(--green)">03 · ONNX</span></td>
           <td>Latency matters. You want sub-ms inference. Model changes occasionally. You're OK with Python at train time, not runtime.</td>
           <td style="color:var(--green)">&lt;1ms</td>
           <td style="color:var(--green)">Low — one .onnx file</td>
         </tr>
         <tr>
-          <td><span class="pattern-name" style="color:var(--purple)">03 · Native (Weka)</span></td>
+          <td><span class="pattern-name" style="color:var(--purple)">04 · Native (Weka)</span></td>
           <td>Air-gapped or compliance-restricted environment. No Python anywhere. Team is Java-only. Tabular data, not deep learning.</td>
           <td style="color:var(--green)">&lt;1ms</td>
           <td style="color:var(--green)">Zero — lives in the JAR</td>
-        </tr>
-        <tr>
-          <td><span class="pattern-name" style="color:var(--yellow)">04 · Features</span></td>
-          <td><em>Always.</em> This isn't optional. No matter which inference pattern you pick, feature engineering belongs in Java.</td>
-          <td>—</td>
-          <td>—</td>
         </tr>
         <tr>
           <td><span class="pattern-name" style="color:var(--orange)">05 · Pipeline</span></td>
@@ -757,11 +688,11 @@ open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka U
     </table>
 
     <div class="highlight">
-      "Chapter 04 (Feature Engineering) isn't one option on the list — it's the foundation under every other option. The model is only as good as the features you feed it, and those features should always be computed in Java."
+      "The realistic production journey: start with 02 (REST) to get something working fast. Migrate the hot path to 03 (ONNX) for low latency. Use 04 (Native) for compliance-restricted subsystems. Wire it all with 05 (Pipeline) for event-driven scale. And from day one, use 01 (Spring AI) to explain every score to your stakeholders."
     </div>
 
-    <p>The realistic production answer for most teams: start with <strong>01 (REST)</strong> to get something working fast and let data science iterate. Migrate the hot path to <strong>02 (ONNX)</strong> once you understand the load. Use <strong>03 (Native)</strong> for compliance-sensitive sub-systems. Wire it all together with <strong>05 (Pipeline)</strong> when you're ready for event-driven scale.</p>
-    <p>And from day one, chapter one, <em>always</em> use <strong>04 (Feature Engineering in Java)</strong> — because that's where the domain knowledge lives, and domain knowledge is irreplaceable.</p>
+    <p>The realistic production answer for most teams: start with <strong>02 (REST)</strong> to get something working fast and let data science iterate. Migrate the hot path to <strong>03 (ONNX)</strong> once you understand the load. Use <strong>04 (Native)</strong> for compliance-sensitive sub-systems. Wire it all together with <strong>05 (Pipeline)</strong> when you're ready for event-driven scale.</p>
+    <p>And from day one, use <strong>01 (Spring AI)</strong> to make every ML score explainable — because a score your stakeholders can't understand is a score they won't trust.</p>
   </div>
 </div>
 
@@ -778,7 +709,7 @@ open http://localhost:<span class="num">9090</span>  <span class="cmt"># Kafka U
 
 <div class="footer">
   <p>Community Day KC 2026 · Java + Machine Learning in Production</p>
-  <p style="margin-top:8px;font-size:12px">Examples: 01-model-as-service · 02-onnx-in-jvm · 03-java-native-ml · 04-feature-engineering · 05-full-pipeline</p>
+  <p style="margin-top:8px;font-size:12px">Examples: 01-spring-ai · 02-model-as-service · 03-onnx-in-jvm · 04-java-native-ml · 05-full-pipeline (bonus)</p>
 </div>
 
 </body>
