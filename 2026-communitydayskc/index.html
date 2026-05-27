@@ -349,95 +349,89 @@
   </div>
 </div>
 
-<!-- ── ARCH-01: Model as a Service ── -->
+<!-- ── ARCH-01: Java Native ML ── -->
 <div class="slide" id="s-arch-01" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-blue">Pattern 03 · Architecture</div>
-  <h2 style="margin-bottom:8px"><span class="accent">Model as a Service</span> — REST Integration</h2>
-  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Model as a Service Architecture Diagram">
+  <div class="pill pill-green">Pattern 01 · Architecture</div>
+  <h2 style="margin-bottom:8px"><span class="green">Java-Native ML</span> — Zero External Dependencies</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Java Native ML Architecture Diagram">
     <defs>
-      <marker id="a1f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
-      <marker id="a1b" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
-      <marker id="a1g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="a3f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="a3g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="a3a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+      <marker id="a3r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f87171"/></marker>
     </defs>
-    <!-- Java zone -->
-    <rect x="4" y="4" width="432" height="382" rx="12" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5" stroke-dasharray="8,4"/>
-    <text x="220" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA · SPRING BOOT JVM</text>
-    <!-- FraudController -->
-    <rect x="20" y="38" width="186" height="68" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
-    <text x="113" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudController</text>
-    <text x="113" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">@RestController</text>
-    <text x="113" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/score</text>
-    <!-- FeatureEngineer -->
-    <rect x="226" y="38" width="192" height="68" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
-    <text x="322" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FeatureEngineer</text>
-    <text x="322" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Domain logic stays in Java</text>
-    <text x="322" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">5 features → float[]</text>
-    <!-- Arrow: Controller → FE -->
-    <line x1="206" y1="72" x2="224" y2="72" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a1f)"/>
-    <!-- FraudDetectionService -->
-    <rect x="106" y="160" width="232" height="70" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
-    <text x="222" y="183" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudDetectionService</text>
-    <text x="222" y="201" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">WebClient · non-blocking</text>
-    <text x="222" y="219" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">200ms SLA · graceful fallback</text>
-    <!-- Arrow: FE → FraudDetectionService -->
-    <line x1="322" y1="106" x2="268" y2="158" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a1f)"/>
-    <!-- Decision Engine -->
-    <rect x="106" y="290" width="232" height="72" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
-    <text x="222" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#34d399">Decision Engine</text>
-    <text x="222" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">prob &gt; 0.85 → BLOCK transaction</text>
-    <text x="222" y="350" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">prob ≤ 0.85 → ALLOW + audit log</text>
-    <!-- Arrow: FraudDetectionService → Decision -->
-    <line x1="222" y1="230" x2="222" y2="288" stroke="#34d399" stroke-width="1.5" marker-end="url(#a1g)"/>
-    <!-- HTTP arrows in center gap (x 436–504) -->
-    <text x="470" y="152" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#818cf8">HTTP REST</text>
-    <line x1="436" y1="140" x2="504" y2="78" stroke="#6366f1" stroke-width="2" marker-end="url(#a1f)"/>
-    <text x="434" y="132" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#6366f1">POST /predict/fraud</text>
-    <text x="434" y="144" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" fill="#4f46e5">TransactionFeatures JSON</text>
-    <line x1="504" y1="148" x2="436" y2="210" stroke="#22d3ee" stroke-width="2" marker-end="url(#a1b)"/>
-    <text x="434" y="228" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#22d3ee">FraudScore JSON</text>
-    <text x="434" y="240" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" fill="#0e7490">{probability, risk_level}</text>
-    <!-- Python zone -->
-    <rect x="504" y="4" width="392" height="382" rx="12" fill="#0d111e" stroke="#0e4f6d" stroke-width="1.5" stroke-dasharray="8,4"/>
-    <text x="700" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#22d3ee" letter-spacing="2">🐍  PYTHON · FASTAPI :8000</text>
-    <!-- FastAPI Endpoint -->
-    <rect x="520" y="38" width="178" height="68" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
-    <text x="609" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">FastAPI Endpoint</text>
-    <text x="609" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /predict/fraud</text>
-    <text x="609" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">async def predict()</text>
-    <!-- Pydantic -->
-    <rect x="520" y="160" width="178" height="68" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
-    <text x="609" y="183" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">Pydantic Model</text>
-    <text x="609" y="201" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">TransactionFeatures</text>
-    <text x="609" y="219" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Type-safe contract</text>
-    <!-- Arrow: FastAPI → Pydantic -->
-    <line x1="609" y1="106" x2="609" y2="158" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a1b)"/>
-    <!-- RandomForest -->
-    <rect x="520" y="290" width="178" height="72" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
-    <text x="609" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">RandomForest Model</text>
-    <text x="609" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">scikit-learn · fraud_model.pkl</text>
-    <text x="609" y="350" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">predict_proba() inference</text>
-    <!-- Arrow: Pydantic → RandomForest -->
-    <line x1="609" y1="228" x2="609" y2="288" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a1b)"/>
-    <!-- Metrics panel -->
-    <rect x="716" y="38" width="168" height="156" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="800" y="58" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Characteristics</text>
-    <line x1="726" y1="66" x2="874" y2="66" stroke="#1e293b" stroke-width="1"/>
-    <text x="800" y="84" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">⏱  Latency 50–100ms</text>
-    <text x="800" y="103" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">🔄  Teams fully decoupled</text>
-    <text x="800" y="122" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">🚀  Independent deploys</text>
-    <text x="800" y="141" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">📦  Model versioning</text>
-    <text x="800" y="160" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">✓  GPU models supported</text>
-    <text x="800" y="179" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">✓  Fallback on timeout</text>
-    <!-- Best For panel -->
-    <rect x="716" y="212" width="168" height="174" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="800" y="232" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#c084fc">Best For</text>
-    <line x1="726" y1="240" x2="874" y2="240" stroke="#1e293b" stroke-width="1"/>
-    <text x="800" y="260" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Large / GPU models</text>
-    <text x="800" y="280" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Frequent retraining</text>
-    <text x="800" y="300" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Complex Python deps</text>
-    <text x="800" y="320" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Polyglot teams</text>
-    <text x="800" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Microservice orgs</text>
-    <text x="800" y="368" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">Pattern: REST Contract</text>
+    <!-- JVM outer boundary — everything inside -->
+    <rect x="4" y="4" width="894" height="382" rx="14" fill="#0d111e" stroke="#4f46e5" stroke-width="2"/>
+    <text x="450" y="26" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA ONLY · SPRING BOOT JVM · NO PYTHON · NO ONNX · NO HTTP</text>
+    <!-- Input: LoanApplication -->
+    <rect x="20" y="46" width="175" height="124" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="107" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">LoanApplication</text>
+    <line x1="30" y1="76" x2="185" y2="76" stroke="#2d3a5e" stroke-width="1"/>
+    <text x="107" y="94" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">creditScore: 650</text>
+    <text x="107" y="112" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">annualIncome: $72,000</text>
+    <text x="107" y="130" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">debtRatio: 0.32</text>
+    <text x="107" y="148" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">employmentYears: 7</text>
+    <!-- Arrow: Input → Classifier -->
+    <line x1="195" y1="108" x2="226" y2="108" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a3f)"/>
+    <!-- CreditRiskClassifier box -->
+    <rect x="228" y="46" width="440" height="260" rx="10" fill="#131929" stroke="#3730a3" stroke-width="1.5"/>
+    <text x="448" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#818cf8">CreditRiskClassifier — Pure Java Decision Tree</text>
+    <line x1="238" y1="76" x2="658" y2="76" stroke="#1e293b" stroke-width="1"/>
+    <!-- Decision tree nodes -->
+    <!-- Root node -->
+    <rect x="358" y="88" width="180" height="44" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="448" y="107" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">creditScore &lt; 580?</text>
+    <text x="448" y="123" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Root split · Gini impurity</text>
+    <!-- NO branch → right sub-tree -->
+    <line x1="538" y1="110" x2="580" y2="148" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
+    <text x="572" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">NO →</text>
+    <!-- YES branch → DENY -->
+    <line x1="358" y1="110" x2="290" y2="148" stroke="#f87171" stroke-width="1.5" marker-end="url(#a3r)"/>
+    <text x="308" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#f87171">← YES</text>
+    <!-- DENY leaf -->
+    <rect x="248" y="150" width="120" height="38" rx="6" fill="#4c0519" stroke="#f87171" stroke-width="1.5"/>
+    <text x="308" y="173" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#f87171">⛔ DENY</text>
+    <!-- Second split: debtRatio -->
+    <rect x="548" y="150" width="180" height="44" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="638" y="169" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">debtRatio &gt; 0.43?</text>
+    <text x="638" y="185" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Level 2 split</text>
+    <!-- YES → REVIEW -->
+    <line x1="548" y1="172" x2="480" y2="220" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a3a)"/>
+    <text x="498" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">← YES</text>
+    <!-- REVIEW leaf -->
+    <rect x="380" y="222" width="122" height="38" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="441" y="245" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">⚠ REVIEW</text>
+    <!-- NO → APPROVE -->
+    <line x1="728" y1="172" x2="620" y2="220" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
+    <text x="692" y="200" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">NO →</text>
+    <!-- APPROVE leaf -->
+    <rect x="590" y="222" width="124" height="38" rx="6" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="652" y="245" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">✓ APPROVE</text>
+    <!-- classifier footer note -->
+    <text x="448" y="278" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">Gini impurity splits · confidence scores · decision path logged for audit trail</text>
+    <!-- Arrow: Classifier → Output -->
+    <line x1="668" y1="108" x2="700" y2="108" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
+    <!-- Output: CreditDecision -->
+    <rect x="702" y="46" width="178" height="124" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="791" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">CreditDecision</text>
+    <line x1="712" y1="76" x2="870" y2="76" stroke="#065f46" stroke-width="1"/>
+    <text x="791" y="95" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">decision: APPROVE</text>
+    <text x="791" y="113" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">confidence: 0.87</text>
+    <text x="791" y="131" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">path: root→right→approve</text>
+    <text x="791" y="149" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">reason: "Score &gt; 580, DTI safe"</text>
+    <!-- Bottom stats row -->
+    <rect x="20" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="121" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">No Python Runtime</text>
+    <text x="121" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Zero polyglot complexity</text>
+    <rect x="240" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="341" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Sub-millisecond</text>
+    <text x="341" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Pure in-memory inference</text>
+    <rect x="460" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="561" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Audit-Ready</text>
+    <text x="561" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Full decision path logged</text>
+    <rect x="680" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="781" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Regulated Environments</text>
+    <text x="781" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Weka · Tribuo · DL4J ready</text>
   </svg>
 </div>
 
@@ -540,89 +534,95 @@
   </svg>
 </div>
 
-<!-- ── ARCH-03: Java Native ML ── -->
+<!-- ── ARCH-03: Model as a Service ── -->
 <div class="slide" id="s-arch-03" style="padding:28px 50px;gap:10px">
-  <div class="pill pill-green">Pattern 01 · Architecture</div>
-  <h2 style="margin-bottom:8px"><span class="green">Java-Native ML</span> — Zero External Dependencies</h2>
-  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Java Native ML Architecture Diagram">
+  <div class="pill pill-blue">Pattern 03 · Architecture</div>
+  <h2 style="margin-bottom:8px"><span class="accent">Model as a Service</span> — REST Integration</h2>
+  <svg viewBox="0 0 900 390" style="width:100%;max-width:900px;height:auto;flex-shrink:0" role="img" aria-label="Model as a Service Architecture Diagram">
     <defs>
-      <marker id="a3f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
-      <marker id="a3g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
-      <marker id="a3a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
-      <marker id="a3r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f87171"/></marker>
+      <marker id="a1f" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+      <marker id="a1b" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22d3ee"/></marker>
+      <marker id="a1g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
     </defs>
-    <!-- JVM outer boundary — everything inside -->
-    <rect x="4" y="4" width="894" height="382" rx="14" fill="#0d111e" stroke="#4f46e5" stroke-width="2"/>
-    <text x="450" y="26" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA ONLY · SPRING BOOT JVM · NO PYTHON · NO ONNX · NO HTTP</text>
-    <!-- Input: LoanApplication -->
-    <rect x="20" y="46" width="175" height="124" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
-    <text x="107" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#a5b4fc">LoanApplication</text>
-    <line x1="30" y1="76" x2="185" y2="76" stroke="#2d3a5e" stroke-width="1"/>
-    <text x="107" y="94" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">creditScore: 650</text>
-    <text x="107" y="112" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">annualIncome: $72,000</text>
-    <text x="107" y="130" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">debtRatio: 0.32</text>
-    <text x="107" y="148" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">employmentYears: 7</text>
-    <!-- Arrow: Input → Classifier -->
-    <line x1="195" y1="108" x2="226" y2="108" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a3f)"/>
-    <!-- CreditRiskClassifier box -->
-    <rect x="228" y="46" width="440" height="260" rx="10" fill="#131929" stroke="#3730a3" stroke-width="1.5"/>
-    <text x="448" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#818cf8">CreditRiskClassifier — Pure Java Decision Tree</text>
-    <line x1="238" y1="76" x2="658" y2="76" stroke="#1e293b" stroke-width="1"/>
-    <!-- Decision tree nodes -->
-    <!-- Root node -->
-    <rect x="358" y="88" width="180" height="44" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
-    <text x="448" y="107" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">creditScore &lt; 580?</text>
-    <text x="448" y="123" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Root split · Gini impurity</text>
-    <!-- NO branch → right sub-tree -->
-    <line x1="538" y1="110" x2="580" y2="148" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
-    <text x="572" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">NO →</text>
-    <!-- YES branch → DENY -->
-    <line x1="358" y1="110" x2="290" y2="148" stroke="#f87171" stroke-width="1.5" marker-end="url(#a3r)"/>
-    <text x="308" y="136" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#f87171">← YES</text>
-    <!-- DENY leaf -->
-    <rect x="248" y="150" width="120" height="38" rx="6" fill="#4c0519" stroke="#f87171" stroke-width="1.5"/>
-    <text x="308" y="173" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#f87171">⛔ DENY</text>
-    <!-- Second split: debtRatio -->
-    <rect x="548" y="150" width="180" height="44" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
-    <text x="638" y="169" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#a5b4fc">debtRatio &gt; 0.43?</text>
-    <text x="638" y="185" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#64748b">Level 2 split</text>
-    <!-- YES → REVIEW -->
-    <line x1="548" y1="172" x2="480" y2="220" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#a3a)"/>
-    <text x="498" y="206" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#fbbf24">← YES</text>
-    <!-- REVIEW leaf -->
-    <rect x="380" y="222" width="122" height="38" rx="6" fill="#451a03" stroke="#fbbf24" stroke-width="1.5"/>
-    <text x="441" y="245" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">⚠ REVIEW</text>
-    <!-- NO → APPROVE -->
-    <line x1="728" y1="172" x2="620" y2="220" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
-    <text x="692" y="200" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#34d399">NO →</text>
-    <!-- APPROVE leaf -->
-    <rect x="590" y="222" width="124" height="38" rx="6" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
-    <text x="652" y="245" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">✓ APPROVE</text>
-    <!-- classifier footer note -->
-    <text x="448" y="278" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" fill="#475569">Gini impurity splits · confidence scores · decision path logged for audit trail</text>
-    <!-- Arrow: Classifier → Output -->
-    <line x1="668" y1="108" x2="700" y2="108" stroke="#34d399" stroke-width="1.5" marker-end="url(#a3g)"/>
-    <!-- Output: CreditDecision -->
-    <rect x="702" y="46" width="178" height="124" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
-    <text x="791" y="68" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#34d399">CreditDecision</text>
-    <line x1="712" y1="76" x2="870" y2="76" stroke="#065f46" stroke-width="1"/>
-    <text x="791" y="95" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">decision: APPROVE</text>
-    <text x="791" y="113" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">confidence: 0.87</text>
-    <text x="791" y="131" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">path: root→right→approve</text>
-    <text x="791" y="149" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">reason: "Score &gt; 580, DTI safe"</text>
-    <!-- Bottom stats row -->
-    <rect x="20" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="121" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">No Python Runtime</text>
-    <text x="121" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Zero polyglot complexity</text>
-    <rect x="240" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="341" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Sub-millisecond</text>
-    <text x="341" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Pure in-memory inference</text>
-    <rect x="460" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="561" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Audit-Ready</text>
-    <text x="561" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Full decision path logged</text>
-    <rect x="680" y="320" width="202" height="54" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
-    <text x="781" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#34d399">Regulated Environments</text>
-    <text x="781" y="358" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Weka · Tribuo · DL4J ready</text>
+    <!-- Java zone -->
+    <rect x="4" y="4" width="432" height="382" rx="12" fill="#0d111e" stroke="#4f46e5" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <text x="220" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#818cf8" letter-spacing="2">☕  JAVA · SPRING BOOT JVM</text>
+    <!-- FraudController -->
+    <rect x="20" y="38" width="186" height="68" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="113" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudController</text>
+    <text x="113" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">@RestController</text>
+    <text x="113" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /api/fraud/score</text>
+    <!-- FeatureEngineer -->
+    <rect x="226" y="38" width="192" height="68" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="322" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FeatureEngineer</text>
+    <text x="322" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Domain logic stays in Java</text>
+    <text x="322" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">5 features → float[]</text>
+    <!-- Arrow: Controller → FE -->
+    <line x1="206" y1="72" x2="224" y2="72" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a1f)"/>
+    <!-- FraudDetectionService -->
+    <rect x="106" y="160" width="232" height="70" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.5"/>
+    <text x="222" y="183" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">FraudDetectionService</text>
+    <text x="222" y="201" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">WebClient · non-blocking</text>
+    <text x="222" y="219" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">200ms SLA · graceful fallback</text>
+    <!-- Arrow: FE → FraudDetectionService -->
+    <line x1="322" y1="106" x2="268" y2="158" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a1f)"/>
+    <!-- Decision Engine -->
+    <rect x="106" y="290" width="232" height="72" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+    <text x="222" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#34d399">Decision Engine</text>
+    <text x="222" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">prob &gt; 0.85 → BLOCK transaction</text>
+    <text x="222" y="350" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">prob ≤ 0.85 → ALLOW + audit log</text>
+    <!-- Arrow: FraudDetectionService → Decision -->
+    <line x1="222" y1="230" x2="222" y2="288" stroke="#34d399" stroke-width="1.5" marker-end="url(#a1g)"/>
+    <!-- HTTP arrows in center gap (x 436–504) -->
+    <text x="470" y="152" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#818cf8">HTTP REST</text>
+    <line x1="436" y1="140" x2="504" y2="78" stroke="#6366f1" stroke-width="2" marker-end="url(#a1f)"/>
+    <text x="434" y="132" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#6366f1">POST /predict/fraud</text>
+    <text x="434" y="144" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" fill="#4f46e5">TransactionFeatures JSON</text>
+    <line x1="504" y1="148" x2="436" y2="210" stroke="#22d3ee" stroke-width="2" marker-end="url(#a1b)"/>
+    <text x="434" y="228" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" font-weight="700" fill="#22d3ee">FraudScore JSON</text>
+    <text x="434" y="240" text-anchor="end" font-family="Segoe UI,sans-serif" font-size="9" fill="#0e7490">{probability, risk_level}</text>
+    <!-- Python zone -->
+    <rect x="504" y="4" width="392" height="382" rx="12" fill="#0d111e" stroke="#0e4f6d" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <text x="700" y="24" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#22d3ee" letter-spacing="2">🐍  PYTHON · FASTAPI :8000</text>
+    <!-- FastAPI Endpoint -->
+    <rect x="520" y="38" width="178" height="68" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="609" y="62" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">FastAPI Endpoint</text>
+    <text x="609" y="80" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">POST /predict/fraud</text>
+    <text x="609" y="97" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">async def predict()</text>
+    <!-- Pydantic -->
+    <rect x="520" y="160" width="178" height="68" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="609" y="183" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">Pydantic Model</text>
+    <text x="609" y="201" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">TransactionFeatures</text>
+    <text x="609" y="219" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">Type-safe contract</text>
+    <!-- Arrow: FastAPI → Pydantic -->
+    <line x1="609" y1="106" x2="609" y2="158" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a1b)"/>
+    <!-- RandomForest -->
+    <rect x="520" y="290" width="178" height="72" rx="8" fill="#0c2a3b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="609" y="314" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="12" font-weight="700" fill="#67e8f9">RandomForest Model</text>
+    <text x="609" y="332" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">scikit-learn · fraud_model.pkl</text>
+    <text x="609" y="350" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#64748b">predict_proba() inference</text>
+    <!-- Arrow: Pydantic → RandomForest -->
+    <line x1="609" y1="228" x2="609" y2="288" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#a1b)"/>
+    <!-- Metrics panel -->
+    <rect x="716" y="38" width="168" height="156" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="58" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#fbbf24">Characteristics</text>
+    <line x1="726" y1="66" x2="874" y2="66" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="84" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">⏱  Latency 50–100ms</text>
+    <text x="800" y="103" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">🔄  Teams fully decoupled</text>
+    <text x="800" y="122" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">🚀  Independent deploys</text>
+    <text x="800" y="141" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">📦  Model versioning</text>
+    <text x="800" y="160" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">✓  GPU models supported</text>
+    <text x="800" y="179" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#86efac">✓  Fallback on timeout</text>
+    <!-- Best For panel -->
+    <rect x="716" y="212" width="168" height="174" rx="8" fill="#131929" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="232" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#c084fc">Best For</text>
+    <line x1="726" y1="240" x2="874" y2="240" stroke="#1e293b" stroke-width="1"/>
+    <text x="800" y="260" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Large / GPU models</text>
+    <text x="800" y="280" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Frequent retraining</text>
+    <text x="800" y="300" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Complex Python deps</text>
+    <text x="800" y="320" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Polyglot teams</text>
+    <text x="800" y="340" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" fill="#94a3b8">Microservice orgs</text>
+    <text x="800" y="368" text-anchor="middle" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="#fbbf24">Pattern: REST Contract</text>
   </svg>
 </div>
 

@@ -340,74 +340,76 @@
 <div class="timeline">
 
 <!-- ────────────────────────────────────────────────────────────────────────── -->
-<!--  CHAPTER 1 · Model as a Service                                            -->
+<!--  CHAPTER 2 · Java-Native ML                                                -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
-<div class="chapter ch1">
-  <div class="chapter-dot">03</div>
-  <div class="chapter-num">Chapter 2 · example 03-model-as-service</div>
-  <h2>The Quick Win — Call Python Over HTTP</h2>
-  <span class="tag tag-1">REST · WebClient · Fallback</span>
-  <span class="tag tag-1">Python FastAPI + sklearn</span>
+<div class="chapter ch3">
+  <div class="chapter-dot">01</div>
+  <div class="chapter-num">Chapter 2 · example 01-java-native-ml</div>
+  <h2>The Compliance Team's Dream — 100% Java, Zero External Dependencies</h2>
+  <span class="tag tag-3">Weka · RandomForest in Java</span>
+  <span class="tag tag-3">Air-gapped · Fully auditable</span>
 
   <div class="chapter-body">
-    <p>The data science team already had a RandomForest model for fraud detection sitting in a Jupyter notebook. The fastest path to production: wrap it in a FastAPI service and call it from Spring Boot.</p>
+    <p>The compliance team had a list of requirements that made the Python-based approaches complicated: no external binaries in production containers, every line of model logic must be auditable in the Java codebase, and the system must work in an air-gapped environment where Python simply wasn't available.</p>
+
+    <p>The answer: <strong>Weka</strong>. A full machine learning library, written in Java, that's been running in financial systems since the late 90s. Train a RandomForest at startup, entirely in Java, and it lives right there in JVM memory — fully auditable by any Java developer on the team.</p>
 
     <div class="arch">
-      <div class="arch-box">Spring Boot</div>
-      <span class="arch-arrow">──POST /predict/fraud──▶</span>
-      <div class="arch-box">FastAPI + RandomForest</div>
-    </div>
-
-    <p>Java handles what Java is already great at — feature extraction from domain objects, business rules, SLA enforcement — and hands off a clean numeric vector to Python for inference.</p>
-
-    <div class="highlight">
-      "The key insight: don't let Java become dumb glue. Feature engineering — the transformation of raw transaction data into ML-ready numbers — stays in Java, where the domain knowledge already lives."
+      <div class="arch-box">Spring Boot @PostConstruct</div>
+      <span class="arch-arrow">──trains──▶</span>
+      <div class="arch-box">Weka RandomForest</div>
+      <span class="arch-arrow">──lives in──▶</span>
+      <div class="arch-box">JVM Heap</div>
     </div>
 
     <div class="code-block">
       <div class="code-header">
-        <span class="lang-dot" style="color:var(--accent)"></span>
-        <span>FraudDetectionService.java — 500ms SLA with graceful fallback</span>
+        <span class="lang-dot" style="color:var(--purple)"></span>
+        <span>CreditRiskClassifier.java — model trains at startup, no external files</span>
       </div>
-      <pre><span class="kw">private static final</span> Duration SLA_TIMEOUT    = Duration.ofMillis(<span class="num">500</span>);
-<span class="kw">private static final</span> FraudScore SAFE_FALLBACK = <span class="kw">new</span> <span class="type">FraudScore</span>(
-    <span class="num">0.0</span>, <span class="kw">false</span>, <span class="str">"fallback-v0"</span>, <span class="str">"LOW"</span>, Map.of()
-);
+      <pre><span class="ann">@PostConstruct</span>
+<span class="kw">public void</span> <span class="fn">initialize</span>() <span class="kw">throws</span> Exception {
+    dataStructure = <span class="fn">buildDataStructure</span>();
+    <span class="type">Instances</span> trainingData = <span class="fn">generateTrainingData</span>(dataStructure);
 
-<span class="kw">public</span> FraudScore <span class="fn">evaluate</span>(Transaction tx) {
-    <span class="type">TransactionFeatures</span> features = featureEngineer.<span class="fn">extract</span>(tx);
-    <span class="kw">return</span> <span class="fn">callMlService</span>(features)
-        .<span class="fn">onErrorReturn</span>(SAFE_FALLBACK)   <span class="cmt">// Python down? Don't block the payment.</span>
-        .<span class="fn">block</span>();
+    classifier = <span class="kw">new</span> <span class="type">RandomForest</span>();
+    classifier.<span class="fn">setNumIterations</span>(<span class="num">100</span>);
+    classifier.<span class="fn">setSeed</span>(<span class="num">42</span>);
+    classifier.<span class="fn">buildClassifier</span>(trainingData);  <span class="cmt">// pure Java. no Python. no files.</span>
+
+    log.<span class="fn">info</span>(<span class="str">"Weka RandomForest trained: {} instances, {} attributes"</span>,
+        trainingData.<span class="fn">size</span>(), trainingData.<span class="fn">numAttributes</span>() - <span class="num">1</span>);
 }
 
-<span class="kw">private</span> Mono&lt;FraudScore&gt; <span class="fn">callMlService</span>(TransactionFeatures features) {
-    <span class="kw">return</span> mlWebClient.<span class="fn">post</span>()
-        .<span class="fn">uri</span>(<span class="str">"/predict/fraud"</span>)
-        .<span class="fn">bodyValue</span>(features)
-        .<span class="fn">retrieve</span>()
-        .<span class="fn">bodyToMono</span>(FraudScore.class)
-        .<span class="fn">timeout</span>(SLA_TIMEOUT);  <span class="cmt">// Fail fast. Fraud check isn't worth a 30s hang.</span>
+<span class="kw">public</span> CreditDecision <span class="fn">predict</span>(LoanApplication app) <span class="kw">throws</span> Exception {
+    <span class="type">Instance</span> instance = <span class="fn">toInstance</span>(app, dataStructure);
+    <span class="kw">double</span>[] distribution = classifier.<span class="fn">distributionForInstance</span>(instance);
+    <span class="cmt">// Returns: APPROVE / DENY / REVIEW with confidence scores</span>
+    <span class="kw">return new</span> <span class="type">CreditDecision</span>(decision, approveProb, denyProb, reviewProb, ...);
 }</pre>
     </div>
 
     <div class="tradeoff">
       <div class="tradeoff-item pro">
         <div class="label">Works For</div>
-        Fastest path to production. Data science team owns the model independently. Any Python framework works.
+        Air-gapped deployments. Compliance-heavy domains. Teams without Python expertise. Tabular data models.
       </div>
       <div class="tradeoff-item con">
         <div class="label">The Catch</div>
-        Network hop on every transaction. Python service is another thing to deploy, monitor, and page on at 2am.
+        Training data must be baked in or loaded from Java-accessible sources. Deep learning is off the table.
       </div>
     </div>
 
-    <p>The team shipped this in a sprint. Fraud dropped 40% in week one. Then Black Friday arrived and the Python service started timing out under load. They needed something faster.</p>
+    <div class="highlight">
+      "The credit risk classifier now runs in four different government data centers that have never had Python installed. Any Java developer on the team can read, test, and modify the model logic."
+    </div>
+
+    <p>Compliance was happy. But the performance team raised a new flag: the fraud scores for the same transaction were coming out slightly different depending on which service computed the features. Something was wrong upstream.</p>
   </div>
 </div>
 
 <!-- ────────────────────────────────────────────────────────────────────────── -->
-<!--  CHAPTER 2 · ONNX in JVM                                                  -->
+<!--  CHAPTER 3 · ONNX in JVM                                                  -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
 <div class="chapter ch2">
   <div class="chapter-dot">02</div>
@@ -486,71 +488,69 @@
 </div>
 
 <!-- ────────────────────────────────────────────────────────────────────────── -->
-<!--  CHAPTER 3 · Java-Native ML                                                -->
+<!--  CHAPTER 4 · Model as a Service                                            -->
 <!-- ────────────────────────────────────────────────────────────────────────── -->
-<div class="chapter ch3">
-  <div class="chapter-dot">01</div>
-  <div class="chapter-num">Chapter 4 · example 01-java-native-ml</div>
-  <h2>The Compliance Team's Dream — 100% Java, Zero External Dependencies</h2>
-  <span class="tag tag-3">Weka · RandomForest in Java</span>
-  <span class="tag tag-3">Air-gapped · Fully auditable</span>
+<div class="chapter ch1">
+  <div class="chapter-dot">03</div>
+  <div class="chapter-num">Chapter 4 · example 03-model-as-service</div>
+  <h2>The Quick Win — Call Python Over HTTP</h2>
+  <span class="tag tag-1">REST · WebClient · Fallback</span>
+  <span class="tag tag-1">Python FastAPI + sklearn</span>
 
   <div class="chapter-body">
-    <p>The compliance team had a list of requirements that made the Python-based approaches complicated: no external binaries in production containers, every line of model logic must be auditable in the Java codebase, and the system must work in an air-gapped environment where Python simply wasn't available.</p>
-
-    <p>The answer: <strong>Weka</strong>. A full machine learning library, written in Java, that's been running in financial systems since the late 90s. Train a RandomForest at startup, entirely in Java, and it lives right there in JVM memory — fully auditable by any Java developer on the team.</p>
+    <p>The data science team already had a RandomForest model for fraud detection sitting in a Jupyter notebook. The fastest path to production: wrap it in a FastAPI service and call it from Spring Boot.</p>
 
     <div class="arch">
-      <div class="arch-box">Spring Boot @PostConstruct</div>
-      <span class="arch-arrow">──trains──▶</span>
-      <div class="arch-box">Weka RandomForest</div>
-      <span class="arch-arrow">──lives in──▶</span>
-      <div class="arch-box">JVM Heap</div>
+      <div class="arch-box">Spring Boot</div>
+      <span class="arch-arrow">──POST /predict/fraud──▶</span>
+      <div class="arch-box">FastAPI + RandomForest</div>
+    </div>
+
+    <p>Java handles what Java is already great at — feature extraction from domain objects, business rules, SLA enforcement — and hands off a clean numeric vector to Python for inference.</p>
+
+    <div class="highlight">
+      "The key insight: don't let Java become dumb glue. Feature engineering — the transformation of raw transaction data into ML-ready numbers — stays in Java, where the domain knowledge already lives."
     </div>
 
     <div class="code-block">
       <div class="code-header">
-        <span class="lang-dot" style="color:var(--purple)"></span>
-        <span>CreditRiskClassifier.java — model trains at startup, no external files</span>
+        <span class="lang-dot" style="color:var(--accent)"></span>
+        <span>FraudDetectionService.java — 500ms SLA with graceful fallback</span>
       </div>
-      <pre><span class="ann">@PostConstruct</span>
-<span class="kw">public void</span> <span class="fn">initialize</span>() <span class="kw">throws</span> Exception {
-    dataStructure = <span class="fn">buildDataStructure</span>();
-    <span class="type">Instances</span> trainingData = <span class="fn">generateTrainingData</span>(dataStructure);
+      <pre><span class="kw">private static final</span> Duration SLA_TIMEOUT    = Duration.ofMillis(<span class="num">500</span>);
+<span class="kw">private static final</span> FraudScore SAFE_FALLBACK = <span class="kw">new</span> <span class="type">FraudScore</span>(
+    <span class="num">0.0</span>, <span class="kw">false</span>, <span class="str">"fallback-v0"</span>, <span class="str">"LOW"</span>, Map.of()
+);
 
-    classifier = <span class="kw">new</span> <span class="type">RandomForest</span>();
-    classifier.<span class="fn">setNumIterations</span>(<span class="num">100</span>);
-    classifier.<span class="fn">setSeed</span>(<span class="num">42</span>);
-    classifier.<span class="fn">buildClassifier</span>(trainingData);  <span class="cmt">// pure Java. no Python. no files.</span>
-
-    log.<span class="fn">info</span>(<span class="str">"Weka RandomForest trained: {} instances, {} attributes"</span>,
-        trainingData.<span class="fn">size</span>(), trainingData.<span class="fn">numAttributes</span>() - <span class="num">1</span>);
+<span class="kw">public</span> FraudScore <span class="fn">evaluate</span>(Transaction tx) {
+    <span class="type">TransactionFeatures</span> features = featureEngineer.<span class="fn">extract</span>(tx);
+    <span class="kw">return</span> <span class="fn">callMlService</span>(features)
+        .<span class="fn">onErrorReturn</span>(SAFE_FALLBACK)   <span class="cmt">// Python down? Don't block the payment.</span>
+        .<span class="fn">block</span>();
 }
 
-<span class="kw">public</span> CreditDecision <span class="fn">predict</span>(LoanApplication app) <span class="kw">throws</span> Exception {
-    <span class="type">Instance</span> instance = <span class="fn">toInstance</span>(app, dataStructure);
-    <span class="kw">double</span>[] distribution = classifier.<span class="fn">distributionForInstance</span>(instance);
-    <span class="cmt">// Returns: APPROVE / DENY / REVIEW with confidence scores</span>
-    <span class="kw">return new</span> <span class="type">CreditDecision</span>(decision, approveProb, denyProb, reviewProb, ...);
+<span class="kw">private</span> Mono&lt;FraudScore&gt; <span class="fn">callMlService</span>(TransactionFeatures features) {
+    <span class="kw">return</span> mlWebClient.<span class="fn">post</span>()
+        .<span class="fn">uri</span>(<span class="str">"/predict/fraud"</span>)
+        .<span class="fn">bodyValue</span>(features)
+        .<span class="fn">retrieve</span>()
+        .<span class="fn">bodyToMono</span>(FraudScore.class)
+        .<span class="fn">timeout</span>(SLA_TIMEOUT);  <span class="cmt">// Fail fast. Fraud check isn't worth a 30s hang.</span>
 }</pre>
     </div>
 
     <div class="tradeoff">
       <div class="tradeoff-item pro">
         <div class="label">Works For</div>
-        Air-gapped deployments. Compliance-heavy domains. Teams without Python expertise. Tabular data models.
+        Fastest path to production. Data science team owns the model independently. Any Python framework works.
       </div>
       <div class="tradeoff-item con">
         <div class="label">The Catch</div>
-        Training data must be baked in or loaded from Java-accessible sources. Deep learning is off the table.
+        Network hop on every transaction. Python service is another thing to deploy, monitor, and page on at 2am.
       </div>
     </div>
 
-    <div class="highlight">
-      "The credit risk classifier now runs in four different government data centers that have never had Python installed. Any Java developer on the team can read, test, and modify the model logic."
-    </div>
-
-    <p>Compliance was happy. But the performance team raised a new flag: the fraud scores for the same transaction were coming out slightly different depending on which service computed the features. Something was wrong upstream.</p>
+    <p>The team shipped this in a sprint. Fraud dropped 40% in week one. Then Black Friday arrived and the Python service started timing out under load. They needed something faster.</p>
   </div>
 </div>
 
