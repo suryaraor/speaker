@@ -13,6 +13,7 @@ from pathlib import Path
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
@@ -109,6 +110,13 @@ app = FastAPI(
     description="Serves a RandomForest fraud detection model via REST",
     version=MODEL_VERSION,
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 FEATURE_NAMES = ["amount", "hour_of_day", "merchant_risk_score", "velocity_30d", "geo_risk_score"]

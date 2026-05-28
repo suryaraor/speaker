@@ -148,7 +148,7 @@ function Start-Example03 {
     } else {
         Open-ServiceWindow "03 Python FastAPI" `
             "$Root\03-model-as-service\python-ml-service" `
-            "uvicorn main:app --reload --port 8000"
+            ".venv\Scripts\uvicorn main:app --reload --port 8000"
         Write-Info "Waiting 3 s for FastAPI to boot ..."
         Start-Sleep 3
     }

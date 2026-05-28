@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Live Test Suite — From Java to AI</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0b0f1a;
+  --surface:  #131929;
+  --border:   #1e293b;
+  --border2:  #2d3f55;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --dim:      #94a3b8;
+  --indigo:   #6366f1;
+  --indigo-d: #4f46e5;
+  --green:    #34d399;
+  --green-d:  #065f46;
+  --red:      #f87171;
+  --red-d:    #7f1d1d;
+  --amber:    #fbbf24;
+  --cyan:     #22d3ee;
+  --purple:   #c084fc;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+/* ── Layout ─────────────────────────────────────────────── */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+header {
+  background: #0d1220;
+  border-bottom: 1px solid var(--border);
+  padding: 20px 32px;
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+
+.header-title { flex: 1; min-width: 200px; }
+.header-title h1 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+.header-title p  { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+.header-stats { display: flex; gap: 12px; align-items: center; }
+.stat-chip {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 6px 16px; min-width: 60px;
+}
+.stat-chip .num  { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.stat-chip .lbl  { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+.stat-chip.pass .num { color: var(--green); }
+.stat-chip.fail .num { color: var(--red); }
+.stat-chip.run  .num { color: var(--indigo); }
+.stat-chip.total .num { color: var(--text); }
+
+.header-actions { display: flex; gap: 10px; }
+
+main { flex: 1; padding: 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: none; border-radius: 8px; cursor: pointer;
+  font-size: .82rem; font-weight: 600; padding: 8px 16px;
+  transition: opacity .15s, transform .1s; white-space: nowrap;
+}
+.btn:hover  { opacity: .88; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: var(--indigo); color: #fff; }
+.btn-ghost   { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+.btn-sm { padding: 5px 11px; font-size: .76rem; }
+.btn-run { background: #1a2340; color: var(--indigo); border: 1px solid #2a3a60; }
+.btn-run:hover { background: #1e2d52; border-color: var(--indigo); }
+
+/* ── Example sections ───────────────────────────────────── */
+.example-section { margin-bottom: 40px; }
+
+.example-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px 14px 0 0; cursor: pointer;
+  transition: border-color .2s;
+}
+.example-header:hover { border-color: var(--border2); }
+.example-header.open  { border-color: var(--indigo-d); }
+
+.ex-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 800; flex-shrink: 0;
+  border: 2px solid currentColor;
+}
+
+.ex-info { flex: 1; min-width: 0; }
+.ex-info h2 { font-size: 1rem; font-weight: 700; }
+.ex-info p  { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
+.ex-meta { display: flex; align-items: center; gap: 8px; }
+.port-badge {
+  font-family: var(--font-mono); font-size: .72rem;
+  background: #0c1525; border: 1px solid var(--border);
+  color: var(--cyan); border-radius: 6px; padding: 3px 8px;
+}
+.ex-progress {
+  font-size: .75rem; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 10px; white-space: nowrap;
+}
+.chevron { font-size: .8rem; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+.chevron.open { transform: rotate(90deg); }
+
+.tests-body {
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+  display: none;
+}
+.tests-body.open { display: block; }
+
+.section-run-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; background: #0e1525;
+  border-bottom: 1px solid var(--border);
+}
+.section-run-bar p { font-size: .78rem; color: var(--muted); }
+
+/* ── Test cards ─────────────────────────────────────────── */
+.test-card {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.test-card:last-child { border-bottom: none; }
+
+.test-card-header {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 20px; cursor: pointer;
+}
+.test-card-header:hover { background: #0e1420; }
+
+.test-index {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--border); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .65rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+}
+
+.test-meta { flex: 1; min-width: 0; }
+.test-meta h3 { font-size: .9rem; font-weight: 600; color: var(--text); }
+.test-what {
+  font-size: .78rem; color: var(--dim); margin-top: 4px; line-height: 1.5;
+}
+
+.test-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* Status badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: .7rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.badge-idle    { background: #1a2030; color: var(--muted); border: 1px solid var(--border); }
+.badge-running { background: #1a1b4b; color: #818cf8; border: 1px solid #3730a3; animation: pulse 1.2s ease-in-out infinite; }
+.badge-pass    { background: #022c22; color: var(--green); border: 1px solid #065f46; }
+.badge-fail    { background: #3b0e0e; color: var(--red);   border: 1px solid #7f1d1d; }
+.badge-skip    { background: #1c1507; color: var(--amber); border: 1px solid #78350f; }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+
+/* Expanded test detail */
+.test-detail { padding: 0 20px 18px 56px; display: none; }
+.test-detail.open { display: block; }
+
+.detail-row { margin-bottom: 12px; }
+.detail-label {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--muted); margin-bottom: 5px;
+}
+
+/* Method + URL bar */
+.endpoint-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: #090d16; border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 14px;
+  font-family: var(--font-mono); font-size: .8rem;
+  overflow-x: auto;
+}
+.method { font-weight: 800; flex-shrink: 0; }
+.method.GET    { color: var(--green); }
+.method.POST   { color: var(--amber); }
+.url-text { color: var(--cyan); word-break: break-all; }
+
+/* Code / JSON blocks */
+.code-block {
+  background: #070b14; border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+  font-family: var(--font-mono); font-size: .78rem;
+  line-height: 1.7; overflow-x: auto; white-space: pre;
+  max-height: 260px; overflow-y: auto;
+  color: #94a3b8;
+}
+.code-block .key    { color: #93c5fd; }
+.code-block .str    { color: #86efac; }
+.code-block .num    { color: #fda4af; }
+.code-block .bool   { color: #fbbf24; }
+.code-block .null   { color: var(--muted); }
+
+.expect-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: #060c10; border: 1px solid #0d2030;
+  border-radius: 8px; padding: 8px 14px;
+  font-size: .8rem;
+}
+.expect-icon { font-size: .9rem; flex-shrink: 0; }
+.expect-text { color: var(--dim); }
+.expect-text strong { color: var(--text); }
+
+/* Response area */
+.response-area { margin-top: 12px; }
+.response-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px; flex-wrap: wrap;
+}
+.response-status {
+  font-size: .75rem; font-weight: 700;
+  padding: 2px 9px; border-radius: 6px;
+}
+.rs-2xx { background: #022c22; color: var(--green); }
+.rs-4xx, .rs-5xx { background: #3b0e0e; color: var(--red); }
+.rs-err { background: #1c1507; color: var(--amber); }
+
+.response-time { font-size: .72rem; color: var(--muted); font-family: var(--font-mono); }
+.response-size { font-size: .72rem; color: var(--muted); font-family: var(--font-mono); }
+
+/* Performance highlight */
+.perf-highlight {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #020e20; border: 1px solid #0a2a50;
+  border-radius: 8px; padding: 8px 14px; margin-top: 8px;
+  font-size: .85rem;
+}
+.perf-value { font-family: var(--font-mono); font-weight: 700; color: var(--cyan); font-size: 1.1rem; }
+.perf-label { color: var(--muted); font-size: .75rem; }
+
+/* Sub-section heading inside example */
+.sub-heading {
+  padding: 10px 20px 6px;
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--indigo);
+  background: #0a0f1e; border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+
+/* Overall progress bar */
+.progress-bar-wrap {
+  background: var(--border); border-radius: 999px;
+  height: 4px; width: 160px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--indigo);
+  border-radius: 999px; transition: width .4s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Service-down notice */
+.svc-down {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #1c1507; border: 1px solid #78350f;
+  border-radius: 8px; padding: 10px 14px;
+  font-size: .8rem; color: var(--amber); line-height: 1.5;
+}
+.svc-down code {
+  background: #2a1e08; padding: 1px 5px; border-radius: 4px;
+  font-family: var(--font-mono); font-size: .75rem;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header>
+  <div class="header-title">
+    <h1>Live Test Suite — From Java to AI</h1>
+    <p>Community Day KC 2026 · 5 integration patterns · fraud detection domain</p>
+  </div>
+
+  <div class="header-stats">
+    <div class="stat-chip total"><span class="num" id="stat-total">0</span><span class="lbl">Total</span></div>
+    <div class="stat-chip run">  <span class="num" id="stat-run">0</span><span class="lbl">Running</span></div>
+    <div class="stat-chip pass"> <span class="num" id="stat-pass">0</span><span class="lbl">Passed</span></div>
+    <div class="stat-chip fail"> <span class="num" id="stat-fail">0</span><span class="lbl">Failed</span></div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;min-width:160px;">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="global-bar" style="width:0%"></div></div>
+    <span style="font-size:.68rem;color:var(--muted)" id="global-pct">0 / 0 complete</span>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="resetAll()">Reset</button>
+    <button class="btn btn-primary" id="btn-run-all" onclick="runAll()">▶ Run All Tests</button>
+  </div>
+</header>
+
+<main id="main-content"></main>
+
+</div>
+
+<script>
+// ── Test definitions ──────────────────────────────────────────────────────────
+
+const EXAMPLES = [
+  {
+    id: 'ex01',
+    num: '01',
+    color: '#34d399',
+    name: 'Java-Native ML',
+    subtitle: 'Weka RandomForest — train & serve entirely in Java, zero Python at runtime',
+    ports: ['8082'],
+    tests: [
+      {
+        id: 'e1t1',
+        name: 'Service health check',
+        what: 'Confirms the Java Spring Boot service started cleanly and the Weka model trained on startup.',
+        method: 'GET', url: 'http://localhost:8082/actuator/health',
+        expect: 'status = "UP"',
+        pass: r => r && r.status === 'UP',
+      },
+      {
+        id: 'e1t2',
+        name: 'Strong applicant → APPROVE',
+        what: 'Credit score 775, $90k income, 7 years employed, 20% debt-to-income. A clear approval by any metric.',
+        method: 'GET', url: 'http://localhost:8082/api/credit/demo/approve',
+        expect: 'decision = "APPROVE"',
+        pass: r => r && r.decision === 'APPROVE',
+        highlight: r => r && `decision: ${r.decision} | approveProb: ${(r.approveProb*100).toFixed(1)}%`,
+      },
+      {
+        id: 'e1t3',
+        name: 'Risky applicant → DENY',
+        what: 'Credit score 510, $32k income, no employment history, 70% debt-to-income. The model should firmly deny.',
+        method: 'GET', url: 'http://localhost:8082/api/credit/demo/deny',
+        expect: 'decision = "DENY"',
+        pass: r => r && r.decision === 'DENY',
+        highlight: r => r && `decision: ${r.decision} | denyProb: ${(r.denyProb*100).toFixed(1)}%`,
+      },
+      {
+        id: 'e1t4',
+        name: 'Borderline applicant → REVIEW',
+        what: 'Credit score 645, $54k income, 3 years employed, 41% debt-to-income. Edge case — needs a human review.',
+        method: 'GET', url: 'http://localhost:8082/api/credit/demo/review',
+        expect: 'decision = "REVIEW"',
+        pass: r => r && r.decision === 'REVIEW',
+        highlight: r => r && `decision: ${r.decision} | reviewProb: ${(r.reviewProb*100).toFixed(1)}%`,
+      },
+      {
+        id: 'e1t5',
+        name: 'Custom evaluation via POST',
+        what: 'Demonstrates the full POST endpoint — any application can be scored in real-time.',
+        method: 'POST', url: 'http://localhost:8082/api/credit/evaluate',
+        body: { applicantId: 'APP-DEMO', creditScore: 700, annualIncome: 75000, loanAmount: 15000, employmentYears: 5, debtToIncomeRatio: 0.30 },
+        expect: 'response has decision, probabilities, explanation',
+        pass: r => r && r.decision !== undefined && r.explanation !== undefined,
+        highlight: r => r && `decision: ${r.decision} | explanation: ${r.explanation}`,
+      },
+    ],
+  },
+  {
+    id: 'ex02',
+    num: '02',
+    color: '#22d3ee',
+    name: 'ONNX In-JVM',
+    subtitle: 'Train a model in Python → export to ONNX → run inference inside the JVM at sub-millisecond speed',
+    ports: ['8081'],
+    tests: [
+      {
+        id: 'e2t1',
+        name: 'Service health check',
+        what: 'Verifies the ONNX Runtime loaded the fraud_model.onnx file successfully on startup.',
+        method: 'GET', url: 'http://localhost:8081/actuator/health',
+        expect: 'status = "UP"',
+        pass: r => r && r.status === 'UP',
+      },
+      {
+        id: 'e2t2',
+        name: 'High-risk transaction → fraud',
+        what: '$1,800 transaction at 3 AM, merchant risk 0.90, geo risk 0.82, velocity burst of 28 recent txns. Classic fraud pattern.',
+        method: 'GET', url: 'http://localhost:8081/api/infer/demo/high-risk',
+        expect: 'isFraud = true, riskLevel = "HIGH"',
+        pass: r => r && r.isFraud === true,
+        highlight: r => r && `isFraud: ${r.isFraud} | fraudProb: ${(r.fraudProbability*100).toFixed(1)}% | riskLevel: ${r.riskLevel}`,
+      },
+      {
+        id: 'e2t3',
+        name: 'Low-risk transaction → legit',
+        what: '$42 grocery purchase at 2 PM, merchant risk 0.03, geo risk 0.10, normal velocity. Should pass cleanly.',
+        method: 'GET', url: 'http://localhost:8081/api/infer/demo/low-risk',
+        expect: 'isFraud = false, riskLevel = "LOW"',
+        pass: r => r && r.isFraud === false,
+        highlight: r => r && `isFraud: ${r.isFraud} | fraudProb: ${(r.fraudProbability*100).toFixed(1)}% | riskLevel: ${r.riskLevel}`,
+      },
+      {
+        id: 'e2t4',
+        name: 'Latency benchmark — 1,000 inferences',
+        what: 'Runs the ONNX model 1,000 times back-to-back and measures average inference time. Demonstrates why in-JVM beats REST for low-latency scoring.',
+        method: 'GET', url: 'http://localhost:8081/api/infer/benchmark',
+        expect: 'avg_ms_per_inference < 5 ms (typically < 1 ms in-JVM)',
+        pass: r => r && r.avg_ms_per_inference < 5,
+        perfKey: 'avg_ms_per_inference',
+        perfUnit: 'ms / inference',
+        highlight: r => r && `${r.avg_ms_per_inference.toFixed(3)} ms avg over ${r.iterations} iterations`,
+      },
+    ],
+  },
+  {
+    id: 'ex03',
+    num: '03',
+    color: '#fbbf24',
+    name: 'Model as a Service',
+    subtitle: 'Python FastAPI serves the ML model over REST — Java Spring Boot calls it as a microservice',
+    ports: ['8000 (Python)', '8080 (Java)'],
+    subSections: ['Python FastAPI Service — :8000', 'Java Spring Client — :8080'],
+    tests: [
+      // Python service tests
+      {
+        id: 'e3t1',
+        name: 'Python service health',
+        what: 'Python FastAPI service is up and the RandomForest model trained on startup is ready to serve.',
+        method: 'GET', url: 'http://localhost:8000/health',
+        expect: 'status = "healthy", model_loaded = true',
+        pass: r => r && r.status === 'healthy' && r.model_loaded === true,
+        sub: 0,
+      },
+      {
+        id: 'e3t2',
+        name: 'Model metadata',
+        what: 'Inspect the trained model — algorithm, feature names, and learned feature importances.',
+        method: 'GET', url: 'http://localhost:8000/model/info',
+        expect: 'response has algorithm, feature_importances',
+        pass: r => r && r.algorithm !== undefined,
+        sub: 0,
+      },
+      {
+        id: 'e3t3',
+        name: 'High-risk prediction (direct Python)',
+        what: '$1,850 at 3 AM, merchant risk 0.80, geo risk 0.75, velocity 22. The Python RandomForest should flag this HIGH.',
+        method: 'POST', url: 'http://localhost:8000/predict/fraud',
+        body: { amount: 1850.0, hour_of_day: 3, merchant_risk_score: 0.8, velocity_30d: 22, geo_risk_score: 0.75 },
+        expect: 'risk_level = "HIGH"',
+        pass: r => r && r.risk_level === 'HIGH',
+        highlight: r => r && `risk_level: ${r.risk_level} | fraud_prob: ${(r.fraud_probability*100).toFixed(1)}%`,
+        sub: 0,
+      },
+      {
+        id: 'e3t4',
+        name: 'Low-risk prediction (direct Python)',
+        what: '$42, 2 PM, merchant risk 0.05, geo risk 0.08, velocity 3. Should be classified LOW risk.',
+        method: 'POST', url: 'http://localhost:8000/predict/fraud',
+        body: { amount: 42.0, hour_of_day: 14, merchant_risk_score: 0.05, velocity_30d: 3, geo_risk_score: 0.08 },
+        expect: 'risk_level = "LOW"',
+        pass: r => r && r.risk_level === 'LOW',
+        highlight: r => r && `risk_level: ${r.risk_level} | fraud_prob: ${(r.fraud_probability*100).toFixed(1)}%`,
+        sub: 0,
+      },
+      // Java client tests
+      {
+        id: 'e3t5',
+        name: 'Java client health',
+        what: 'Java Spring Boot client service is up, WebClient configured, and ready to proxy requests to Python.',
+        method: 'GET', url: 'http://localhost:8080/actuator/health',
+        expect: 'status = "UP"',
+        pass: r => r && r.status === 'UP',
+        sub: 1,
+      },
+      {
+        id: 'e3t6',
+        name: 'High-risk via Java client (end-to-end)',
+        what: 'Java receives a full Transaction, engineers features (amount, hour, merchant, velocity, geo), calls Python over HTTP → returns fraud score. Crypto merchant, Nigeria, 3 AM, $1,850.',
+        method: 'GET', url: 'http://localhost:8080/api/fraud/demo/high-risk',
+        expect: 'riskLevel = "HIGH", fraudProbability > 0.5',
+        pass: r => r && (r.riskLevel === 'HIGH' || r.risk_level === 'HIGH'),
+        highlight: r => r && `riskLevel: ${r.riskLevel || r.risk_level} | fraudProb: ${((r.fraudProbability || r.fraud_probability || 0)*100).toFixed(1)}%`,
+        sub: 1,
+      },
+      {
+        id: 'e3t7',
+        name: 'Low-risk via Java client (end-to-end)',
+        what: 'Java receives a low-risk Transaction — US grocery store, 2:30 PM, $42.50 — engineers features, calls Python, returns low score.',
+        method: 'GET', url: 'http://localhost:8080/api/fraud/demo/low-risk',
+        expect: 'riskLevel = "LOW", fraudProbability < 0.5',
+        pass: r => r && (r.riskLevel === 'LOW' || r.risk_level === 'LOW'),
+        highlight: r => r && `riskLevel: ${r.riskLevel || r.risk_level} | fraudProb: ${((r.fraudProbability || r.fraud_probability || 0)*100).toFixed(1)}%`,
+        sub: 1,
+      },
+    ],
+  },
+  {
+    id: 'ex04',
+    num: '04',
+    color: '#c084fc',
+    name: 'Spring AI — LLM Explainer',
+    subtitle: 'Spring AI sends fraud alerts to GPT-4o-mini and gets back structured, human-readable explanations',
+    ports: ['8006'],
+    tests: [
+      {
+        id: 'e4t1',
+        name: 'Service health check',
+        what: 'Spring AI service is running. Note: it needs OPENAI_API_KEY set — health will be UP even without one, but the LLM calls below will fail without it.',
+        method: 'GET', url: 'http://localhost:8006/actuator/health',
+        expect: 'status = "UP"',
+        pass: r => r && r.status === 'UP',
+      },
+      {
+        id: 'e4t2',
+        name: 'LLM explains a fraud alert',
+        what: 'A high-confidence fraud alert (92% probability, 3 AM FUEL purchase, card-not-present) is sent to GPT-4o-mini via Spring AI. The LLM returns a structured FraudExplanation — not free text, but a typed Java record with summary, riskFactors, recommendedAction, urgencyScore.',
+        method: 'POST', url: 'http://localhost:8006/api/fraud/explain',
+        body: {
+          transactionId: 'TXN-8821', accountId: 'ACC-1042', amount: 1850.00, currency: 'USD',
+          fraudProbability: 0.92, riskLevel: 'HIGH', hourOfDay: 3,
+          merchantRiskScore: 0.80, velocity30d: 22, geoRiskScore: 0.75,
+          merchantCategory: 'FUEL', cardPresent: false,
+        },
+        expect: 'response has summary, riskFactors (list), recommendedAction, urgencyScore',
+        pass: r => r && r.summary !== undefined && Array.isArray(r.riskFactors),
+        highlight: r => r && `recommendedAction: ${r.recommendedAction} | urgency: ${r.urgencyScore}/10`,
+      },
+      {
+        id: 'e4t3',
+        name: 'Free-text fraud analysis Q&A',
+        what: 'An analyst asks a natural language question. Spring AI passes it to the LLM and returns a plain-text answer — demonstrating conversational AI in Java with one method call.',
+        method: 'POST', url: 'http://localhost:8006/api/fraud/ask',
+        bodyRaw: 'Why is a 3 AM FUEL purchase with card-not-present high risk?',
+        expect: 'non-empty string response from the LLM',
+        pass: r => typeof r === 'string' && r.length > 10,
+        highlight: r => typeof r === 'string' ? r.substring(0, 120) + '…' : null,
+      },
+    ],
+  },
+  {
+    id: 'ex05',
+    num: '05',
+    color: '#f87171',
+    name: 'Full ML Pipeline (Bonus)',
+    subtitle: 'End-to-end event-driven fraud detection: Kafka → ONNX scoring → alerts. Requires Docker.',
+    ports: ['8084'],
+    tests: [
+      {
+        id: 'e5t1',
+        name: 'Pipeline status',
+        what: 'Check whether the pipeline is using ONNX in-JVM scoring (fastest) or falling back to the Python REST service (if ONNX model not present).',
+        method: 'GET', url: 'http://localhost:8084/api/pipeline/status',
+        expect: 'response has scoring_method (ONNX_IN_JVM or REST_FALLBACK)',
+        pass: r => r && r.scoring_method !== undefined,
+        highlight: r => r && `scoring_method: ${r.scoring_method} | onnx_available: ${r.onnx_available}`,
+      },
+      {
+        id: 'e5t2',
+        name: 'Send a test transaction into Kafka',
+        what: 'Inject a suspicious transaction (CRYPTO merchant, Nigeria, $1,800) into the "transactions" Kafka topic. The Java consumer will score it with ONNX and emit a fraud alert.',
+        method: 'POST', url: 'http://localhost:8084/api/pipeline/test/send?txnId=TXN-SUITE-001&merchantCategory=CRYPTO&countryCode=NG&amount=1800.0',
+        expect: 'status = "sent", transactionId = "TXN-SUITE-001"',
+        pass: r => r && r.status === 'sent',
+        highlight: r => r && `status: ${r.status} | txnId: ${r.transactionId}`,
+      },
+      {
+        id: 'e5t3',
+        name: 'Read fraud alerts from the pipeline',
+        what: 'Fetch recent fraud alerts emitted by the Kafka consumer after scoring. Run test 2 first to inject a transaction, wait ~2s, then check here.',
+        method: 'GET', url: 'http://localhost:8084/api/pipeline/alerts',
+        expect: 'array of fraud alerts (may be empty if no transactions sent yet)',
+        pass: r => Array.isArray(r),
+        highlight: r => Array.isArray(r) ? `${r.length} alert(s) in queue` : null,
+      },
+    ],
+  },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+const state = {};  // testId → { status, response, time, error }
+
+function initState() {
+  EXAMPLES.forEach(ex => ex.tests.forEach(t => {
+    state[t.id] = { status: 'idle', response: null, time: null, error: null };
+  }));
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+
+function syntaxHL(json) {
+  if (typeof json === 'string') {
+    return `<span class="str">"${escHtml(json)}"</span>`;
+  }
+  let str = JSON.stringify(json, null, 2);
+  return str
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+      if (/^"/.test(m)) {
+        if (/:$/.test(m)) return `<span class="key">${m}</span>`;
+        return `<span class="str">${m}</span>`;
+      }
+      if (/true|false/.test(m)) return `<span class="bool">${m}</span>`;
+      if (/null/.test(m))       return `<span class="null">${m}</span>`;
+      return `<span class="num">${m}</span>`;
+    });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────────
+function render() {
+  const container = $('main-content');
+  container.innerHTML = EXAMPLES.map(ex => renderExample(ex)).join('');
+  updateStats();
+}
+
+function renderExample(ex) {
+  const total = ex.tests.length;
+  const passed = ex.tests.filter(t => state[t.id]?.status === 'pass').length;
+  const failed = ex.tests.filter(t => state[t.id]?.status === 'fail').length;
+  const hasRun = passed + failed > 0;
+  const isOpen = ex._open !== false;
+
+  const progressText = hasRun ? `${passed}/${total} passed` : `${total} tests`;
+  const headerClass = isOpen ? 'example-header open' : 'example-header';
+  const bodyClass   = isOpen ? 'tests-body open' : 'tests-body';
+  const chevClass   = isOpen ? 'chevron open' : 'chevron';
+
+  // Group tests by sub-section if needed
+  let testsHTML = '';
+  if (ex.subSections) {
+    ex.subSections.forEach((sub, si) => {
+      const subTests = ex.tests.filter(t => t.sub === si);
+      testsHTML += `<div class="sub-heading">⬡ ${sub}</div>`;
+      testsHTML += subTests.map((t, i) => renderTestCard(t, i + 1)).join('');
+    });
+  } else {
+    testsHTML = ex.tests.map((t, i) => renderTestCard(t, i + 1)).join('');
+  }
+
+  return `
+<div class="example-section" id="${ex.id}">
+  <div class="${headerClass}" onclick="toggleExample('${ex.id}')">
+    <div class="ex-num" style="color:${ex.color};border-color:${ex.color}">${ex.num}</div>
+    <div class="ex-info">
+      <h2 style="color:${ex.color}">${ex.name}</h2>
+      <p>${ex.subtitle}</p>
+    </div>
+    <div class="ex-meta">
+      ${ex.ports.map(p => `<span class="port-badge">:${p}</span>`).join('')}
+      <span class="ex-progress">${progressText}</span>
+    </div>
+    <span class="${chevClass}">▶</span>
+  </div>
+  <div class="${bodyClass}" id="${ex.id}-body">
+    <div class="section-run-bar">
+      <p>Runs all ${ex.tests.length} tests for this example</p>
+      <button class="btn btn-run btn-sm" onclick="runExample('${ex.id}', event)">▶ Run Example ${ex.num}</button>
+    </div>
+    ${testsHTML}
+  </div>
+</div>`;
+}
+
+function renderTestCard(t, idx) {
+  const s = state[t.id] || { status: 'idle' };
+  const detailOpen = s.status !== 'idle' ? 'open' : '';
+
+  return `
+<div class="test-card" id="card-${t.id}">
+  <div class="test-card-header" onclick="toggleDetail('${t.id}')">
+    <div class="test-index">${idx}</div>
+    <div class="test-meta">
+      <h3>${t.name}</h3>
+      <p class="test-what">${t.what}</p>
+    </div>
+    <div class="test-right">
+      ${renderBadge(s.status, s.time)}
+      <button class="btn btn-run btn-sm" onclick="runTest('${t.id}', event)">▶ Run</button>
+    </div>
+  </div>
+  <div class="test-detail ${detailOpen}" id="detail-${t.id}">
+    ${renderDetail(t, s)}
+  </div>
+</div>`;
+}
+
+function renderBadge(status, time) {
+  const labels = { idle:'IDLE', running:'RUNNING…', pass:'PASS', fail:'FAIL' };
+  const cls    = { idle:'badge-idle', running:'badge-running', pass:'badge-pass', fail:'badge-fail' };
+  const icons  = { idle:'○', running:'◌', pass:'✓', fail:'✗' };
+  const timeStr = (status === 'pass' || status === 'fail') && time ? ` ${time}ms` : '';
+  return `<span class="badge ${cls[status]||'badge-idle'}">${icons[status]||'○'} ${labels[status]||'IDLE'}${timeStr}</span>`;
+}
+
+function renderDetail(t, s) {
+  const bodyStr = t.bodyRaw
+    ? `<div class="detail-row">
+        <div class="detail-label">Request Body (text/plain)</div>
+        <div class="code-block">${escHtml(t.bodyRaw)}</div>
+       </div>`
+    : t.body
+    ? `<div class="detail-row">
+        <div class="detail-label">Request Body (application/json)</div>
+        <div class="code-block">${syntaxHL(t.body)}</div>
+       </div>`
+    : '';
+
+  const responseHTML = renderResponse(t, s);
+
+  return `
+<div class="detail-row">
+  <div class="detail-label">Endpoint</div>
+  <div class="endpoint-bar">
+    <span class="method ${t.method}">${t.method}</span>
+    <span class="url-text">${escHtml(t.url)}</span>
+  </div>
+</div>
+${bodyStr}
+<div class="detail-row">
+  <div class="detail-label">Expected Outcome</div>
+  <div class="expect-bar">
+    <span class="expect-icon">◎</span>
+    <span class="expect-text"><strong>${escHtml(t.expect)}</strong></span>
+  </div>
+</div>
+${responseHTML}`;
+}
+
+function renderResponse(t, s) {
+  if (s.status === 'idle') return '';
+  if (s.status === 'running') return `<div class="response-area"><div class="badge badge-running" style="display:inline-flex">◌ Waiting for response…</div></div>`;
+
+  const isError = s.status === 'fail' && s.error;
+  let statusClass = 'rs-err';
+  let statusText  = 'ERROR';
+  if (s.httpStatus >= 200 && s.httpStatus < 300) { statusClass='rs-2xx'; statusText=`${s.httpStatus} OK`; }
+  else if (s.httpStatus >= 400) { statusClass=`rs-${Math.floor(s.httpStatus/100)}xx`; statusText=`${s.httpStatus}`; }
+
+  let highlightHTML = '';
+  if (s.status === 'pass' && t.highlight && s.response) {
+    const hl = t.highlight(s.response);
+    if (hl) highlightHTML = `<div class="perf-highlight" style="margin-top:6px;margin-bottom:6px"><span style="color:var(--green);font-size:.8rem">✓</span> <span class="perf-value" style="font-size:.9rem;color:var(--green)">${escHtml(hl)}</span></div>`;
+  }
+  if (s.status === 'pass' && t.perfKey && s.response) {
+    const val = s.response[t.perfKey];
+    if (val !== undefined) {
+      highlightHTML = `<div class="perf-highlight"><span style="font-size:.9rem">⚡</span><span class="perf-value">${val.toFixed(3)}</span><span class="perf-label">${t.perfUnit}</span></div>`;
+    }
+  }
+
+  const bodyDisplay = s.error
+    ? `<div class="code-block" style="color:var(--amber)">${escHtml(s.error)}</div>`
+    : `<div class="code-block">${syntaxHL(s.response)}</div>`;
+
+  return `
+<div class="response-area">
+  <div class="response-header">
+    <div class="detail-label" style="margin:0">Response</div>
+    ${s.httpStatus ? `<span class="response-status ${statusClass}">${statusText}</span>` : ''}
+    ${s.time ? `<span class="response-time">⏱ ${s.time} ms</span>` : ''}
+    ${s.size ? `<span class="response-size">${s.size} bytes</span>` : ''}
+  </div>
+  ${highlightHTML}
+  ${bodyDisplay}
+</div>`;
+}
+
+// ── Toggle helpers ────────────────────────────────────────────────────────────
+function toggleExample(exId) {
+  const ex = EXAMPLES.find(e => e.id === exId);
+  if (!ex) return;
+  ex._open = !ex._open;
+  const body = $(`${exId}-body`);
+  const hdr  = body.previousElementSibling;
+  const chev = hdr.querySelector('.chevron');
+  body.classList.toggle('open', ex._open);
+  hdr.classList.toggle('open', ex._open);
+  if (chev) chev.classList.toggle('open', ex._open);
+}
+
+function toggleDetail(testId) {
+  const detail = $(`detail-${testId}`);
+  if (detail) detail.classList.toggle('open');
+}
+
+// ── HTTP runner ───────────────────────────────────────────────────────────────
+async function runTest(testId, evt) {
+  if (evt) evt.stopPropagation();
+  const test = EXAMPLES.flatMap(e => e.tests).find(t => t.id === testId);
+  if (!test) return;
+
+  setState(testId, { status: 'running', response: null, time: null, error: null });
+  updateCard(testId);
+
+  const start = Date.now();
+  try {
+    const opts = {
+      method: test.method,
+      signal: AbortSignal.timeout(10000),
+      headers: {},
+    };
+    if (test.body) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(test.body);
+    } else if (test.bodyRaw) {
+      opts.headers['Content-Type'] = 'text/plain';
+      opts.body = test.bodyRaw;
+    }
+
+    const res  = await fetch(test.url, opts);
+    const time = Date.now() - start;
+    const ct   = res.headers.get('content-type') || '';
+    let body;
+    if (ct.includes('application/json')) {
+      body = await res.json();
+    } else {
+      body = await res.text();
+    }
+    const passed = test.pass(body);
+    setState(testId, { status: passed ? 'pass' : 'fail', response: body, time, httpStatus: res.status, size: JSON.stringify(body).length });
+  } catch(e) {
+    const time = Date.now() - start;
+    let msg = e.message || String(e);
+    if (e.name === 'AbortError' || e.name === 'TimeoutError') msg = 'Request timed out (10 s). Is the service running?';
+    else if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('CORS')) {
+      msg = `Cannot reach ${test.url}\n\nPossible causes:\n• Service not started (run mvn spring-boot:run in the example folder)\n• CORS not enabled (rebuild after adding CorsConfig.java)\n• Port conflict\n\nOriginal error: ${msg}`;
+    }
+    setState(testId, { status: 'fail', error: msg, time, httpStatus: null });
+  }
+  updateCard(testId);
+  updateStats();
+}
+
+function setState(id, data) {
+  state[id] = { ...state[id], ...data };
+}
+
+function updateCard(testId) {
+  const card = $(`card-${testId}`);
+  if (!card) return;
+  const s = state[testId];
+  const t = EXAMPLES.flatMap(e => e.tests).find(t => t.id === testId);
+  if (!t) return;
+
+  // update badge
+  const right = card.querySelector('.test-right');
+  if (right) {
+    const oldBadge = right.querySelector('.badge');
+    if (oldBadge) oldBadge.outerHTML = renderBadge(s.status, s.time);
+  }
+
+  // ensure detail is open
+  const detail = $(`detail-${testId}`);
+  if (detail) {
+    detail.innerHTML = renderDetail(t, s);
+    detail.classList.add('open');
+  }
+
+  // update section progress
+  const ex = EXAMPLES.find(e => e.tests.some(t => t.id === testId));
+  if (ex) {
+    const total  = ex.tests.length;
+    const passed = ex.tests.filter(t => state[t.id]?.status === 'pass').length;
+    const failed = ex.tests.filter(t => state[t.id]?.status === 'fail').length;
+    const hasRun = passed + failed > 0;
+    const progEl = document.querySelector(`#${ex.id} .ex-progress`);
+    if (progEl) progEl.textContent = hasRun ? `${passed}/${total} passed` : `${total} tests`;
+  }
+}
+
+async function runExample(exId, evt) {
+  if (evt) evt.stopPropagation();
+  const ex = EXAMPLES.find(e => e.id === exId);
+  if (!ex) return;
+  ex._open = true;
+  const body = $(`${exId}-body`);
+  if (body) { body.classList.add('open'); body.previousElementSibling.classList.add('open'); }
+  for (const t of ex.tests) {
+    await runTest(t.id);
+  }
+}
+
+async function runAll() {
+  const btn = $('btn-run-all');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running…';
+  for (const ex of EXAMPLES) {
+    ex._open = true;
+    for (const t of ex.tests) {
+      await runTest(t.id);
+    }
+  }
+  btn.disabled = false;
+  btn.textContent = '▶ Run All Tests';
+}
+
+function resetAll() {
+  initState();
+  EXAMPLES.forEach(ex => { ex._open = true; });
+  render();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const all = Object.values(state);
+  const total   = all.length;
+  const running = all.filter(s => s.status === 'running').length;
+  const passed  = all.filter(s => s.status === 'pass').length;
+  const failed  = all.filter(s => s.status === 'fail').length;
+  const done    = passed + failed;
+
+  $('stat-total').textContent = total;
+  $('stat-run').textContent   = running;
+  $('stat-pass').textContent  = passed;
+  $('stat-fail').textContent  = failed;
+
+  const pct = total ? Math.round(done / total * 100) : 0;
+  $('global-bar').style.width = pct + '%';
+  $('global-bar').style.background = failed > 0 ? 'var(--red)' : passed === total && total > 0 ? 'var(--green)' : 'var(--indigo)';
+  $('global-pct').textContent = `${done} / ${total} complete`;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+EXAMPLES.forEach(ex => { ex._open = true; });
+initState();
+render();
+updateStats();
+</script>
+</body>
+</html>
