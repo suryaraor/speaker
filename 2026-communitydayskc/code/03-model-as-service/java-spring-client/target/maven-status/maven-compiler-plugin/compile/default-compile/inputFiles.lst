@@ -1,8 +1,0 @@
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\model\Transaction.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\model\TransactionFeatures.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\service\FraudDetectionService.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\service\FeatureEngineer.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\model\FraudScore.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\config\WebClientConfig.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\MlClientApplication.java
-c:\github\suryaraor\speaker\2026-communitydayskc\code\01-model-as-service\java-spring-client\src\main\java\com\example\mlclient\controller\FraudController.java
