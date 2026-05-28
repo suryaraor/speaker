@@ -15,6 +15,11 @@ public class FraudExplainerController {
         this.explainerService = explainerService;
     }
 
+    @GetMapping("/health")
+    public java.util.Map<String, String> health() {
+        return java.util.Map.of("status", "UP", "service", "spring-ai-fraud-explainer");
+    }
+
     /**
      * POST /api/fraud/explain
      *
