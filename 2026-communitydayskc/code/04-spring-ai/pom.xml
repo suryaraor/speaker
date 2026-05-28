@@ -42,13 +42,14 @@
 
     <!--
       Spring AI — swap starter to change provider with zero code changes:
-        spring-ai-openai-spring-boot-starter    (OpenAI / Azure OpenAI)
-        spring-ai-anthropic-spring-boot-starter  (Claude)
-        spring-ai-ollama-spring-boot-starter     (local Ollama, no API key)
+        spring-ai-starter-model-openai    (OpenAI / Azure OpenAI)
+        spring-ai-starter-model-anthropic  (Claude)
+        spring-ai-starter-model-ollama     (local Ollama, no API key)
     -->
     <dependency>
       <groupId>org.springframework.ai</groupId>
-      <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+      <artifactId>spring-ai-starter-model-openai</artifactId>
+      <version>${spring-ai.version}</version>
     </dependency>
 
     <dependency>
@@ -67,11 +68,4 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
-      <id>spring-milestones</id>
-      <name>Spring Milestones</name>
-      <url>https://repo.spring.io/milestone</url>
-    </repository>
-  </repositories>
 </project>

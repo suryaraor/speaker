@@ -1,0 +1,6 @@
+# Java
+*.class
+
+# Maven
+target/
+*.lst
