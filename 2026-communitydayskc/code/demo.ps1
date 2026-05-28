@@ -244,19 +244,25 @@ function Start-Example05 {
         return
     }
 
-    # Start Docker Desktop if it is not already running
-    $desktopRunning = Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
-    if (-not $desktopRunning) {
-        $dockerDesktopExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-        if (Test-Path $dockerDesktopExe) {
-            Write-Info "Starting Docker Desktop ..."
-            Start-Process $dockerDesktopExe
+    # Ensure com.docker.backend is running — it creates the named pipe bridge
+    if (-not (Get-Process "com.docker.backend" -ErrorAction SilentlyContinue)) {
+        $backendExe = "C:\Program Files\Docker\Docker\resources\com.docker.backend.exe"
+        if (Test-Path $backendExe) {
+            Write-Info "Docker backend not running - starting it ..."
+            Start-Process $backendExe -WindowStyle Hidden
         } else {
-            Write-Fail "Docker Desktop not found - install it and try again"
-            return
+            # Fall back to launching the full Docker Desktop UI
+            $dockerDesktopExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+            if (Test-Path $dockerDesktopExe) {
+                Write-Info "Starting Docker Desktop ..."
+                Start-Process $dockerDesktopExe
+            } else {
+                Write-Fail "Docker Desktop not found - install it and try again"
+                return
+            }
         }
     } else {
-        Write-Info "Docker Desktop is running - waiting for engine to be ready ..."
+        Write-Info "Docker backend is running - waiting for engine pipe ..."
     }
 
     # Wait up to 90 s for the engine pipe to appear, then lock in the right context
@@ -280,11 +286,42 @@ function Start-Example05 {
     }
 
     if (-not $ready) {
-        Write-Fail "Docker engine did not start within 90 s - check Docker Desktop status and try again"
+        Write-Fail "Docker engine did not start within 90 s"
+        Write-Info "Try:  docker desktop restart"
+        Write-Info "Then re-run:  .\demo.ps1 start 05"
         return
     }
 
-    Invoke-DockerCompose "up", "--build", "-d"
+    # Pipe is up but the engine may still be initialising — wait until docker info succeeds
+    $apiDeadline = (Get-Date).AddSeconds(60)
+    $apiReady = $false
+    while ((Get-Date) -lt $apiDeadline) {
+        $null = docker info 2>&1
+        if ($LASTEXITCODE -eq 0) { $apiReady = $true; break }
+        $remaining = [int](($apiDeadline - (Get-Date)).TotalSeconds)
+        Write-Info "Waiting for Docker API to be ready ... ($remaining s remaining)"
+        Start-Sleep 3
+    }
+    if (-not $apiReady) {
+        Write-Fail "Docker API did not become ready within 60 s after pipe appeared"
+        Write-Info "Try:  docker desktop restart"
+        Write-Info "Then re-run:  .\demo.ps1 start 05"
+        return
+    }
+    Write-Ok "Docker API ready"
+
+    # Check if containers already exist (stopped) — if so, just start them (much faster)
+    Push-Location "$Root\05-full-pipeline"
+    $existingContainers = & docker compose ps --all --quiet 2>$null
+    Pop-Location
+
+    if ($existingContainers) {
+        Write-Info "Existing containers found - restarting them (skipping rebuild) ..."
+        Invoke-DockerCompose "start"
+    } else {
+        Write-Info "No existing containers - building and creating stack ..."
+        Invoke-DockerCompose "up", "--build", "-d"
+    }
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "docker compose failed - check the output above"
         return
@@ -308,8 +345,9 @@ function Stop-Example05 {
         return
     }
 
-    Invoke-DockerCompose "down"
-    Write-Ok "Stack stopped"
+    Invoke-DockerCompose "stop"
+    Write-Ok "Stack stopped (containers preserved for fast restart)"
+    Write-Info "  To fully remove containers:  docker compose down  (from 05-full-pipeline folder)"
 }
 
 # =============================================================================

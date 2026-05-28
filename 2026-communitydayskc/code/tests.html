@@ -581,11 +581,12 @@ const EXAMPLES = [
       {
         id: 'e5t3',
         name: 'Read fraud alerts from the pipeline',
-        what: 'Fetch recent fraud alerts emitted by the Kafka consumer after scoring. Run test 2 first to inject a transaction, wait ~2s, then check here.',
+        what: 'Fetch recent fraud alerts emitted by the Kafka consumer after scoring. Automatically waits 2.5 s for the consumer to process the transaction from Test 2, then asserts at least 1 alert is present.',
         method: 'GET', url: 'http://localhost:8084/api/pipeline/alerts',
-        expect: 'array of fraud alerts (may be empty if no transactions sent yet)',
-        pass: r => Array.isArray(r),
-        highlight: r => Array.isArray(r) ? `${r.length} alert(s) in queue` : null,
+        expect: 'at least 1 fraud alert in the array (after Test 2 injects a transaction)',
+        pass: r => Array.isArray(r) && r.length > 0,
+        highlight: r => Array.isArray(r) ? `${r.length} alert(s) detected` : null,
+        delayMs: 2500,
         optional: true, infraNote: 'Requires Docker Desktop + docker-compose up',
       },
     ],
@@ -748,7 +749,7 @@ ${responseHTML}`;
 
 function renderResponse(t, s) {
   if (s.status === 'idle') return '';
-  if (s.status === 'running') return `<div class="response-area"><div class="badge badge-running" style="display:inline-flex">◌ Waiting for response…</div></div>`;
+  if (s.status === 'running') return `<div class="response-area"><div class="badge badge-running" style="display:inline-flex">◌ ${escHtml(s.waitMsg || 'Waiting for response…')}</div></div>`;
   if (s.status === 'skip') return `<div class="response-area"><div class="svc-down"><span>⊘</span><span>Infrastructure not available — <code>${t.infraNote || 'service required'}</code><br>Start it and re-run this test when Docker is running.</span></div></div>`;
 
   const isError = s.status === 'fail' && s.error;
@@ -810,8 +811,15 @@ async function runTest(testId, evt) {
   const test = EXAMPLES.flatMap(e => e.tests).find(t => t.id === testId);
   if (!test) return;
 
-  setState(testId, { status: 'running', response: null, time: null, error: null });
+  setState(testId, { status: 'running', response: null, time: null, error: null, waitMsg: null });
   updateCard(testId);
+
+  if (test.delayMs) {
+    setState(testId, { waitMsg: `Waiting ${test.delayMs / 1000}s for Kafka consumer to process…` });
+    updateCard(testId);
+    await new Promise(r => setTimeout(r, test.delayMs));
+    setState(testId, { waitMsg: null });
+  }
 
   const start = Date.now();
   try {

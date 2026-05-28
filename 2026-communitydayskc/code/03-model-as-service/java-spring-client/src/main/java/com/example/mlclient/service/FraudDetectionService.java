@@ -5,6 +5,7 @@ import com.example.mlclient.model.Transaction;
 import com.example.mlclient.model.TransactionFeatures;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -17,17 +18,21 @@ public class FraudDetectionService {
 
     private static final Logger log = LoggerFactory.getLogger(FraudDetectionService.class);
 
-    private static final Duration SLA_TIMEOUT    = Duration.ofMillis(500);
     private static final FraudScore SAFE_FALLBACK = new FraudScore(
         0.0, false, "fallback-v0", "LOW", Map.of()
     );
 
     private final WebClient mlWebClient;
     private final FeatureEngineer featureEngineer;
+    private final Duration mlTimeout;
 
-    public FraudDetectionService(WebClient mlWebClient, FeatureEngineer featureEngineer) {
+    public FraudDetectionService(
+            WebClient mlWebClient,
+            FeatureEngineer featureEngineer,
+            @Value("${ml.service.timeout-ms:5000}") long timeoutMs) {
         this.mlWebClient     = mlWebClient;
         this.featureEngineer = featureEngineer;
+        this.mlTimeout       = Duration.ofMillis(timeoutMs);
     }
 
     public FraudScore evaluate(Transaction tx) {
@@ -50,6 +55,6 @@ public class FraudDetectionService {
             .bodyValue(features)
             .retrieve()
             .bodyToMono(FraudScore.class)
-            .timeout(SLA_TIMEOUT);
+            .timeout(mlTimeout);
     }
 }

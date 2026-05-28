@@ -10,6 +10,7 @@ RUN mvn package -DskipTests -q
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
+COPY --from=builder /build/src/main/resources/models /app/models
 
 EXPOSE 8084
 
