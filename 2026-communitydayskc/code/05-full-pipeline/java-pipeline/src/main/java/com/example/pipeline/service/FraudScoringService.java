@@ -33,8 +33,14 @@ public class FraudScoringService {
 
     @PostConstruct
     public void init() {
-        env      = OrtEnvironment.getEnvironment();
         mlClient = WebClient.builder().baseUrl(mlServiceUrl).build();
+
+        try {
+            env = OrtEnvironment.getEnvironment();
+        } catch (UnsatisfiedLinkError e) {
+            log.warn("ONNX runtime native library unavailable — using REST fallback: {}", e.getMessage());
+            return;
+        }
 
         Path path = Path.of(modelPath);
         if (path.toFile().exists()) {

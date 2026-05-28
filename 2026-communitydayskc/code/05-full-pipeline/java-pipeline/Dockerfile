@@ -1,14 +1,13 @@
 # ── Build stage ────────────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk-jammy AS builder
 WORKDIR /build
 COPY pom.xml .
 COPY src ./src
-# Download dependencies first (layer caching)
-RUN apk add --no-cache maven && mvn dependency:go-offline -q
+RUN apt-get update -q && apt-get install -y -q maven && mvn dependency:go-offline -q
 RUN mvn package -DskipTests -q
 
 # ── Runtime stage ───────────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
 

@@ -4,4 +4,7 @@
 # Maven
 target/
 *.lst
+
+# Python
 *.pyc
+__pycache__/

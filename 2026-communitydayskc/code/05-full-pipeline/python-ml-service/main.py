@@ -14,6 +14,7 @@ from pathlib import Path
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
@@ -24,6 +25,7 @@ logging.basicConfig(level=logging.INFO)
 
 MODEL_PATH = Path("fraud_model.pkl")
 MODEL_VERSION = "v1.0.0"
+FEATURE_NAMES = ["amount", "hour_of_day", "merchant_risk_score", "velocity_30d", "geo_risk_score"]
 _pipeline: Pipeline | None = None
 
 
@@ -78,6 +80,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Fraud Detection Service", version=MODEL_VERSION, lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/predict/fraud", response_model=FraudScore)
 async def predict(features: TransactionFeatures):
@@ -95,3 +104,20 @@ async def predict(features: TransactionFeatures):
 @app.get("/health")
 async def health():
     return {"status": "healthy", "model_loaded": _pipeline is not None}
+
+
+@app.get("/model/info")
+async def model_info():
+    if _pipeline is None:
+        raise HTTPException(503, "Model not loaded")
+    rf: RandomForestClassifier = _pipeline["model"]
+    return {
+        "version": MODEL_VERSION,
+        "algorithm": "RandomForestClassifier",
+        "n_estimators": rf.n_estimators,
+        "max_depth": rf.max_depth,
+        "feature_names": FEATURE_NAMES,
+        "feature_importances": dict(zip(FEATURE_NAMES, rf.feature_importances_.round(4).tolist())),
+        "n_classes": rf.n_classes_,
+        "classes": rf.classes_.tolist(),
+    }

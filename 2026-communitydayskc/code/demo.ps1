@@ -95,11 +95,55 @@ function Invoke-DockerCompose([string[]]$DcArgs) {
 }
 
 # =============================================================================
+# Python ML Service  :8000  (shared across examples 01-04)
+# =============================================================================
+
+function Start-PythonService {
+    if (Test-PortListening 8000) {
+        Write-Ok "Python ML service already running on :8000"
+        return
+    }
+    $pyDir = "$Root\03-model-as-service\python-ml-service"
+    if (-not (Test-Path "$pyDir\.venv\Scripts\uvicorn.exe")) {
+        Write-Info "Setting up Python venv ..."
+        Push-Location $pyDir
+        try {
+            if (-not (Test-Path "$pyDir\.venv")) { python -m venv .venv }
+            & "$pyDir\.venv\Scripts\pip" install -r requirements.txt -q
+            Write-Ok "Python venv ready"
+        } finally {
+            Pop-Location
+        }
+    }
+    Open-ServiceWindow "Python ML Service :8000" `
+        $pyDir `
+        "& '.venv\Scripts\python.exe' -m uvicorn main:app --reload --port 8000"
+
+    Write-Info "Waiting for Python ML service to be ready ..."
+    $deadline = (Get-Date).AddSeconds(30)
+    $ready = $false
+    while ((Get-Date) -lt $deadline) {
+        Start-Sleep 2
+        try {
+            $resp = Invoke-RestMethod "http://localhost:8000/health" -TimeoutSec 2 -ErrorAction Stop
+            if ($resp.model_loaded -eq $true) { $ready = $true; break }
+        } catch {}
+    }
+    if ($ready) { Write-Ok "Python ML service ready (model loaded)" }
+    else         { Write-Warn "Python ML service did not respond within 30 s - continuing anyway" }
+}
+
+function Stop-PythonService {
+    Stop-ServicePort 8000 "Python ML service"
+}
+
+# =============================================================================
 # Example 01 - Java-Native ML (Weka)  :8082
 # =============================================================================
 
 function Start-Example01 {
     Write-Head "01 - Java-Native ML (Weka)  port 8082"
+    Start-PythonService
     if (Test-PortListening 8082) { Write-Warn "Already running on :8082"; return }
     Open-ServiceWindow "01 Java-Native ML" "$Root\01-java-native-ml" "mvn spring-boot:run"
 }
@@ -107,6 +151,7 @@ function Start-Example01 {
 function Stop-Example01 {
     Write-Head "01 - Stop Java-Native ML"
     Stop-ServicePort 8082 "Java-Native ML"
+    Stop-PythonService
 }
 
 # =============================================================================
@@ -116,6 +161,7 @@ function Stop-Example01 {
 
 function Start-Example02 {
     Write-Head "02 - ONNX In-JVM  port 8081"
+    Start-PythonService
     if (Test-PortListening 8081) { Write-Warn "Already running on :8081"; return }
 
     $onnxFile = "$Root\02-onnx-in-jvm\java-onnx-inference\src\main\resources\models\fraud_model.onnx"
@@ -134,6 +180,7 @@ function Start-Example02 {
 function Stop-Example02 {
     Write-Head "02 - Stop ONNX In-JVM"
     Stop-ServicePort 8081 "ONNX In-JVM"
+    Stop-PythonService
 }
 
 # =============================================================================
@@ -142,16 +189,7 @@ function Stop-Example02 {
 
 function Start-Example03 {
     Write-Head "03 - Model as a Service  port 8000 (Python FastAPI) + 8080 (Java)"
-
-    if (Test-PortListening 8000) {
-        Write-Warn ":8000 already in use - skipping Python service"
-    } else {
-        Open-ServiceWindow "03 Python FastAPI" `
-            "$Root\03-model-as-service\python-ml-service" `
-            ".venv\Scripts\uvicorn main:app --reload --port 8000"
-        Write-Info "Waiting 3 s for FastAPI to boot ..."
-        Start-Sleep 3
-    }
+    Start-PythonService
 
     if (Test-PortListening 8080) {
         Write-Warn ":8080 already in use - skipping Java client"
@@ -164,8 +202,8 @@ function Start-Example03 {
 
 function Stop-Example03 {
     Write-Head "03 - Stop Model as a Service"
-    Stop-ServicePort 8000 "Python FastAPI"
     Stop-ServicePort 8080 "Java Spring Client"
+    Stop-PythonService
 }
 
 # =============================================================================
@@ -174,6 +212,7 @@ function Stop-Example03 {
 
 function Start-Example04 {
     Write-Head "04 - Spring AI (LLM Fraud Explainer)  port 8006"
+    Start-PythonService
     if (Test-PortListening 8006) { Write-Warn "Already running on :8006"; return }
 
     if (-not $env:OPENAI_API_KEY -and -not $env:ANTHROPIC_API_KEY) {
@@ -189,6 +228,7 @@ function Start-Example04 {
 function Stop-Example04 {
     Write-Head "04 - Stop Spring AI"
     Stop-ServicePort 8006 "Spring AI"
+    Stop-PythonService
 }
 
 # =============================================================================
@@ -204,7 +244,51 @@ function Start-Example05 {
         return
     }
 
+    # Start Docker Desktop if it is not already running
+    $desktopRunning = Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
+    if (-not $desktopRunning) {
+        $dockerDesktopExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+        if (Test-Path $dockerDesktopExe) {
+            Write-Info "Starting Docker Desktop ..."
+            Start-Process $dockerDesktopExe
+        } else {
+            Write-Fail "Docker Desktop not found - install it and try again"
+            return
+        }
+    } else {
+        Write-Info "Docker Desktop is running - waiting for engine to be ready ..."
+    }
+
+    # Wait up to 90 s for the engine pipe to appear, then lock in the right context
+    $deadline = (Get-Date).AddSeconds(90)
+    $ready = $false
+    while ((Get-Date) -lt $deadline) {
+        $pipes = Get-ChildItem \\.\pipe\ -ErrorAction SilentlyContinue |
+                 Select-Object -ExpandProperty Name
+        if ($pipes -contains 'dockerDesktopLinuxEngine') {
+            docker context use desktop-linux | Out-Null
+            Write-Ok "Docker engine ready  (context -> desktop-linux)"
+            $ready = $true; break
+        } elseif ($pipes -contains 'docker_engine') {
+            docker context use default | Out-Null
+            Write-Ok "Docker engine ready  (context -> default)"
+            $ready = $true; break
+        }
+        $remaining = [int](($deadline - (Get-Date)).TotalSeconds)
+        Write-Info "Waiting for Docker engine pipe ... ($remaining s remaining)"
+        Start-Sleep 5
+    }
+
+    if (-not $ready) {
+        Write-Fail "Docker engine did not start within 90 s - check Docker Desktop status and try again"
+        return
+    }
+
     Invoke-DockerCompose "up", "--build", "-d"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "docker compose failed - check the output above"
+        return
+    }
     Write-Ok "Stack started"
     Write-Info "  Java pipeline  ->  http://localhost:8084/api/pipeline/status"
     Write-Info "  Kafka UI       ->  http://localhost:9090"
@@ -236,19 +320,22 @@ function Show-ExampleStatus([string]$Ex) {
     switch ($Ex) {
         "01" {
             Write-Head "01 - Java-Native ML"
+            Show-PortStatus "Python ML service" 8000
             Show-PortStatus "Java-Native ML (Weka)" 8082
         }
         "02" {
             Write-Head "02 - ONNX In-JVM"
+            Show-PortStatus "Python ML service" 8000
             Show-PortStatus "ONNX In-JVM" 8081
         }
         "03" {
             Write-Head "03 - Model as a Service"
-            Show-PortStatus "Python FastAPI" 8000
+            Show-PortStatus "Python ML service" 8000
             Show-PortStatus "Java Spring Client" 8080
         }
         "04" {
             Write-Head "04 - Spring AI"
+            Show-PortStatus "Python ML service" 8000
             Show-PortStatus "Spring AI" 8006
         }
         "05" {
